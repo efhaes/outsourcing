@@ -1,0 +1,25 @@
+{% extends 'kepala_supervisor/base_kepala.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">{{ page_title }}</h5>
+    <a href="{% url 'kepala_area_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="card p-4">
+    <div class="alert alert-warning">
+        <strong>Peringatan:</strong> Area yang dinonaktifkan tidak akan muncul dalam daftar aktif.
+    </div>
+    
+    <p>Apakah Anda yakin ingin menonaktifkan area <strong>{{ area.nama_area }}</strong>?</p>
+    <p class="text-muted">Perusahaan: {{ area.perusahaan.nama_perusahaan }}</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Ya, Nonaktifkan</button>
+        <a href="{% url 'kepala_area_list' %}" class="btn btn-secondary">Batal</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,298 @@
+{% extends 'supervisor/base_supervisor.html' %}
+
+{% block content %}
+<style>
+.form-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+.form-page-header h5 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--clr-text);
+    margin: 0;
+}
+.form-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+}
+.section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 1.75rem 0 1.25rem;
+}
+.section-divider span {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--clr-text-muted);
+    white-space: nowrap;
+}
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--clr-border);
+}
+.field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.field-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--clr-text-muted);
+    text-transform: uppercase;
+}
+.field-hint {
+    font-size: 11.5px;
+    color: var(--clr-text-muted);
+    margin-top: 4px;
+}
+.field-error {
+    font-size: 11.5px;
+    color: #dc3545;
+    margin-top: 4px;
+}
+.task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    background: var(--clr-bg);
+    border: 1px solid var(--clr-border);
+    border-radius: 10px;
+    padding: 14px;
+}
+.task-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--clr-border);
+    background: var(--clr-surface);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 13px;
+}
+.task-item:has(input:checked) {
+    border-color: #0d6efd;
+    background: #f0f5ff;
+    color: #0d6efd;
+}
+.task-item input[type="checkbox"] {
+    accent-color: #0d6efd;
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid var(--clr-border);
+    padding: 9px 13px;
+    font-size: 13.5px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    background: var(--clr-surface);
+}
+.form-control:focus, .form-select:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13,110,253,0.1);
+    outline: none;
+}
+.btn-submit {
+    background: #0d6efd;
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 28px;
+    font-size: 13.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+}
+.btn-submit:hover { background: #0b5ed7; transform: translateY(-1px); }
+.btn-submit:active { transform: translateY(0); }
+.btn-cancel {
+    background: transparent;
+    color: var(--clr-text-muted);
+    border: 1px solid var(--clr-border);
+    border-radius: 10px;
+    padding: 10px 24px;
+    font-size: 13.5px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+.btn-cancel:hover {
+    background: var(--clr-bg);
+    color: var(--clr-text);
+}
+.avatar-preview-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+.avatar-preview-wrap img {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--clr-border);
+}
+.toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 4px;
+}
+.toggle-wrap label {
+    font-size: 13.5px;
+    color: var(--clr-text);
+    cursor: pointer;
+    user-select: none;
+}
+</style>
+
+<div class="form-page-header">
+    <h5>{{ page_title }}</h5>
+    <a href="{% url 'supervisor_staff_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="form-card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="alert alert-danger mb-3" style="border-radius:10px;font-size:13px;">
+            {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Identitas -->
+        <div class="section-divider"><span>Identitas Akun</span></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="field-group">
+                    <label class="field-label">Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                        <div class="field-error">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="field-group">
+                    <label class="field-label">Nama Lengkap</label>
+                    {{ form.nama_lengkap }}
+                    {% if form.nama_lengkap.errors %}
+                        <div class="field-error">{{ form.nama_lengkap.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="field-group">
+                    <label class="field-label">Password</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <div class="field-error">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="field-group">
+                    <label class="field-label">Konfirmasi Password</label>
+                    {{ form.konfirmasi_password }}
+                    {% if form.konfirmasi_password.errors %}
+                        <div class="field-error">{{ form.konfirmasi_password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Kontak & Foto -->
+        <div class="section-divider"><span>Kontak & Foto</span></div>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="field-group">
+                    <label class="field-label">Telepon</label>
+                    {{ form.telepon }}
+                    {% if form.telepon.errors %}
+                        <div class="field-error">{{ form.telepon.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="field-group">
+                    <label class="field-label">Foto Profil</label>
+                    {{ form.foto_profil }}
+                    {% if form.foto_profil.errors %}
+                        <div class="field-error">{{ form.foto_profil.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="field-group">
+                    <label class="field-label">Status Akun</label>
+                    <div class="toggle-wrap">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}">Akun Aktif</label>
+                    </div>
+                    {% if form.is_active.errors %}
+                        <div class="field-error">{{ form.is_active.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Skill / Task -->
+        <div class="section-divider"><span>Skill / Task</span></div>
+        <div class="field-group">
+            <div class="task-grid">
+                {% for checkbox in form.tasks %}
+                <label class="task-item">
+                    <input
+                        type="checkbox"
+                        name="{{ checkbox.data.name }}"
+                        value="{{ checkbox.data.value }}"
+                        id="{{ checkbox.id_for_label }}"
+                        {% if checkbox.data.selected %}checked{% endif %}
+                    >
+                    {{ checkbox.choice_label }}
+                </label>
+                {% empty %}
+                <div style="font-size:13px;color:var(--clr-text-muted);grid-column:1/-1;">
+                    Tidak ada task tersedia.
+                </div>
+                {% endfor %}
+            </div>
+            {% if form.tasks.errors %}
+                <div class="field-error">{{ form.tasks.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Tombol Aksi -->
+        <div class="d-flex gap-2 mt-4 pt-2" style="border-top:1px solid var(--clr-border);">
+            <button type="submit" class="btn-submit">
+                <i class="bi bi-check-lg me-1"></i> {{ action }}
+            </button>
+            <a href="{% url 'supervisor_staff_list' %}" class="btn-cancel">Batal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

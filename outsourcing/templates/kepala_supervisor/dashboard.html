@@ -1,0 +1,139 @@
+{% extends 'kepala_supervisor/base_kepala.html' %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Total Supervisor</div>
+            <div class="fs-3 fw-bold text-primary">{{ stats.total_supervisor|default:0 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Total Staff</div>
+            <div class="fs-3 fw-bold text-success">{{ stats.total_staff|default:0 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Total Laporan</div>
+            <div class="fs-3 fw-bold text-warning">{{ stats.total_laporan|default:0 }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Laporan Aktif</div>
+            <div class="fs-3 fw-bold text-info">{{ stats.laporan_aktif|default:0 }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6 class="fw-semibold mb-3">Penugasan Supervisor</h6>
+            {% if penugasan %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Supervisor</th>
+                            <th>Perusahaan</th>
+                            <th>Jasa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in penugasan %}
+                        <tr>
+                            <td>{{ p.supervisor.nama_lengkap }}</td>
+                            <td>{{ p.perusahaan.nama_perusahaan }}</td>
+                            <td>{{ p.jenis_jasa.nama_jasa }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted small mb-0">Belum ada penugasan supervisor.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3">
+            <h6 class="fw-semibold mb-3">Laporan Terbaru</h6>
+            {% if laporan_terbaru %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nama Laporan</th>
+                            <th>Perusahaan</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for l in laporan_terbaru %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'kepala_laporan_detail' l.pk %}" class="text-decoration-none">
+                                    {{ l.nama_laporan }}
+                                </a>
+                            </td>
+                            <td>{{ l.perusahaan.nama_perusahaan }}</td>
+                            <td>{{ l.tanggal_laporan|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted small mb-0">Belum ada laporan.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-3">
+    <div class="col-12">
+        <div class="card p-3">
+            <h6 class="fw-semibold mb-3">Item Kegiatan Hari Ini</h6>
+            {% if item_hari_ini %}
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Staff</th>
+                            <th>Item</th>
+                            <th>Perusahaan</th>
+                            <th>Jam</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in item_hari_ini %}
+                        <tr>
+                            <td>{{ item.staff.nama_lengkap }}</td>
+                            <td>{{ item.nama_item }}</td>
+                            <td>{{ item.laporan.perusahaan.nama_perusahaan }}</td>
+                            <td>{{ item.jam_mulai|default:"—" }} - {{ item.jam_selesai|default:"—" }}</td>
+                            <td>
+                                {% if item.status == 'terjadwal' %}
+                                    <span class="badge bg-secondary">Terjadwal</span>
+                                {% elif item.status == 'on_progress' %}
+                                    <span class="badge bg-warning">On Progress</span>
+                                {% elif item.status == 'selesai' %}
+                                    <span class="badge bg-success">Selesai</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted small mb-0">Tidak ada item kegiatan hari ini.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

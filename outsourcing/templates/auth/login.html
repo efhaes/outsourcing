@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Login · UNIPACS</title>
+    {% load static %}
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'image/logo_u.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'image/logo_u.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'image/logo_u.png' %}">
+    <!-- Tailwind + Fonts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        * {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            background: radial-gradient(circle at 0% 0%, #eff6ff 0%, #dbeafe 40%, #bfdbfe 100%);
+        }
+
+        /* Card */
+        .fluid-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(12px);
+            border-radius: 2.5rem;
+            box-shadow: 0 30px 50px -20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Input */
+        .input-soft {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(147, 197, 253, 0.5);
+            border-radius: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .input-soft:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            outline: none;
+            transform: translateY(-1px);
+        }
+
+        .input-soft:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* Button */
+        .btn-organic {
+            background: linear-gradient(120deg, #2563eb, #3b82f6, #60a5fa);
+            border-radius: 1.5rem;
+            transition: 0.3s;
+        }
+
+        .btn-organic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Blob */
+        .blob {
+            position: absolute;
+            border-radius: 60% 40% 60% 40%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 12s infinite alternate ease-in-out;
+            max-width: 80vw;
+            max-height: 80vh;
+        }
+
+        .blob:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .blob:nth-child(2) {
+            animation-delay: -6s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0,0) scale(1) rotate(0deg); }
+            50% { transform: translate(20px,-20px) scale(1.05) rotate(180deg); }
+            100% { transform: translate(-10px,10px) scale(0.95) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- BACKGROUND WRAPPER -->
+<div class="fixed inset-0 overflow-hidden">
+    <div class="blob w-[400px] h-[400px] bg-blue-300 top-[-100px] left-[-100px]"></div>
+    <div class="blob w-[500px] h-[500px] bg-indigo-300 bottom-[-150px] right-[-150px]"></div>
+</div>
+
+<!-- CONTENT -->
+<div class="relative z-10 flex items-center justify-center h-screen px-4">
+    <div class="w-full max-w-md">
+        <div class="fluid-card p-10 md:p-12 min-h-[520px] flex flex-col justify-center">
+            <!-- LOGO -->
+            <div class="text-center mb-6">
+                <div class="flex items-center justify-center mx-auto mb-4">
+                    <img src="{% static 'image/logounipacs.jpeg' %}" alt="Logo" class="w-40 h-20 object-contain">
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">
+                    Uni<span class="text-blue-600">Pacs</span>
+                </h1>
+                <p class="text-sm text-gray-500 mt-2">
+                    Sistem Laporan Kegiatan Jasa Outsourcing 
+                </p>
+            </div>
+
+            <!-- ERROR -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- FORM -->
+            <form method="POST" action="{% url 'login' %}" class="space-y-5">
+                {% csrf_token %}
+
+                <!-- USERNAME -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">
+                        Username
+                    </label>
+                    <input type="text" name="username"
+                        value="{{ username|default:'' }}"
+                        required
+                        class="input-soft w-full px-4 py-3"
+                        placeholder="Masukkan username"
+                        autocomplete="username"
+                        autofocus>
+                </div>
+
+                <!-- PASSWORD -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-600 mb-1">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <input type="password" name="password" id="password-field"
+                            required
+                            class="input-soft w-full px-4 py-3 pr-10"
+                            placeholder="Masukkan password"
+                            autocomplete="current-password">
+                        <button type="button" id="togglePassword"
+                            class="absolute right-3 top-3 text-gray-400">
+                            <i class="fas fa-eye-slash" id="toggleIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BUTTON -->
+                <button type="submit"
+                    class="btn-organic w-full text-white py-3 font-semibold">
+                    Login
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<div class="relative z-10 text-center mt-8">
+    <p class="text-xs text-gray-400">
+        2026 UNIPACS - Sistem Laporan Layanan Lapangan
+    </p>
+    <p class="text-xs text-gray-300 mt-1">
+        v1.0.0 | Dibangun dengan Django & Tailwind CSS
+    </p>
+</div>
+
+<script>
+const toggle = document.getElementById('togglePassword');
+const pass = document.getElementById('password-field');
+const icon = document.getElementById('toggleIcon');
+
+toggle.addEventListener('click', () => {
+    const type = pass.type === 'password' ? 'text' : 'password';
+    pass.type = type;
+    icon.classList.toggle('fa-eye');
+    icon.classList.toggle('fa-eye-slash');
+});
+</script>
+
+</body>
+</html>

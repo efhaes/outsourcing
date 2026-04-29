@@ -1,0 +1,31 @@
+{% extends 'base/base_admin.html' %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <a href="{% url 'admin_perusahaan_detail' perusahaan.pk %}" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="15 18 9 12 15 6"/>
+                </svg>
+                Kembali ke {{ perusahaan.nama_perusahaan }}
+            </a>
+        </div>
+        <form method="post">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+                <label class="form-label">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}<div class="form-text">{{ field.help_text }}</div>{% endif %}
+                {% if field.errors %}<div class="form-error">{{ field.errors|join:', ' }}</div>{% endif %}
+            </div>
+            {% endfor %}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{{ action }}</button>
+                <a href="{% url 'admin_perusahaan_detail' perusahaan.pk %}" class="btn btn-outline-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

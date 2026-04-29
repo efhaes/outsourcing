@@ -1,0 +1,17 @@
+<div class="delete-confirm-body">
+  <div class="delete-icon-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 6h18"/>
+      <path d="M8 6V4h8v2"/>
+      <path d="M19 6l-1 14H6L5 6"/>
+    </svg>
+  </div>
+  <p>Yakin ingin menghapus task <strong>"{{ task.nama_task }}"</strong>?</p>
+  <small>Tindakan ini tidak dapat dibatalkan.</small>
+</div>
+
+<div class="modal-footer-custom">
+  {% csrf_token %}
+  <button type="button" class="btn-modal-batal" data-bs-dismiss="modal">Batal</button>
+  <button type="button" class="btn-modal-hapus" onclick="confirmDelete({{ task.pk }})">Hapus</button>
+</div>

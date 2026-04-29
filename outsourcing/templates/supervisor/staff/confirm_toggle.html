@@ -1,0 +1,111 @@
+{% extends 'supervisor/base_supervisor.html' %}
+
+{% block extra_css %}
+<style>
+.confirm-wrap {
+    max-width: 420px;
+    margin: 4rem auto;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+.confirm-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+    font-size: 1.75rem;
+}
+.confirm-icon.warning { background: #fff8e1; color: #f59e0b; }
+.confirm-icon.success { background: #e8f5e9; color: #22c55e; }
+.confirm-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--clr-text);
+}
+.confirm-desc {
+    font-size: 13.5px;
+    color: var(--clr-text-muted);
+    margin-bottom: 1.75rem;
+    line-height: 1.6;
+}
+.confirm-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+.btn-confirm {
+    padding: 9px 28px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+}
+.btn-confirm:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-confirm.warning { background: #f59e0b; color: #fff; }
+.btn-confirm.success { background: #22c55e; color: #fff; }
+.btn-back {
+    padding: 9px 24px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    border: 1px solid var(--clr-border);
+    background: transparent;
+    color: var(--clr-text-muted);
+    text-decoration: none;
+    transition: background 0.15s;
+}
+.btn-back:hover { background: var(--clr-bg); color: var(--clr-text); }
+</style>
+{%endblock%}
+
+{%block content%}
+<div class="confirm-wrap">
+    {% if staff.is_active %}
+        <div class="confirm-icon warning">
+            <i class="bi bi-person-slash"></i>
+        </div>
+        <div class="confirm-title">Nonaktifkan Akun</div>
+        <div class="confirm-desc">
+            Anda akan menonaktifkan akun <strong>{{ staff.nama_lengkap }}</strong>.<br>
+            Staff tidak akan bisa login sampai diaktifkan kembali.
+        </div>
+        <div class="confirm-actions">
+            <a href="{% url 'supervisor_staff_list' %}" class="btn-back">Batal</a>
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-confirm warning">
+                    <i class="bi bi-power me-1"></i> Ya, Nonaktifkan
+                </button>
+            </form>
+        </div>
+    {% else %}
+        <div class="confirm-icon success">
+            <i class="bi bi-person-check"></i>
+        </div>
+        <div class="confirm-title">Aktifkan Akun</div>
+        <div class="confirm-desc">
+            Anda akan mengaktifkan akun <strong>{{ staff.nama_lengkap }}</strong>.<br>
+            Staff akan bisa login kembali setelah diaktifkan.
+        </div>
+        <div class="confirm-actions">
+            <a href="{% url 'supervisor_staff_list' %}" class="btn-back">Batal</a>
+            <form method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn-confirm success">
+                    <i class="bi bi-power me-1"></i> Ya, Aktifkan
+                </button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

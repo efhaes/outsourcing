@@ -1,0 +1,505 @@
+{% extends 'staff/base_staff.html' %}
+{% block extra_css %}
+<style>
+/* ══════════════════════════════════════════
+   GREETING CARD
+══════════════════════════════════════════ */
+.greeting-card {
+  background: linear-gradient(135deg, #0f2a1e 0%, #1a4a35 60%, #0f3d2a 100%);
+  border-radius: 20px;
+  padding: 24px 28px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.greeting-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(16,185,129,.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+.greeting-card::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; left: 20px;
+  width: 120px; height: 120px;
+  background: radial-gradient(circle, rgba(59,130,246,.1) 0%, transparent 70%);
+  pointer-events: none;
+}
+.greeting-name {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+.greeting-sub {
+  font-size: 13px;
+  color: #a7f3d0;
+  margin-bottom: 16px;
+}
+.greeting-date {
+  font-size: 12px;
+  color: rgba(255,255,255,.5);
+}
+.job-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+/* ── Next job chip ── */
+.next-job-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,.1);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: #fff;
+  text-decoration: none;
+  transition: background .15s;
+  max-width: 100%;
+}
+.next-job-chip:hover {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+  text-decoration: none;
+}
+.next-job-chip .chip-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  flex-shrink: 0;
+  animation: pulse-dot 1.5s ease infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .6; transform: scale(1.3); }
+}
+.next-job-chip .chip-label {
+  font-size: 10px;
+  color: rgba(255,255,255,.5);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  display: block;
+  line-height: 1;
+  margin-bottom: 2px;
+}
+.next-job-chip .chip-name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+.no-job-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,255,255,.07);
+  border: 1px dashed rgba(255,255,255,.2);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: rgba(255,255,255,.5);
+}
+
+/* ══════════════════════════════════════════
+   STATS STRIP
+══════════════════════════════════════════ */
+.stats-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.stat-tile {
+  background: #fff;
+  border: 1.5px solid #e8f5f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.stat-tile::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+.stat-tile.st-total::before   { background: #e2e8f0; }
+.stat-tile.st-selesai::before { background: #10B981; }
+.stat-tile.st-progress::before { background: #f59e0b; }
+.stat-tile.st-jadwal::before  { background: #94a3b8; }
+
+.stat-tile .st-val {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.stat-tile.st-total   .st-val { color: #0f172a; }
+.stat-tile.st-selesai .st-val { color: #10B981; }
+.stat-tile.st-progress .st-val { color: #f59e0b; }
+.stat-tile.st-jadwal  .st-val { color: #94a3b8; }
+
+.stat-tile .st-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: #94a3b8;
+}
+
+/* Progress bar bulan ini */
+.month-progress-wrap {
+  background: #fff;
+  border: 1.5px solid #e8f5f0;
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.month-progress-wrap .mp-label {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.month-progress-wrap .mp-label strong { color: #0f172a; }
+.mp-bar-wrap {
+  flex: 1;
+  background: #f1f5f9;
+  border-radius: 99px;
+  height: 8px;
+  overflow: hidden;
+}
+.mp-bar {
+  height: 100%;
+  border-radius: 99px;
+  background: linear-gradient(90deg, #10B981, #059669);
+  transition: width .6s cubic-bezier(.34,1.28,.64,1);
+}
+.mp-pct {
+  font-size: 13px;
+  font-weight: 700;
+  color: #10B981;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   SECTION HEADER
+══════════════════════════════════════════ */
+.section-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-hd .sh-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-hd .sh-title::before {
+  content: '';
+  width: 3px; height: 14px;
+  background: #10B981;
+  border-radius: 2px;
+}
+
+/* ══════════════════════════════════════════
+   JOB CARDS (Hari Ini)
+══════════════════════════════════════════ */
+
+.job-card {
+  background: #fff;
+  border: 1.5px solid #e8f5f0;
+  height: 100%;
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform .15s, box-shadow .15s, border-color .15s;
+  position: relative;
+}
+.job-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,.07);
+  border-color: #10B981;
+  color: inherit;
+  text-decoration: none;
+}
+.job-card.is-selesai {
+  opacity: .55;
+}
+.job-card.is-selesai:hover { transform: none; box-shadow: none; }
+
+/* Status dot kiri */
+.job-card .jc-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.jc-dot.dot-terjadwal  { background: #94a3b8; }
+.jc-dot.dot-on_progress { background: #f59e0b; box-shadow: 0 0 0 3px rgba(245,158,11,.2); }
+.jc-dot.dot-selesai    { background: #10B981; }
+
+.job-card .jc-body { flex: 1; min-width: 0; }
+.job-card .jc-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.job-card .jc-meta {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.jc-meta .dot { width: 3px; height: 3px; border-radius: 50%; background: #cbd5e1; }
+
+.job-card .jc-time {
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.job-card .jc-badge {
+  flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════════
+   PENDING TABLE
+══════════════════════════════════════════ */
+.card { border-radius: 16px; border: 1px solid #e8f5f0; }
+
+.pending-badge {
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+/* ══════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════ */
+.empty-state {
+  text-align: center;
+  padding: 28px 20px;
+  color: #94a3b8;
+}
+.empty-state .es-icon { font-size: 36px; margin-bottom: 8px; display: block; }
+.empty-state .es-text { font-size: 13px; }
+
+/* Responsive: di mobile stats 2x2 */
+@media (max-width: 575px) {
+  .stats-strip { grid-template-columns: repeat(2, 1fr); }
+  .greeting-name { font-size: 18px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════════════
+     GREETING CARD
+══════════════════════════════════════════ -->
+<div class="greeting-card">
+  <div class="greeting-name">
+    {% now "H" as jam_sekarang %}
+    {% if jam_sekarang < "12" %}Selamat Pagi{% elif jam_sekarang < "15" %}Selamat Siang{% elif jam_sekarang < "18" %}Selamat Sore{% else %}Selamat Malam{% endif %},
+    {{ request.user.get_full_name|default:request.user.username }} 👋
+  </div>
+  <div class="greeting-sub">{{ today|date:"l, d F Y" }}</div>
+
+  {% if pekerjaan_berikutnya %}
+    <a href="{% url 'staff_item_list' %}" class="next-job-chip">
+      <div class="chip-dot"></div>
+      <div>
+        <span class="chip-label">Pekerjaan berikutnya</span>
+        <span class="chip-name">{{ pekerjaan_berikutnya.nama_item }}</span>
+      </div>
+      {% if pekerjaan_berikutnya.jam_mulai %}
+        <span style="font-size:12px;color:rgba(255,255,255,.5);margin-left:auto;flex-shrink:0;">
+          {{ pekerjaan_berikutnya.jam_mulai|date:"H:i" }}
+        </span>
+      {% endif %}
+    </a>
+  {% else %}
+    <div class="no-job-chip">
+      <span>✓</span> Semua pekerjaan hari ini sudah selesai
+    </div>
+  {% endif %}
+</div>
+
+<!-- ══════════════════════════════════════════
+     PROGRESS BULAN INI
+══════════════════════════════════════════ -->
+<div class="month-progress-wrap">
+  <div class="mp-label">
+    Progress <strong>{{ today|date:"F" }}</strong>
+  </div>
+  <div class="mp-bar-wrap">
+    <div class="mp-bar" style="width: {{ stats_bulan.pct_selesai }}%"></div>
+  </div>
+  <div class="mp-pct">{{ stats_bulan.pct_selesai }}%</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     STATS STRIP
+══════════════════════════════════════════ -->
+<div class="stats-strip">
+  <div class="stat-tile st-total">
+    <div class="st-val">{{ stats_bulan.total }}</div>
+    <div class="st-label">Total</div>
+  </div>
+  <div class="stat-tile st-selesai">
+    <div class="st-val">{{ stats_bulan.selesai }}</div>
+    <div class="st-label">Selesai</div>
+  </div>
+  <div class="stat-tile st-progress">
+    <div class="st-val">{{ stats_bulan.on_progress }}</div>
+    <div class="st-label">Progress</div>
+  </div>
+  <div class="stat-tile st-jadwal">
+    <div class="st-val">{{ stats_bulan.terjadwal }}</div>
+    <div class="st-label">Terjadwal</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PEKERJAAN HARI INI
+══════════════════════════════════════════ -->
+<div class="section-hd">
+  <div class="sh-title">Hari Ini — {{ today|date:"d/m/Y" }}</div>
+  <span class="text-muted" style="font-size:12px;">{{ item_hari_ini|length }} pekerjaan</span>
+</div>
+
+{% if item_hari_ini %}
+<div class="job-cards">
+  {% for item in item_hari_ini %}
+  {% if item.status != 'selesai' %}
+  <a href="{% url 'staff_item_list' %}" class="job-card">
+  {% else %}
+  <div class="job-card is-selesai">
+  {% endif %}
+
+    <div class="jc-dot dot-{{ item.status }}"></div>
+    <div class="jc-body">
+      <div class="jc-name">{{ item.nama_item }}</div>
+      <div class="jc-meta">
+        <span>{{ item.laporan.perusahaan.nama_perusahaan }}</span>
+        <span class="dot"></span>
+        <span>{{ item.sub_area.nama_sub_area|default:item.laporan.area.nama_area }}</span>
+        {% if item.is_insidental %}
+          <span class="dot"></span>
+          <span class="badge bg-warning text-dark" style="font-size:10px;">Insidental</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if item.jam_mulai and item.jam_selesai %}
+    <div class="jc-time">{{ item.jam_mulai|date:"H:i" }} – {{ item.jam_selesai|date:"H:i" }}</div>
+    {% endif %}
+
+    <div class="jc-badge">
+      {% if item.status == 'terjadwal' %}
+        <span class="badge bg-secondary">Terjadwal</span>
+      {% elif item.status == 'on_progress' %}
+        <span class="badge bg-warning text-dark">Progress</span>
+      {% elif item.status == 'selesai' %}
+        <span class="badge bg-success">✓</span>
+      {% endif %}
+    </div>
+
+  {% if item.status != 'selesai' %}</a>{% else %}</div>{% endif %}
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state" style="background:#fff;border:1.5px solid #e8f5f0;border-radius:16px;margin-bottom:20px;">
+  <span class="es-icon">📭</span>
+  <div class="es-text">Tidak ada pekerjaan hari ini</div>
+</div>
+{% endif %}
+
+<!-- ══════════════════════════════════════════
+     PEKERJAAN PENDING
+══════════════════════════════════════════ -->
+{% if item_pending %}
+<div class="section-hd">
+  <div class="sh-title">Pekerjaan Pending</div>
+  <span class="pending-badge">{{ jumlah_pending }} belum selesai</span>
+</div>
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Item</th>
+          <th>Perusahaan</th>
+          <th>Tanggal</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in item_pending %}
+        <tr>
+          <td>
+            <span class="fw-semibold">{{ item.nama_item }}</span>
+            {% if item.is_insidental %}
+              <span class="badge bg-warning text-dark ms-1" style="font-size:10px;">Insidental</span>
+            {% endif %}
+          </td>
+          <td class="small">{{ item.laporan.perusahaan.nama_perusahaan }}</td>
+          <td class="small text-danger fw-semibold">{{ item.tanggal|date:"d/m/Y" }}</td>
+          <td>
+            {% if item.status == 'terjadwal' %}
+              <span class="badge bg-secondary">Terjadwal</span>
+            {% elif item.status == 'on_progress' %}
+              <span class="badge bg-warning text-dark">On Progress</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'staff_item_list' %}" class="btn btn-sm btn-primary">
+              <i class="bi bi-pencil"></i> Update
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

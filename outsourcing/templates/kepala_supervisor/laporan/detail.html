@@ -1,0 +1,147 @@
+{% extends 'kepala_supervisor/base_kepala.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">{{ page_title }}</h5>
+    <a href="{% url 'kepala_laporan_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Total Item</div>
+            <div class="fs-3 fw-bold">{{ stats.total }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Terjadwal</div>
+            <div class="fs-3 fw-bold text-secondary">{{ stats.terjadwal }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">On Progress</div>
+            <div class="fs-3 fw-bold text-warning">{{ stats.on_progress }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Selesai</div>
+            <div class="fs-3 fw-bold text-success">{{ stats.selesai }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card p-3 mb-3">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="small text-muted">Perusahaan</div>
+            <div class="fw-semibold">{{ laporan.perusahaan.nama_perusahaan }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Jenis Jasa</div>
+            <div class="fw-semibold">{{ laporan.jenis_jasa.nama_jasa }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Area Kerja</div>
+            <div class="fw-semibold">{{ laporan.area.nama_area }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Supervisor</div>
+            <div class="fw-semibold">{{ laporan.supervisor.nama_lengkap }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Tanggal Laporan</div>
+            <div class="fw-semibold">{{ laporan.tanggal_laporan|date:"d/m/Y" }}</div>
+        </div>
+        <div class="col-md-6">
+            <div class="small text-muted">Status</div>
+            <div class="fw-semibold">
+                {% if laporan.status == 'draft' %}
+                    <span class="badge bg-secondary">Draft</span>
+                {% elif laporan.status == 'aktif' %}
+                    <span class="badge bg-success">Aktif</span>
+                {% elif laporan.status == 'selesai' %}
+                    <span class="badge bg-primary">Selesai</span>
+                {% elif laporan.status == 'dikirim_customer' %}
+                    <span class="badge bg-info">Dikirim</span>
+                {% endif %}
+            </div>
+        </div>
+        {% if laporan.catatan %}
+        <div class="col-12">
+            <div class="small text-muted">Catatan</div>
+            <div>{{ laporan.catatan }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <h6 class="mb-0">Item Kegiatan</h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>#</th>
+                    <th>Item</th>
+                    <th>Staff</th>
+                    <th>Sub Area</th>
+                    <th>Tanggal</th>
+                    <th>Jam</th>
+                    <th>Status</th>
+                    <th>Foto</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in item_list %}
+                <tr>
+                    <td class="text-muted small">{{ forloop.counter }}</td>
+                    <td>
+                        <span class="fw-semibold">{{ item.nama_item }}</span>
+                        {% if item.is_insidental %}
+                            <span class="badge bg-warning text-dark ms-1">Insidental</span>
+                        {% endif %}
+                        {% if item.catatan_staff %}
+                            <div class="small text-muted">{{ item.catatan_staff }}</div>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.staff.nama_lengkap }}</td>
+                    <td>{{ item.sub_area.nama_sub_area|default:'—' }}</td>
+                    <td>{{ item.tanggal|date:"d/m/Y" }}</td>
+                    <td>{{ item.jam_mulai|default:"—" }} - {{ item.jam_selesai|default:"—" }}</td>
+                    <td>
+                        {% if item.status == 'terjadwal' %}
+                            <span class="badge bg-secondary">Terjadwal</span>
+                        {% elif item.status == 'on_progress' %}
+                            <span class="badge bg-warning">On Progress</span>
+                        {% elif item.status == 'selesai' %}
+                            <span class="badge bg-success">Selesai</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.foto_on_progress %}
+                            <a href="{{ item.foto_on_progress.url }}" target="_blank" class="btn btn-xs btn-outline-info btn-sm">
+                                <i class="bi bi-image"></i>
+                            </a>
+                        {% endif %}
+                        {% if item.foto_after %}
+                            <a href="{{ item.foto_after.url }}" target="_blank" class="btn btn-xs btn-outline-success btn-sm">
+                                <i class="bi bi-check-circle"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted py-4">Belum ada item kegiatan.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

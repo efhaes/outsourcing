@@ -1,0 +1,62 @@
+{% extends 'base/base_admin.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/responsive-table.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">Jenis Jasa</h5>
+    <a href="{% url 'admin_jenis_jasa_create' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus-lg"></i> Tambah
+    </a>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr><th>#</th><th>Nama Jasa</th><th>Deskripsi</th><th>Status</th><th>Aksi</th></tr>
+            </thead>
+            <tbody>
+                {% for j in jenis_jasa_list %}
+                <tr>
+                    <td class="text-muted small" data-label="#">{{ forloop.counter }}</td>
+                    <td class="fw-semibold" data-label="Nama Jasa">{{ j.nama_jasa }}</td>
+                    <td class="text-muted small" data-label="Deskripsi">{{ j.deskripsi|truncatechars:60|default:'—' }}</td>
+                    <td data-label="Status">{% if j.is_active %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-secondary">Nonaktif</span>{% endif %}</td>
+                    <td data-label="Aksi">
+                        <a href="{% url 'admin_jenis_jasa_edit' j.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger"
+                            data-bs-toggle="modal" data-bs-target="#modalHapus{{ j.pk }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <div class="modal fade" id="modalHapus{{ j.pk }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header"><h6 class="modal-title">Nonaktifkan Jenis Jasa</h6>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">Nonaktifkan <strong>{{ j.nama_jasa }}</strong>?</div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                                <form method="post" action="{% url 'admin_jenis_jasa_delete' j.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-danger btn-sm">Ya, Nonaktifkan</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-4">Belum ada jenis jasa.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

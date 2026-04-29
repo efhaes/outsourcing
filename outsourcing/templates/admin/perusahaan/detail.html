@@ -1,0 +1,133 @@
+{% extends 'base/base_admin.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a href="{% url 'admin_perusahaan_list' %}" class="text-muted small text-decoration-none">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+        <h5 class="mb-0 mt-1">{{ perusahaan.nama_perusahaan }}</h5>
+    </div>
+    <a href="{% url 'admin_perusahaan_edit' perusahaan.pk %}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-pencil"></i> Edit
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="card p-3">
+            <div class="text-muted small mb-2 fw-semibold">Info Perusahaan</div>
+            <table class="table table-sm table-borderless mb-0">
+                <tr><td class="text-muted small" style="width:120px">Alamat</td><td>{{ perusahaan.alamat }}</td></tr>
+                <tr><td class="text-muted small">Telepon</td><td>{{ perusahaan.telepon|default:'—' }}</td></tr>
+                <tr><td class="text-muted small">Email</td><td>{{ perusahaan.email|default:'—' }}</td></tr>
+                <tr><td class="text-muted small">Status</td>
+                    <td>{% if perusahaan.is_active %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-secondary">Nonaktif</span>{% endif %}</td>
+                </tr>
+                <tr><td class="text-muted small">Jenis Jasa</td>
+                    <td>{% for j in perusahaan.jenis_jasa.all %}<span class="badge bg-light text-dark border me-1">{{ j.nama_jasa }}</span>{% empty %}—{% endfor %}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Area Kerja -->
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="mb-0">Area Kerja</h6>
+    <a href="{% url 'admin_area_create' perusahaan.pk %}" class="btn btn-sm btn-outline-primary">
+        <i class="bi bi-plus"></i> Tambah Area
+    </a>
+</div>
+
+{% for area in area_list %}
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between align-items-center py-2">
+        <span class="fw-semibold">{{ area.nama_area }}</span>
+        <div class="d-flex gap-1">
+            <a href="{% url 'admin_subarea_create' area.pk %}" class="btn btn-xs btn-sm btn-outline-success">
+                <i class="bi bi-plus"></i> Sub Area
+            </a>
+            <a href="{% url 'admin_area_edit' area.pk %}" class="btn btn-xs btn-sm btn-outline-primary">
+                <i class="bi bi-pencil"></i>
+            </a>
+            <button class="btn btn-xs btn-sm btn-outline-danger"
+                data-bs-toggle="modal" data-bs-target="#modalHapusArea{{ area.pk }}">
+                <i class="bi bi-trash"></i>
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <table class="table table-sm mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Sub Area</th>
+                    <th>Keterangan</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in area.sub_area.all %}
+                <tr>
+                    <td>{{ sub.nama_sub_area }}</td>
+                    <td class="text-muted small">{{ sub.keterangan|default:'—' }}</td>
+                    <td>{% if sub.is_active %}<span class="badge bg-success">Aktif</span>{% else %}<span class="badge bg-secondary">Nonaktif</span>{% endif %}</td>
+                    <td>
+                        <a href="{% url 'admin_subarea_edit' sub.pk %}" class="btn btn-xs btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <button class="btn btn-xs btn-sm btn-outline-danger"
+                            data-bs-toggle="modal" data-bs-target="#modalHapusSub{{ sub.pk }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                <!-- Modal Hapus Sub Area -->
+                <div class="modal fade" id="modalHapusSub{{ sub.pk }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header"><h6 class="modal-title">Hapus Sub Area</h6>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">Nonaktifkan sub area <strong>{{ sub.nama_sub_area }}</strong>?</div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                                <form method="post" action="{% url 'admin_subarea_delete' sub.pk %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-danger btn-sm">Ya, Nonaktifkan</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-muted small py-2">Belum ada sub area.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Hapus Area -->
+<div class="modal fade" id="modalHapusArea{{ area.pk }}" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header"><h6 class="modal-title">Hapus Area</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">Nonaktifkan area <strong>{{ area.nama_area }}</strong>?</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
+                <form method="post" action="{% url 'admin_area_delete' area.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-danger btn-sm">Ya, Nonaktifkan</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="text-muted small">Belum ada area kerja.</div>
+{% endfor %}
+{% endblock %}

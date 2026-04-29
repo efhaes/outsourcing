@@ -1,0 +1,44 @@
+{% extends 'kepala_supervisor/base_kepala.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">{{ page_title }}</h5>
+    <a href="{% url 'kepala_supervisor_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left"></i> Kembali
+    </a>
+</div>
+
+<div class="card p-4">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label class="form-label small text-muted">Username</label>
+                {{ form.username }}
+            </div>
+            <div class="col-md-12">
+                <label class="form-label small text-muted">Nama Lengkap</label>
+                {{ form.nama_lengkap }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted">Telepon</label>
+                {{ form.telepon }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted">Foto Profil</label>
+                {{ form.foto_profil }}
+                {% if supervisor.foto_profil %}
+                    <div class="mt-2">
+                        <img src="{{ supervisor.foto_profil.url }}" class="img-thumbnail" style="max-height: 100px;">
+                    </div>
+                {% endif %}
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">{{ action }}</button>
+                <a href="{% url 'kepala_supervisor_list' %}" class="btn btn-secondary">Batal</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

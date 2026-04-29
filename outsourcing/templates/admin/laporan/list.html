@@ -1,0 +1,69 @@
+{% extends 'base/base_admin.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/admin/responsive-table.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="card p-3 mb-3">
+    <form method="get" class="row g-2">
+        <div class="col-md-3">
+            <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Cari laporan...">
+        </div>
+        <div class="col-md-3">
+            <select name="perusahaan" class="form-select form-select-sm">
+                <option value="">— Semua Perusahaan —</option>
+                {% for p in perusahaan_list %}
+                <option value="{{ p.pk }}" {% if filter_perusahaan == p.pk|stringformat:'s' %}selected{% endif %}>{{ p.nama_perusahaan }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select form-select-sm">
+                <option value="">— Semua Status —</option>
+                {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if filter_status == val %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-sm btn-secondary w-100">Filter</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr><th>#</th><th>Nama Laporan</th><th>Perusahaan</th><th>Supervisor</th><th>Tanggal</th><th>Status</th><th>Aksi</th></tr>
+            </thead>
+            <tbody>
+                {% for l in laporan_list %}
+                <tr>
+                    <td class="text-muted small" data-label="#">{{ forloop.counter }}</td>
+                    <td data-label="Nama Laporan"><a href="{% url 'admin_laporan_detail' l.pk %}" class="text-decoration-none fw-semibold">{{ l.nama_laporan }}</a></td>
+                    <td class="text-muted small" data-label="Perusahaan">{{ l.perusahaan.nama_perusahaan }}</td>
+                    <td class="text-muted small" data-label="Supervisor">{{ l.supervisor.nama_lengkap }}</td>
+                    <td class="text-muted small" data-label="Tanggal">{{ l.tanggal_laporan }}</td>
+                    <td data-label="Status">
+                        {% if l.status == 'draft' %}<span class="badge badge-draft">Draft</span>
+                        {% elif l.status == 'aktif' %}<span class="badge badge-aktif">Aktif</span>
+                        {% elif l.status == 'selesai' %}<span class="badge badge-selesai">Selesai</span>
+                        {% else %}<span class="badge badge-dikirim">Dikirim</span>{% endif %}
+                    </td>
+                    <td data-label="Aksi">
+                        <a href="{% url 'admin_laporan_detail' l.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">Belum ada laporan.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

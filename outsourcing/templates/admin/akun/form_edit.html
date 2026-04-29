@@ -1,0 +1,21 @@
+{% extends 'base/base_admin.html' %}
+
+{% block content %}
+<div class="card p-4" style="max-width:560px">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-3">
+            <label class="form-label fw-semibold small">{{ field.label }}</label>
+            {{ field }}
+            {% if field.help_text %}<div class="text-muted small mt-1">{{ field.help_text }}</div>{% endif %}
+            {% if field.errors %}<div class="text-danger small mt-1">{{ field.errors|join:', ' }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-primary btn-sm">{{ action }}</button>
+            <a href="{% url 'admin_akun_list' %}" class="btn btn-outline-secondary btn-sm">Batal</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

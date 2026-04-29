@@ -1,0 +1,88 @@
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE TABLE — Transform to Cards on Mobile
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Hide table header on mobile */
+  .table thead {
+    display: none;
+  }
+
+  /* Transform table rows to cards */
+  .table tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    overflow: hidden;
+  }
+
+  /* Transform table cells to card content */
+  .table tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid #f1f5f9;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Remove border from last cell */
+  .table tbody td:last-child {
+    border-bottom: none;
+  }
+
+  /* Add field labels using data attributes or CSS content */
+  .table tbody td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #718096;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    min-width: 100px;
+  }
+
+  /* Special styling for action buttons */
+  .table tbody td:last-child {
+    background: #f8fafc;
+    padding: 0.75rem 1rem;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .table tbody td:last-child::before {
+    content: 'Aksi';
+  }
+
+  /* Hide the first column (index #) on mobile */
+  .table tbody td:first-child {
+    display: none;
+  }
+
+  /* Empty state styling */
+  .table tbody tr td[colspan] {
+    display: block;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+
+  .table tbody tr td[colspan]::before {
+    display: none;
+  }
+
+  /* Badge styling in cards */
+  .badge {
+    margin-left: auto;
+  }
+
+  /* Link styling */
+  .table tbody td a {
+    margin-left: auto;
+  }
+}

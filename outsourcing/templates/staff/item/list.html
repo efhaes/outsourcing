@@ -1,0 +1,629 @@
+{% extends 'staff/base_staff.html' %}
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════════════════
+   YEAR / MONTH CARD GRID
+═══════════════════════════════════════════════════ */
+.period-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.period-card {
+  background: #fff;
+  border: 1.5px solid #e8f5f0;
+  border-radius: 16px;
+  padding: 18px 20px 16px;
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  position: relative;
+  overflow: hidden;
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  animation: fadeUp .3s ease both;
+}
+.period-card:nth-child(1)  { animation-delay:  0ms; }
+.period-card:nth-child(2)  { animation-delay: 40ms; }
+.period-card:nth-child(3)  { animation-delay: 80ms; }
+.period-card:nth-child(4)  { animation-delay:120ms; }
+.period-card:nth-child(5)  { animation-delay:160ms; }
+.period-card:nth-child(6)  { animation-delay:200ms; }
+.period-card:nth-child(7)  { animation-delay:240ms; }
+.period-card:nth-child(8)  { animation-delay:280ms; }
+.period-card:nth-child(9)  { animation-delay:320ms; }
+.period-card:nth-child(10) { animation-delay:360ms; }
+.period-card:nth-child(11) { animation-delay:400ms; }
+.period-card:nth-child(12) { animation-delay:440ms; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.period-card::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 60px; height: 60px;
+  background: radial-gradient(circle at top right, rgba(16,185,129,.08), transparent 70%);
+  pointer-events: none;
+}
+.period-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(16,185,129,.12);
+  border-color: #102cb9;
+  text-decoration: none;
+}
+
+.period-card .pc-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #102cb9;
+  margin-bottom: 4px;
+}
+.period-card .pc-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1;
+  margin-bottom: 10px;
+  font-variant-numeric: tabular-nums;
+}
+.period-card.bulan-card .pc-value {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.period-card .pc-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pc-pill {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #f0fdf4;
+  color: #102cb9;
+}
+.pc-total {
+  font-size: 11px;
+  color: #94a3b8;
+}
+.period-card .pc-icon {
+  position: absolute;
+  bottom: -6px; right: 8px;
+  font-size: 48px;
+  opacity: .06;
+  line-height: 1;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════
+   BREADCRUMB NAV
+═══════════════════════════════════════════════════ */
+.period-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.period-nav a {
+  color: #102cb9;
+  font-weight: 600;
+  text-decoration: none;
+}
+.period-nav a:hover { text-decoration: underline; }
+.period-nav .sep { color: #cbd5e1; font-size: 16px; }
+.period-nav .current { color: #0f172a; font-weight: 700; }
+
+/* ═══════════════════════════════════════════════════
+   SECTION HEADER
+═══════════════════════════════════════════════════ */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before {
+  content: '';
+  width: 3px; height: 14px;
+  background: #102cb9;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+/* ═══════════════════════════════════════════════════
+   FILTER BAR
+═══════════════════════════════════════════════════ */
+.filter-bar {
+  background: #fff;
+  border: 1px solid #e8f5f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+/* ═══════════════════════════════════════════════════
+   CARD & TABLE
+═══════════════════════════════════════════════════ */
+.card { border-radius: 16px; border: 1px solid #e8f5f0; }
+
+/* ═══════════════════════════════════════════════════
+   MODAL
+═══════════════════════════════════════════════════ */
+#jamModal .modal-content {
+  border: none; border-radius: 20px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.18), 0 4px 16px rgba(0,0,0,.08);
+  overflow: hidden;
+  animation: modalSlideUp .25s cubic-bezier(.34,1.28,.64,1) both;
+}
+@keyframes modalSlideUp {
+  from { opacity:0; transform: translateY(24px) scale(.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+#jamModal .modal-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  border: none; padding: 20px 24px 18px; position: relative;
+}
+#jamModal .modal-header::after {
+  content: ''; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #10B981, #3B82F6, #10B981);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+#jamModal .modal-title {
+  color: #fff; font-size: 16px; font-weight: 700;
+  display: flex; align-items: center; gap: 10px;
+}
+#jamModal .modal-title .title-icon {
+  width: 34px; height: 34px; background: rgba(255,255,255,.12);
+  border-radius: 10px; display: flex; align-items: center;
+  justify-content: center; font-size: 16px;
+}
+#jamModal .btn-close { filter: invert(1) brightness(1.5); opacity: .7; }
+#jamModal .btn-close:hover { opacity: 1; }
+#jamModal .modal-body { padding: 24px 24px 8px; background: #fff; }
+
+.jam-field { margin-bottom: 20px; }
+.jam-field label {
+  font-size: 12px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; color: #64748b; margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.jam-field label .req { color: #ef4444; }
+.jam-input-wrap { position: relative; }
+.jam-input-wrap .ji-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: #94a3b8; pointer-events: none; display: flex; align-items: center;
+}
+.jam-input-wrap input[type="time"] {
+  width: 100%; padding: 12px 12px 12px 40px;
+  border: 1.5px solid #e2e8f0; border-radius: 12px;
+  font-size: 22px; font-weight: 700; color: #0f172a; background: #f8fafc;
+  outline: none; transition: border-color .18s, background .18s, box-shadow .18s;
+  font-variant-numeric: tabular-nums; -webkit-appearance: none;
+}
+.jam-input-wrap input[type="time"]:focus {
+  border-color: #3B82F6; background: #fff;
+  box-shadow: 0 0 0 4px rgba(59,130,246,.1);
+}
+.jam-input-wrap input[type="time"].has-value { border-color: #10B981; background: #f0fdf4; }
+.jam-input-wrap input[type="time"].is-invalid {
+  border-color: #ef4444; background: #fef2f2;
+  box-shadow: 0 0 0 4px rgba(239,68,68,.08);
+}
+.jam-hint {
+  font-size: 11px; color: #94a3b8; margin-top: 6px;
+  display: flex; align-items: flex-start; gap: 5px; line-height: 1.5;
+}
+.jam-error-box {
+  background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px;
+  padding: 10px 14px; font-size: 13px; color: #dc2626;
+  display: none; margin-bottom: 12px; align-items: center; gap: 8px;
+}
+.jam-error-box.show { display: flex; }
+#jamModal .modal-footer {
+  background: #f8fafc; border-top: 1px solid #f1f5f9;
+  padding: 16px 24px 20px; gap: 10px;
+}
+.btn-jam-batal {
+  background: transparent; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  padding: 10px 20px; font-size: 14px; font-weight: 600; color: #64748b;
+  cursor: pointer; transition: background .15s, border-color .15s;
+}
+.btn-jam-batal:hover { background: #f1f5f9; border-color: #cbd5e1; }
+.btn-jam-simpan {
+  flex: 1; background: linear-gradient(135deg, #10B981, #059669);
+  border: none; border-radius: 10px; padding: 11px 20px;
+  font-size: 14px; font-weight: 700; color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: opacity .18s, transform .12s;
+  box-shadow: 0 4px 12px rgba(16,185,129,.3);
+}
+.btn-jam-simpan:hover { opacity: .9; transform: translateY(-1px); }
+.btn-jam-simpan:active { transform: scale(.98); }
+.btn-jam-simpan:disabled { opacity: .6; transform: none; cursor: not-allowed; }
+.spin {
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.4); border-top-color: #fff;
+  border-radius: 50%; animation: spin .6s linear infinite; display: none;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.btn-jam-simpan.loading .spin { display: block; }
+.btn-jam-simpan.loading .btn-text { display: none; }
+.modal-backdrop.show { backdrop-filter: blur(4px); background: rgba(15,23,42,.55); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="mb-4">
+  <h5 class="mb-1 fw-bold">Jadwal Pekerjaan Saya</h5>
+  {% if tahun_dipilih %}
+  <div class="period-nav">
+    <a href="{% url 'staff_item_list' %}">Semua Tahun</a>
+    <span class="sep">›</span>
+    {% if bulan_dipilih %}
+      <a href="{% url 'staff_item_list' %}?tahun={{ tahun_dipilih }}">{{ tahun_dipilih }}</a>
+      <span class="sep">›</span>
+      <span class="current">{{ nama_bulan }} {{ tahun_dipilih }}</span>
+    {% else %}
+      <span class="current">{{ tahun_dipilih }}</span>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% if not tahun_dipilih %}
+<!-- ════════════════════════════════════════
+     STEP 1 — PILIH TAHUN
+════════════════════════════════════════ -->
+<div class="section-header">
+  <div class="section-title">Pilih Tahun</div>
+</div>
+
+{% if tahun_list %}
+<div class="period-grid">
+  {% for t in tahun_list %}
+  <a href="{% url 'staff_item_list' %}?tahun={{ t.tahun }}" class="period-card">
+    <div class="pc-label">Data Tahun</div>
+    <div class="pc-value">{{ t.tahun }}</div>
+    <div class="pc-meta">
+      <span class="pc-pill">{{ t.selesai }} selesai</span>
+      <span class="pc-total">/ {{ t.total }}</span>
+    </div>
+    <div class="pc-icon">📅</div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+  <i class="bi bi-calendar-x d-block fs-2 mb-2"></i>
+  Belum ada pekerjaan yang terdaftar.
+</div>
+{% endif %}
+
+{% elif not bulan_dipilih %}
+<!-- ════════════════════════════════════════
+     STEP 2 — PILIH BULAN
+════════════════════════════════════════ -->
+<div class="section-header">
+  <div class="section-title">Pilih Bulan — {{ tahun_dipilih }}</div>
+</div>
+
+{% if bulan_list %}
+<div class="period-grid">
+  {% for b in bulan_list %}
+  <a href="{% url 'staff_item_list' %}?tahun={{ tahun_dipilih }}&bulan={{ b.bulan }}" class="period-card bulan-card">
+    <div class="pc-label">Bulan ke-{{ b.bulan }}</div>
+    <div class="pc-value">{{ b.nama_bulan }}</div>
+    <div class="pc-meta">
+      <span class="pc-pill">{{ b.selesai }} selesai</span>
+      <span class="pc-total">/ {{ b.total }}</span>
+    </div>
+    <div class="pc-icon">🗓️</div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="text-center text-muted py-5">
+  <i class="bi bi-calendar2-x d-block fs-2 mb-2"></i>
+  Tidak ada pekerjaan di tahun {{ tahun_dipilih }}.
+</div>
+{% endif %}
+
+{% else %}
+<!-- ════════════════════════════════════════
+     STEP 3 — DAFTAR ITEM
+════════════════════════════════════════ -->
+<form method="get" class="filter-bar">
+  <input type="hidden" name="tahun" value="{{ tahun_dipilih }}">
+  <input type="hidden" name="bulan" value="{{ bulan_dipilih }}">
+  <select name="status" class="form-select form-select-sm" style="max-width:160px;">
+    <option value="">Semua Status</option>
+    <option value="terjadwal"   {% if filter_status == 'terjadwal' %}selected{% endif %}>Terjadwal</option>
+    <option value="on_progress" {% if filter_status == 'on_progress' %}selected{% endif %}>On Progress</option>
+    <option value="selesai"     {% if filter_status == 'selesai' %}selected{% endif %}>Selesai</option>
+  </select>
+  <button class="btn btn-sm btn-secondary">Filter</button>
+  {% if filter_status %}
+    <a href="{% url 'staff_item_list' %}?tahun={{ tahun_dipilih }}&bulan={{ bulan_dipilih }}" class="btn btn-sm btn-outline-secondary">Reset</a>
+  {% endif %}
+</form>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>No</th>
+          <th>Item</th>
+          <th>Perusahaan</th>
+          <th>Area</th>
+          <th>Sub Area</th>
+          <th>Tanggal</th>
+          <th>Jam</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in item_list %}
+        <tr>
+          <td class="text-muted small">{{ forloop.counter }}</td>
+          <td>
+            <span class="fw-semibold">{{ item.nama_item }}</span>
+            {% if item.is_insidental %}
+              <span class="badge bg-warning text-dark ms-1">Insidental</span>
+            {% endif %}
+            {% if item.catatan_staff %}
+              <div class="small text-muted">{{ item.catatan_staff }}</div>
+            {% endif %}
+          </td>
+          <td>{{ item.laporan.perusahaan.nama_perusahaan }}</td>
+          <td>{{ item.laporan.area.nama_area }}</td>
+          <td>{{ item.sub_area.nama_sub_area|default:'—' }}</td>
+          <td class="text-nowrap">{{ item.tanggal|date:"d/m/Y" }}</td>
+          <td class="text-nowrap">
+            {% if item.jam_mulai and item.jam_selesai %}
+              {{ item.jam_mulai|date:"H:i" }} – {{ item.jam_selesai|date:"H:i" }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if item.status == 'terjadwal' %}
+              <span class="badge bg-secondary">Terjadwal</span>
+            {% elif item.status == 'on_progress' %}
+              <span class="badge bg-warning text-dark">On Progress</span>
+            {% elif item.status == 'selesai' %}
+              <span class="badge bg-success">Selesai</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if item.status != 'selesai' %}
+              {% if item.jam_mulai and item.jam_selesai %}
+                <a href="{% url 'staff_item_update' item.pk %}" class="btn btn-primary btn-sm">
+                  <i class="bi bi-pencil"></i> Kerjakan
+                </a>
+              {% else %}
+                <button type="button"
+                    class="btn btn-primary btn-sm btn-update"
+                    data-item-pk="{{ item.pk }}"
+                    data-item-url="{% url 'staff_item_update' item.pk %}"
+                    data-jam-mulai="{{ item.jam_mulai|date:'H:i'|default:'' }}"
+                    data-jam-selesai="{{ item.jam_selesai|date:'H:i'|default:'' }}">
+                  <i class="bi bi-clock"></i> Isi Jam
+                </button>
+              {% endif %}
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="9" class="text-center text-muted py-4">
+            <i class="bi bi-calendar-x d-block fs-3 mb-1"></i>
+            Tidak ada pekerjaan di {{ nama_bulan }} {{ tahun_dipilih }}.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- MODAL INPUT JAM -->
+<div class="modal fade" id="jamModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">
+          <div class="title-icon">🕐</div>
+          Input Jam Kerja
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="jamForm">
+          {% csrf_token %}
+          <input type="hidden" id="itemPk" name="item_pk">
+          <input type="hidden" id="itemUrl">
+
+          <div class="jam-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Jam Mulai <span class="req">*</span>
+            </label>
+            <div class="jam-input-wrap">
+              <span class="ji-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+              <input type="time" id="jamMulai" name="jam_mulai" required>
+            </div>
+          </div>
+
+          <div class="jam-field">
+            <label>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><line x1="17" y1="17" x2="20" y2="20"/></svg>
+              Jam Selesai <span class="req">*</span>
+            </label>
+            <div class="jam-input-wrap">
+              <span class="ji-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><line x1="17" y1="17" x2="20" y2="20"/></svg></span>
+              <input type="time" id="jamSelesai" name="jam_selesai" required>
+            </div>
+            <div class="jam-hint">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Upload foto <em>after</em> baru bisa dilakukan setelah jam ini tiba
+            </div>
+          </div>
+
+          <div class="jam-error-box" id="jamError">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="jamErrorText"></span>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-jam-batal" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn-jam-simpan" id="saveJamBtn">
+          <div class="spin"></div>
+          <span class="btn-text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-3px"><polyline points="5 12 12 5 19 12"/><line x1="12" y1="5" x2="12" y2="19"/></svg>
+            Simpan & Mulai Kerja
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const modalEl = document.getElementById('jamModal');
+  if (!modalEl) return;
+
+  const bsModal      = new bootstrap.Modal(modalEl);
+  const jamError     = document.getElementById('jamError');
+  const jamErrorTxt  = document.getElementById('jamErrorText');
+  const inputMulai   = document.getElementById('jamMulai');
+  const inputSelesai = document.getElementById('jamSelesai');
+  const itemUrlInput = document.getElementById('itemUrl');
+  const saveBtn      = document.getElementById('saveJamBtn');
+
+  function showError(msg, focusEl) {
+    jamErrorTxt.textContent = msg;
+    jamError.classList.add('show');
+    if (focusEl) focusEl.focus();
+  }
+  function hideError() { jamError.classList.remove('show'); }
+
+  function setInvalid(input, invalid) {
+    input.classList.toggle('is-invalid', invalid);
+    if (!invalid) input.classList.toggle('has-value', !!input.value);
+  }
+
+  function resetModal() {
+    inputMulai.value = inputSelesai.value = '';
+    [inputMulai, inputSelesai].forEach(function(inp) {
+      inp.classList.remove('has-value', 'is-invalid');
+    });
+    hideError();
+    saveBtn.disabled = false;
+    saveBtn.classList.remove('loading');
+  }
+
+  [inputMulai, inputSelesai].forEach(function(inp) {
+    inp.addEventListener('input', function () {
+      this.classList.toggle('has-value', !!this.value);
+      this.classList.remove('is-invalid');
+      hideError();
+    });
+  });
+
+  document.querySelectorAll('.btn-update').forEach(function(btn) {
+    btn.addEventListener('click', function () {
+      document.getElementById('itemPk').value = this.dataset.itemPk;
+      itemUrlInput.value = this.dataset.itemUrl;
+      inputMulai.value   = this.dataset.jamMulai   || '';
+      inputSelesai.value = this.dataset.jamSelesai || '';
+      inputMulai.classList.toggle('has-value',   !!inputMulai.value);
+      inputSelesai.classList.toggle('has-value', !!inputSelesai.value);
+      hideError();
+      bsModal.show();
+      modalEl.addEventListener('shown.bs.modal', function onShown() {
+        inputMulai.focus();
+        modalEl.removeEventListener('shown.bs.modal', onShown);
+      });
+    });
+  });
+
+  saveBtn.addEventListener('click', function () {
+    const mulai   = inputMulai.value;
+    const selesai = inputSelesai.value;
+    setInvalid(inputMulai, false);
+    setInvalid(inputSelesai, false);
+    hideError();
+
+    if (!mulai)           { setInvalid(inputMulai,   true); showError('Jam mulai wajib diisi.',                    inputMulai);   return; }
+    if (!selesai)         { setInvalid(inputSelesai, true); showError('Jam selesai wajib diisi.',                  inputSelesai); return; }
+    if (selesai <= mulai) { setInvalid(inputSelesai, true); showError('Jam selesai harus setelah jam mulai.',      inputSelesai); return; }
+
+    saveBtn.disabled = true;
+    saveBtn.classList.add('loading');
+
+    fetch('{% url "staff_item_update_jam" %}', {
+      method: 'POST',
+      body  : new FormData(document.getElementById('jamForm')),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        window.location.href = data.redirect_url || itemUrlInput.value;
+      } else {
+        showError(data.error || 'Terjadi kesalahan.');
+        saveBtn.disabled = false;
+        saveBtn.classList.remove('loading');
+      }
+    })
+    .catch(function () {
+      showError('Koneksi bermasalah. Silakan coba lagi.');
+      saveBtn.disabled = false;
+      saveBtn.classList.remove('loading');
+    });
+  });
+
+  modalEl.addEventListener('hidden.bs.modal', resetModal);
+});
+</script>
+{% endblock %}

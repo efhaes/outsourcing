@@ -1,0 +1,75 @@
+{% extends 'supervisor/base_supervisor.html' %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Laporan Aktif</div>
+            <div class="fs-3 fw-bold text-primary">{{ laporan_aktif }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Laporan Draft</div>
+            <div class="fs-3 fw-bold text-secondary">{{ laporan_draft }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Total Staff</div>
+            <div class="fs-3 fw-bold text-success">{{ total_staff }}</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3">
+            <div class="text-muted small mb-1">Item Hari Ini</div>
+            <div class="fs-3 fw-bold text-info">{{ item_hari_ini|length }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card p-3">
+    <h6 class="fw-semibold mb-3">Item Kegiatan Hari Ini — {{ today|date:"d/m/Y" }}</h6>
+    {% if item_hari_ini %}
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Staff</th>
+                    <th>Item</th>
+                    <th>Laporan</th>
+                    <th>Jam</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in item_hari_ini %}
+                <tr>
+                    <td>{{ item.staff.nama_lengkap }}</td>
+                    <td>
+                        <span class="fw-semibold">{{ item.nama_item }}</span>
+                        {% if item.is_insidental %}
+                            <span class="badge bg-warning text-dark ms-1">Insidental</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.laporan.nama_laporan }}</td>
+                    <td>{{ item.jam_mulai|default:"—" }} - {{ item.jam_selesai|default:"—" }}</td>
+                    <td>
+                        {% if item.status == 'terjadwal' %}
+                            <span class="badge bg-secondary">Terjadwal</span>
+                        {% elif item.status == 'on_progress' %}
+                            <span class="badge bg-warning">On Progress</span>
+                        {% elif item.status == 'selesai' %}
+                            <span class="badge bg-success">Selesai</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted small mb-0">Tidak ada item kegiatan hari ini.</p>
+    {% endif %}
+</div>
+{% endblock %}

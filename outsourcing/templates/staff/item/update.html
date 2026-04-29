@@ -1,0 +1,522 @@
+{% extends 'staff/base_staff.html' %}
+
+{% block content %}
+<style>
+.update-page { max-width: 1200px; margin: 0 auto; padding-bottom: 40px; }
+
+/* Topbar */
+.topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+.topbar h5 { font-size: 17px; font-weight: 600; margin: 0 0 3px; }
+.topbar .sub { font-size: 12px; color: #888; }
+.btn-back { font-size: 12px; color: #666; border: 1px solid #ddd; border-radius: 8px; padding: 6px 12px; background: #fff; text-decoration: none; white-space: nowrap; }
+
+/* Card */
+.ucard { background: #fff; border: 1px solid #ececec; border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+
+/* Info grid */
+.section-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #aaa; margin-bottom: 12px; }
+.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.info-item .il { font-size: 11px; color: #aaa; margin-bottom: 2px; }
+.info-item .iv { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+
+/* Badge */
+.badge-pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+.badge-progress { background: #FFF3CD; color: #856404; }
+.badge-terjadwal { background: #f0f0f0; color: #555; }
+.badge-selesai { background: #D1FAE5; color: #065F46; }
+
+/* Jam boxes */
+.jam-row { display: flex; gap: 10px; margin-bottom: 14px; }
+.jam-box { flex: 1; border-radius: 12px; padding: 14px 12px; text-align: center; border: 1px solid #ececec; background: #fff; }
+.jam-box .jl { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #aaa; margin-bottom: 6px; }
+.jam-box .jv { font-size: 26px; font-weight: 700; color: #1a1a1a; }
+.jam-box .js { font-size: 11px; margin-top: 4px; }
+.jam-box.mulai { border-top: 3px solid #10B981; }
+.jam-box.selesai { border-top: 3px solid #3B82F6; }
+.jam-box.selesai .jv { color: #3B82F6; }
+.jam-box.mulai .jv { color: #10B981; }
+
+/* Countdown */
+.countdown-bar { background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
+.countdown-bar .ci { font-size: 22px; flex-shrink: 0; }
+.countdown-bar .ct { font-size: 13px; font-weight: 600; color: #92400E; }
+.countdown-bar .ctimer { font-size: 20px; font-weight: 700; color: #B45309; margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+/* Foto section */
+.step-hint { display: flex; gap: 8px; align-items: flex-start; padding: 9px 12px; background: #F8F9FA; border-radius: 8px; margin-bottom: 10px; }
+.step-hint .sn { width: 20px; height: 20px; border-radius: 50%; background: #E0F2FE; color: #0369A1; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.step-hint .st { font-size: 12px; color: #555; line-height: 1.5; }
+.step-hint .st strong { color: #1a1a1a; }
+
+.foto-item { border: 1.5px dashed #ddd; border-radius: 12px; overflow: hidden; background: #FAFAFA; }
+.foto-item.uploaded { border-style: solid; border-color: #10B981; background: #fff; }
+.foto-item.uploaded-blue { border-style: solid; border-color: #3B82F6; background: #fff; }
+.foto-item.locked { opacity: .5; pointer-events: none; }
+
+.foto-header { padding: 12px 14px 0; display: flex; align-items: center; gap: 10px; }
+.foto-icon-wrap { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.fi-progress { background: #E0F2FE; }
+.fi-after { background: #D1FAE5; }
+.fi-locked { background: #F3F4F6; }
+.foto-header-text .ft { font-size: 14px; font-weight: 600; color: #1a1a1a; }
+.foto-header-text .fs { font-size: 11px; color: #888; margin-top: 1px; }
+.foto-header-text .fs.success { color: #10B981; }
+.foto-header-text .fs.success-blue { color: #3B82F6; }
+.foto-header-text .fs.locked { color: #B45309; }
+
+/* Foto tersimpan — thumbnail besar */
+.foto-saved-thumb { margin: 10px 14px 0; }
+.fst-label { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
+.fst-label.green { color: #10B981; }
+.fst-label.blue  { color: #3B82F6; }
+.fst-wrap { display: block; position: relative; border-radius: 10px; overflow: hidden; cursor: pointer; }
+.fst-wrap.green-border { border: 2px solid #10B981; }
+.fst-wrap.blue-border  { border: 2px solid #3B82F6; }
+.fst-img { width: 100%; max-height: 180px; object-fit: cover; display: block; }
+.fst-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 12px; font-weight: 600; opacity: 0; transition: background .2s, opacity .2s; }
+.fst-wrap:hover .fst-overlay { background: rgba(0,0,0,.45); opacity: 1; }
+.fst-ganti { font-size: 11px; color: #aaa; margin-top: 6px; text-align: center; }
+
+/* Divider ganti foto */
+.ganti-label { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #bbb; text-align: center; margin: 12px 14px 0; display: flex; align-items: center; gap: 8px; }
+.ganti-label::before, .ganti-label::after { content: ''; flex: 1; height: 1px; background: #ececec; }
+
+/* Pilihan kamera / file */
+.foto-actions { display: flex; gap: 8px; padding: 12px 14px 0; }
+.foto-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 12px 8px; border: 1px solid #e0e0e0; border-radius: 10px; background: #fff; cursor: pointer; transition: background .15s, border-color .15s; }
+.foto-btn:hover { background: #F0FDF4; border-color: #10B981; }
+.foto-btn.after:hover { background: #EFF6FF; border-color: #3B82F6; }
+.foto-btn svg { width: 22px; height: 22px; }
+.foto-btn span { font-size: 12px; font-weight: 600; color: #333; }
+.foto-btn small { font-size: 10px; color: #aaa; }
+
+/* Preview thumbnail (foto baru dipilih, belum disimpan) */
+.foto-preview { margin: 10px 14px 0; border-radius: 8px; overflow: hidden; position: relative; }
+.foto-preview img { width: 100%; max-height: 160px; object-fit: cover; display: block; border-radius: 8px; }
+.foto-preview .fp-remove { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,.55); border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.foto-preview .fp-remove svg { width: 12px; height: 12px; }
+
+/* Tombol simpan per-foto */
+.btn-save-foto { width: 100%; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; margin: 10px 0 0; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity .2s, transform .1s; background: #10B981; color: #fff; }
+.btn-save-foto:hover { opacity: .88; }
+.btn-save-foto:active { transform: scale(.98); }
+.btn-save-foto.blue { background: #3B82F6; }
+.foto-save-wrap { padding: 10px 14px 14px; }
+
+/* Catatan */
+.catatan-wrap textarea { width: 100%; border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px 12px; font-size: 13px; font-family: inherit; color: #1a1a1a; background: #FAFAFA; resize: none; outline: none; transition: border-color .15s; box-sizing: border-box; }
+.catatan-wrap textarea:focus { border-color: #10B981; background: #fff; }
+
+/* Info bar */
+.info-bar { display: flex; gap: 8px; align-items: flex-start; background: #EFF6FF; border-radius: 10px; padding: 10px 12px; }
+.info-bar svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+.info-bar p { font-size: 12px; color: #1E40AF; line-height: 1.6; margin: 0; }
+.info-bar p strong { color: #1E3A8A; }
+
+/* Save button */
+.btn-save { width: 100%; padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 700; border: none; cursor: pointer; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .2s; }
+.btn-save.active { background: #10B981; color: #fff; }
+.btn-save.active:hover { opacity: .9; }
+.btn-save.disabled { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
+.btn-cancel { display: block; text-align: center; margin-top: 10px; color: #aaa; font-size: 13px; text-decoration: none; }
+
+/* Hidden real inputs */
+.hidden-input { display: none !important; }
+</style>
+
+<div class="update-page">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <h5>{{ page_title }}</h5>
+      <div class="sub">{{ item.tanggal|date:"l, d F Y" }}</div>
+    </div>
+    <a href="{% url 'staff_item_list' %}" class="btn-back">← Kembali</a>
+  </div>
+
+  <!-- Info Card -->
+  <div class="ucard">
+    <div class="section-label">Info Pekerjaan</div>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="il">Perusahaan</div>
+        <div class="iv">{{ item.laporan.perusahaan.nama_perusahaan }}</div>
+      </div>
+      <div class="info-item">
+        <div class="il">Area</div>
+        <div class="iv">{{ item.laporan.area.nama_area }}</div>
+      </div>
+      <div class="info-item">
+        <div class="il">Sub Area</div>
+        <div class="iv">{{ item.sub_area.nama_sub_area|default:'—' }}</div>
+      </div>
+      <div class="info-item">
+        <div class="il">Status</div>
+        <div class="iv">
+          {% if item.status == 'terjadwal' %}
+            <span class="badge-pill badge-terjadwal">Terjadwal</span>
+          {% elif item.status == 'on_progress' %}
+            <span class="badge-pill badge-progress">On Progress</span>
+          {% elif item.status == 'selesai' %}
+            <span class="badge-pill badge-selesai">Selesai</span>
+          {% endif %}
+        </div>
+      </div>
+      {% if item.deskripsi %}
+      <div class="info-item" style="grid-column:1/-1">
+        <div class="il">Deskripsi</div>
+        <div class="iv" style="font-weight:400;font-size:13px;color:#555">{{ item.deskripsi }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Jam boxes -->
+  <div class="jam-row">
+    <div class="jam-box mulai">
+      <div class="jl">Mulai Kerja</div>
+      <div class="jv">{% if item.jam_mulai %}{{ item.jam_mulai|date:'H:i' }}{% else %}—{% endif %}</div>
+      <div class="js">
+        {% if item.jam_mulai %}<span class="badge-pill badge-selesai">✓ Sudah diisi</span>{% else %}<span style="color:#aaa;font-size:11px">Belum diisi</span>{% endif %}
+      </div>
+    </div>
+    <div class="jam-box selesai">
+      <div class="jl">Selesai Kerja</div>
+      <div class="jv">{% if item.jam_selesai %}{{ item.jam_selesai|date:'H:i' }}{% else %}—{% endif %}</div>
+      <div class="js">
+        {% if item.jam_selesai %}
+          {% if disable_save %}<span class="badge-pill badge-progress">Belum tiba</span>{% else %}<span class="badge-pill badge-selesai">Sudah tiba</span>{% endif %}
+        {% else %}
+          <span style="color:#aaa;font-size:11px">Belum diisi</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Countdown bar -->
+  {% if item.jam_selesai and disable_save %}
+  <div class="countdown-bar">
+    <div class="ci">⏳</div>
+    <div>
+      <div class="ct">Foto selesai bisa diupload pukul {{ item.jam_selesai|date:'H:i' }}</div>
+      <div class="ctimer" id="countdown">Menghitung...</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ===================== FORM FOTO ON PROGRESS ===================== -->
+  <form method="post" enctype="multipart/form-data" id="formProgress">
+    {% csrf_token %}
+    <input type="hidden" name="save_type" value="foto_progress">
+    <input type="file" id="real_foto_progress"     name="foto_on_progress" class="hidden-input" accept="image/*">
+    <input type="file" id="real_foto_progress_cam" name="foto_on_progress" class="hidden-input" accept="image/*" capture="environment">
+
+    <div class="ucard">
+      <div class="section-label">Foto Sedang Berjalan</div>
+
+      <div class="step-hint">
+        <div class="sn">1</div>
+        <div class="st"><strong>Foto sedang berjalan</strong> — ambil foto kondisi pekerjaan saat ini. Tekan <strong>Simpan</strong> segera agar tidak hilang.</div>
+      </div>
+
+      <div class="foto-item {% if item.foto_on_progress %}uploaded{% endif %}" id="boxProgress">
+        <div class="foto-header">
+          <div class="foto-icon-wrap fi-progress">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="1.8">
+              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
+            </svg>
+          </div>
+          <div class="foto-header-text">
+            <div class="ft">Foto Sedang Berjalan</div>
+            <div class="fs {% if item.foto_on_progress %}success{% endif %}" id="statusProgress">
+              {% if item.foto_on_progress %}✓ Sudah tersimpan{% else %}Belum ada foto{% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if item.foto_on_progress %}
+        <!-- Thumbnail foto yang sudah tersimpan -->
+        <div class="foto-saved-thumb">
+          <div class="fst-label green">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#10B981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Foto tersimpan — ketuk untuk lihat
+          </div>
+          <a href="{{ item.foto_on_progress.url }}" target="_blank" class="fst-wrap green-border">
+            <img src="{{ item.foto_on_progress.url }}" alt="Foto on progress" class="fst-img">
+            <div class="fst-overlay">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Lihat foto
+            </div>
+          </a>
+          <div class="fst-ganti">Pilih foto baru di bawah jika ingin mengganti</div>
+        </div>
+        <div class="ganti-label">Ganti Foto</div>
+        {% endif %}
+
+        <!-- Preview foto baru (sebelum disimpan) -->
+        <div class="foto-preview" id="previewProgress" style="display:none">
+          <img id="imgProgress" src="" alt="preview">
+          <button type="button" class="fp-remove" onclick="clearFoto('progress')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+
+        <div class="foto-actions">
+          <button type="button" class="foto-btn" onclick="document.getElementById('real_foto_progress_cam').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="1.8">
+              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
+            </svg>
+            <span>Buka Kamera</span>
+            <small>Ambil foto langsung</small>
+          </button>
+          <button type="button" class="foto-btn" onclick="document.getElementById('real_foto_progress').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="1.8">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Pilih File</span>
+            <small>Dari galeri / folder</small>
+          </button>
+        </div>
+
+        <div class="foto-save-wrap">
+          <button type="submit" class="btn-save-foto" id="btnSimpanProgress">
+            💾 Simpan Foto Berjalan
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- ===================== FORM FOTO AFTER ===================== -->
+  <form method="post" enctype="multipart/form-data" id="formAfter">
+    {% csrf_token %}
+    <input type="hidden" name="save_type" value="foto_after">
+    <input type="file" id="real_foto_after"     name="foto_after" class="hidden-input" accept="image/*">
+    <input type="file" id="real_foto_after_cam" name="foto_after" class="hidden-input" accept="image/*" capture="environment">
+
+    <div class="ucard">
+      <div class="section-label">Foto Setelah Selesai</div>
+
+      <div class="step-hint" {% if disable_save %}style="opacity:.5"{% endif %}>
+        <div class="sn">2</div>
+        <div class="st"><strong>Foto setelah selesai</strong> — bisa diupload setelah pukul {% if item.jam_selesai %}{{ item.jam_selesai|date:'H:i' }}{% else %}jam selesai{% endif %}. Tekan <strong>Simpan</strong> segera agar tidak hilang.</div>
+      </div>
+
+      <div class="foto-item {% if item.foto_after %}uploaded-blue{% elif disable_save %}locked{% endif %}" id="boxAfter">
+        <div class="foto-header">
+          <div class="foto-icon-wrap {% if disable_save %}fi-locked{% else %}fi-after{% endif %}">
+            {% if disable_save %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="1.8">
+              <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
+            </svg>
+            {% else %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8">
+              <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
+            </svg>
+            {% endif %}
+          </div>
+          <div class="foto-header-text">
+            <div class="ft">Foto Setelah Selesai</div>
+            <div class="fs {% if item.foto_after %}success-blue{% elif disable_save %}locked{% endif %}" id="statusAfter">
+              {% if item.foto_after %}✓ Sudah tersimpan{% elif disable_save %}🔒 Terkunci sampai pukul {{ item.jam_selesai|date:'H:i' }}{% else %}Belum ada foto{% endif %}
+            </div>
+          </div>
+        </div>
+
+        {% if not disable_save %}
+
+          {% if item.foto_after %}
+          <!-- Thumbnail foto after yang sudah tersimpan -->
+          <div class="foto-saved-thumb">
+            <div class="fst-label blue">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Foto tersimpan — ketuk untuk lihat
+            </div>
+            <a href="{{ item.foto_after.url }}" target="_blank" class="fst-wrap blue-border">
+              <img src="{{ item.foto_after.url }}" alt="Foto after" class="fst-img">
+              <div class="fst-overlay">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Lihat foto
+              </div>
+            </a>
+            <div class="fst-ganti">Pilih foto baru di bawah jika ingin mengganti</div>
+          </div>
+          <div class="ganti-label">Ganti Foto</div>
+          {% endif %}
+
+          <!-- Preview foto baru (sebelum disimpan) -->
+          <div class="foto-preview" id="previewAfter" style="display:none">
+            <img id="imgAfter" src="" alt="preview">
+            <button type="button" class="fp-remove" onclick="clearFoto('after')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </div>
+
+          <div class="foto-actions">
+            <button type="button" class="foto-btn after" onclick="document.getElementById('real_foto_after_cam').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8">
+                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/>
+              </svg>
+              <span>Buka Kamera</span>
+              <small>Ambil foto langsung</small>
+            </button>
+            <button type="button" class="foto-btn after" onclick="document.getElementById('real_foto_after').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="1.8">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              <span>Pilih File</span>
+              <small>Dari galeri / folder</small>
+            </button>
+          </div>
+
+          <div class="foto-save-wrap">
+            <button type="submit" class="btn-save-foto blue" id="btnSimpanAfter">
+              💾 Simpan Foto Selesai
+            </button>
+          </div>
+
+        {% else %}
+          <div style="padding:10px 14px 14px;font-size:12px;color:#B45309;">
+            ⏳ Tombol akan aktif otomatis saat pukul {{ item.jam_selesai|date:'H:i' }} tiba
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </form>
+
+  <!-- ===================== FORM UTAMA (catatan + simpan) ===================== -->
+  <form method="post" enctype="multipart/form-data" id="mainForm">
+    {% csrf_token %}
+    <input type="hidden" name="save_type" value="all">
+
+    <div class="ucard">
+      <div class="section-label">Catatan (opsional)</div>
+      <div class="catatan-wrap">
+        {{ form.catatan_staff }}
+      </div>
+
+      <div class="info-bar" style="margin-top:12px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>Status otomatis: <strong>On Progress</strong> saat upload foto berjalan &bull; <strong>Selesai</strong> saat foto after + jam selesai sudah tiba</p>
+      </div>
+
+      <button type="submit" class="btn-save {% if disable_save %}disabled{% else %}active{% endif %}" id="btnSimpan" {% if disable_save %}disabled{% endif %}>
+        {% if disable_save %}
+          ⏳ Tunggu sampai pukul {{ item.jam_selesai|date:'H:i' }}
+        {% else %}
+          ✓ Simpan Catatan
+        {% endif %}
+      </button>
+      <a href="{% url 'staff_item_list' %}" class="btn-cancel">Kembali ke daftar</a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function setupFotoInput(inputId, imgId, previewId, boxId, statusId) {
+  var input = document.getElementById(inputId);
+  if (!input) return;
+  input.addEventListener('change', function() {
+    if (!this.files || !this.files[0]) return;
+    var file = this.files[0];
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      document.getElementById(imgId).src = e.target.result;
+      document.getElementById(previewId).style.display = 'block';
+      document.getElementById(boxId).classList.add('uploaded');
+      document.getElementById(statusId).textContent = '✓ Foto dipilih — tekan Simpan!';
+      document.getElementById(statusId).className = 'fs success';
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+setupFotoInput('real_foto_progress',     'imgProgress', 'previewProgress', 'boxProgress', 'statusProgress');
+setupFotoInput('real_foto_progress_cam', 'imgProgress', 'previewProgress', 'boxProgress', 'statusProgress');
+setupFotoInput('real_foto_after',        'imgAfter',    'previewAfter',    'boxAfter',    'statusAfter');
+setupFotoInput('real_foto_after_cam',    'imgAfter',    'previewAfter',    'boxAfter',    'statusAfter');
+
+// Sinkronisasi input kamera vs file
+['real_foto_progress_cam','real_foto_progress'].forEach(function(id, i, arr) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('change', function() {
+    var other = document.getElementById(arr[1-i]);
+    if (other && this.files.length > 0) other.value = '';
+  });
+});
+['real_foto_after_cam','real_foto_after'].forEach(function(id, i, arr) {
+  var el = document.getElementById(id);
+  if (el) el.addEventListener('change', function() {
+    var other = document.getElementById(arr[1-i]);
+    if (other && this.files.length > 0) other.value = '';
+  });
+});
+
+function clearFoto(which) {
+  if (which === 'progress') {
+    document.getElementById('real_foto_progress').value      = '';
+    document.getElementById('real_foto_progress_cam').value  = '';
+    document.getElementById('previewProgress').style.display = 'none';
+    document.getElementById('imgProgress').src               = '';
+    {% if item.foto_on_progress %}
+    document.getElementById('statusProgress').textContent    = '✓ Sudah tersimpan';
+    document.getElementById('statusProgress').className      = 'fs success';
+    document.getElementById('boxProgress').classList.add('uploaded');
+    {% else %}
+    document.getElementById('statusProgress').textContent    = 'Belum ada foto';
+    document.getElementById('statusProgress').className      = 'fs';
+    document.getElementById('boxProgress').classList.remove('uploaded');
+    {% endif %}
+  } else {
+    document.getElementById('real_foto_after').value         = '';
+    document.getElementById('real_foto_after_cam').value     = '';
+    document.getElementById('previewAfter').style.display    = 'none';
+    document.getElementById('imgAfter').src                  = '';
+    {% if item.foto_after %}
+    document.getElementById('statusAfter').textContent       = '✓ Sudah tersimpan';
+    document.getElementById('statusAfter').className         = 'fs success-blue';
+    document.getElementById('boxAfter').classList.add('uploaded-blue');
+    {% else %}
+    document.getElementById('statusAfter').textContent       = 'Belum ada foto';
+    document.getElementById('statusAfter').className         = 'fs';
+    document.getElementById('boxAfter').classList.remove('uploaded-blue');
+    {% endif %}
+  }
+}
+
+// Loading state saat submit
+document.getElementById('formProgress').addEventListener('submit', function() {
+  var btn = document.getElementById('btnSimpanProgress');
+  btn.disabled = true;
+  btn.textContent = '⏳ Menyimpan...';
+});
+document.getElementById('formAfter').addEventListener('submit', function() {
+  var btn = document.getElementById('btnSimpanAfter');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Menyimpan...'; }
+});
+
+// Countdown & auto-unlock
+{% if item.jam_selesai and disable_save %}
+var targetTime = new Date("{{ item.tanggal|date:'Y-m-d' }}T{{ item.jam_selesai|date:'H:i' }}:00");
+function updateCountdown() {
+  var now  = new Date();
+  var diff = targetTime - now;
+  if (diff <= 0) {
+    document.getElementById('countdown').textContent = 'Jam selesai sudah tiba!';
+    setTimeout(function() { location.reload(); }, 800);
+    return;
+  }
+  var h = Math.floor(diff / 3600000);
+  var m = Math.floor((diff % 3600000) / 60000);
+  var s = Math.floor((diff % 60000) / 1000);
+  document.getElementById('countdown').textContent =
+    'Sisa: ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+{% endif %}
+</script>
+
+{% endblock %}

@@ -1,0 +1,712 @@
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+
+
+# ============================================================
+# MANAGER
+# ============================================================
+
+class AktifManager(models.Manager):
+    """
+    Manager untuk memfilter hanya record yang aktif.
+    Gunakan: Model.aktif.all()
+    Tetap gunakan Model.objects.all() untuk akses penuh (admin, dsb).
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active=True)
+
+
+# ============================================================
+# ROLE CHOICES
+# ============================================================
+
+class RoleChoices(models.TextChoices):
+    ADMIN               = 'admin',               'Admin'
+    KEPALA_SUPERVISOR   = 'kepala_supervisor',   'Kepala Supervisor'
+    SUPERVISOR          = 'supervisor',           'Supervisor Lapangan'
+    STAFF               = 'staff',               'Staff Lapangan'
+    CUSTOMER            = 'customer',            'Customer'
+
+
+# ============================================================
+# USER (Custom)
+# ============================================================
+
+telepon_validator = RegexValidator(
+    regex=r'^\+?[0-9]{7,20}$',
+    message='Nomor telepon hanya boleh berisi angka, dan opsional diawali dengan +. Panjang 7–20 karakter.',
+)
+
+
+class User(AbstractUser):
+    """
+    Custom User model yang extend AbstractUser.
+    Role menentukan akses & tampilan di sistem.
+
+    CATATAN PENTING:
+    - Gunakan `is_active` (bawaan Django) untuk menonaktifkan user.
+      Setting is_active=False akan BENAR-BENAR memblokir login.
+    - `is_active` dihapus karena tidak terhubung ke sistem auth Django
+      dan menyebabkan user yang "dinonaktifkan" tetap bisa login.
+    """
+    role = models.CharField(
+        max_length=30,
+        choices=RoleChoices.choices,
+        default=RoleChoices.STAFF,
+    )
+    nama_lengkap = models.CharField(max_length=150, blank=True)
+    telepon      = models.CharField(
+        max_length=20,
+        blank=True,
+        validators=[telepon_validator],
+    )
+    foto_profil  = models.ImageField(
+        upload_to='foto_profil/',
+        blank=True,
+        null=True,
+    )
+ 
+    dibuat_pada  = models.DateTimeField(auto_now_add=True)
+    diubah_pada  = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.nama_lengkap or self.username} ({self.get_role_display()})"
+
+    # Helper properties
+    @property
+    def is_admin(self):
+        return self.role == RoleChoices.ADMIN
+
+    @property
+    def is_kepala_supervisor(self):
+        return self.role == RoleChoices.KEPALA_SUPERVISOR
+
+    @property
+    def is_supervisor(self):
+        return self.role == RoleChoices.SUPERVISOR
+
+    @property
+    def is_staff_lapangan(self):
+        return self.role == RoleChoices.STAFF
+
+    @property
+    def is_customer(self):
+        return self.role == RoleChoices.CUSTOMER
+
+    class Meta:
+        verbose_name        = 'Pengguna'
+        verbose_name_plural = 'Pengguna'
+        ordering            = ['nama_lengkap']
+
+
+# ============================================================
+# MASTER DATA
+# ============================================================
+
+class JenisJasa(models.Model):
+    """
+    Master data jenis jasa outsourcing.
+    Contoh: Cleaning Service, Security, Office Boy, dll.
+    Dikelola oleh Admin.
+    """
+    nama_jasa   = models.CharField(max_length=100, unique=True)
+    deskripsi   = models.TextField(blank=True)
+    is_active    = models.BooleanField(default=True)
+    dibuat_pada = models.DateTimeField(auto_now_add=True)
+    diubah_pada = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    aktif   = AktifManager()
+
+    def __str__(self):
+        return self.nama_jasa
+
+    class Meta:
+        verbose_name        = 'Jenis Jasa'
+        verbose_name_plural = 'Jenis Jasa'
+        ordering            = ['nama_jasa']
+
+
+class Perusahaan(models.Model):
+    """
+    Data perusahaan klien yang menggunakan jasa outsourcing.
+    Satu perusahaan bisa menggunakan banyak jenis jasa (M2M).
+    Satu perusahaan memiliki satu akun Customer.
+    """
+    nama_perusahaan = models.CharField(max_length=200)
+    alamat          = models.TextField()
+    telepon         = models.CharField(max_length=20, blank=True)
+    email           = models.EmailField(blank=True)
+    jenis_jasa      = models.ManyToManyField(
+        JenisJasa,
+        related_name='perusahaan',
+        blank=True,
+    )
+    customer        = models.OneToOneField(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='perusahaan_customer',
+        limit_choices_to={'role': RoleChoices.CUSTOMER},
+    )
+    is_active    = models.BooleanField(default=True)
+    dibuat_pada = models.DateTimeField(auto_now_add=True)
+    diubah_pada = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    aktif   = AktifManager()
+
+    def clean(self):
+        # Validasi bahwa user yang di-assign sebagai customer benar-benar role CUSTOMER
+        if self.customer and self.customer.role != RoleChoices.CUSTOMER:
+            raise ValidationError(
+                f"User '{self.customer}' bukan Customer. "
+                f"Role saat ini: {self.customer.get_role_display()}."
+            )
+
+    def __str__(self):
+        return self.nama_perusahaan
+
+    class Meta:
+        verbose_name        = 'Perusahaan'
+        verbose_name_plural = 'Perusahaan'
+        ordering            = ['nama_perusahaan']
+
+
+class AreaKerja(models.Model):
+    """
+    Area kerja di dalam satu perusahaan.
+    Contoh: Gedung A, Lantai 2, Area Parkir, dll.
+    """
+    perusahaan  = models.ForeignKey(
+        Perusahaan,
+        on_delete=models.CASCADE,
+        related_name='area_kerja',
+    )
+    nama_area   = models.CharField(max_length=150)
+    keterangan  = models.TextField(blank=True)
+    is_active    = models.BooleanField(default=True)
+    dibuat_pada = models.DateTimeField(auto_now_add=True)
+    diubah_pada = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    aktif   = AktifManager()
+
+    def __str__(self):
+        return f"{self.perusahaan.nama_perusahaan} — {self.nama_area}"
+
+    class Meta:
+        verbose_name        = 'Area Kerja'
+        verbose_name_plural = 'Area Kerja'
+        ordering            = ['perusahaan', 'nama_area']
+        unique_together     = ['perusahaan', 'nama_area']
+
+
+class SubArea(models.Model):
+    """
+    Sub area di dalam AreaKerja.
+    Contoh: Toilet Lt.1, Lobby, Ruang Rapat, dll.
+    Berguna untuk membagi item kegiatan lebih spesifik.
+    """
+    area        = models.ForeignKey(
+        AreaKerja,
+        on_delete=models.CASCADE,
+        related_name='sub_area',
+    )
+    nama_sub_area = models.CharField(max_length=150)
+    keterangan    = models.TextField(blank=True)
+    is_active      = models.BooleanField(default=True)
+    dibuat_pada   = models.DateTimeField(auto_now_add=True)
+    diubah_pada   = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    aktif   = AktifManager()
+
+    def __str__(self):
+        return f"{self.area} → {self.nama_sub_area}"
+
+    class Meta:
+        verbose_name        = 'Sub Area'
+        verbose_name_plural = 'Sub Area'
+        ordering            = ['area', 'nama_sub_area']
+        unique_together     = ['area', 'nama_sub_area']
+
+
+class Task(models.Model):
+    """
+    Master data tugas/pekerjaan standar yang bisa di-assign ke staff.
+    Contoh: Menyapu lantai, Membersihkan toilet, dll.
+    Terkait dengan Jenis Jasa (Cleaning Service, Security, dll).
+    Dikelola oleh Admin.
+    """
+    jenis_jasa  = models.ForeignKey(
+        JenisJasa,
+        on_delete=models.CASCADE,
+        related_name='tasks',
+    )
+    nama_task   = models.CharField(max_length=200)
+    deskripsi   = models.TextField(blank=True)
+    is_active    = models.BooleanField(default=True)
+    dibuat_pada = models.DateTimeField(auto_now_add=True)
+    diubah_pada = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    aktif   = AktifManager()
+
+    def __str__(self):
+        return f"{self.nama_task} ({self.jenis_jasa.nama_jasa})"
+
+    class Meta:
+        verbose_name        = 'Task'
+        verbose_name_plural = 'Task'
+        ordering            = ['jenis_jasa', 'nama_task']
+        unique_together     = ['jenis_jasa', 'nama_task']
+
+
+# ============================================================
+# HIERARKI AKUN
+# ============================================================
+
+class KepalaSupervisorJasa(models.Model):
+    """
+    Menghubungkan Kepala Supervisor dengan Jenis Jasa yang dia tangani.
+    Satu Kepala Supervisor bisa pegang lebih dari satu Jenis Jasa.
+    Dibuat oleh Admin.
+    """
+    kepala_supervisor = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='jasa_yang_dipegang',
+        limit_choices_to={'role': RoleChoices.KEPALA_SUPERVISOR},
+    )
+    jenis_jasa  = models.ForeignKey(
+        JenisJasa,
+        on_delete=models.CASCADE,
+        related_name='kepala_supervisor',
+    )
+    dibuat_pada = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.kepala_supervisor} → {self.jenis_jasa}"
+
+    class Meta:
+        verbose_name        = 'Kepala Supervisor Jasa'
+        verbose_name_plural = 'Kepala Supervisor Jasa'
+        unique_together     = ['kepala_supervisor', 'jenis_jasa']
+
+
+class SupervisorPerusahaan(models.Model):
+    """
+    Menghubungkan Supervisor Lapangan dengan Perusahaan & Jenis Jasa
+    yang dia tangani, serta siapa Kepala Supervisor-nya.
+    Dibuat oleh Kepala Supervisor.
+
+    Validasi duplikat aktif: satu supervisor tidak bisa di-assign
+    dua kali ke perusahaan+jenis_jasa yang sama selagi keduanya aktif.
+    Constraint ini dijaga di level clean() karena unique_together
+    tidak mempertimbangkan is_active.
+    """
+    supervisor        = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='penugasan_supervisor',
+        limit_choices_to={'role': RoleChoices.SUPERVISOR},
+    )
+    perusahaan        = models.ForeignKey(
+        Perusahaan,
+        on_delete=models.CASCADE,
+        related_name='supervisor_perusahaan',
+    )
+    jenis_jasa        = models.ForeignKey(
+        JenisJasa,
+        on_delete=models.CASCADE,
+        related_name='supervisor_perusahaan',
+    )
+    kepala_supervisor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='supervisor_dibawahnya',
+        limit_choices_to={'role': RoleChoices.KEPALA_SUPERVISOR},
+    )
+    is_active    = models.BooleanField(default=True)
+    dibuat_pada = models.DateTimeField(auto_now_add=True)
+    diubah_pada = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    aktif   = AktifManager()
+
+    def clean(self):
+        # Pastikan jenis jasa ada di perusahaan tersebut
+        if self.perusahaan_id and self.jenis_jasa_id:
+            if not self.perusahaan.jenis_jasa.filter(pk=self.jenis_jasa_id).exists():
+                raise ValidationError(
+                    f"Perusahaan '{self.perusahaan}' tidak menggunakan jasa '{self.jenis_jasa}'."
+                )
+
+        # Cegah duplikat penugasan aktif: supervisor yang sama,
+        # perusahaan yang sama, jenis jasa yang sama, dan is_active=True
+        if self.is_active and self.supervisor_id and self.perusahaan_id and self.jenis_jasa_id:
+            qs = SupervisorPerusahaan.objects.filter(
+                supervisor=self.supervisor_id,
+                perusahaan=self.perusahaan_id,
+                jenis_jasa=self.jenis_jasa_id,
+                is_active=True,
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                raise ValidationError(
+                    f"Supervisor '{self.supervisor}' sudah aktif di perusahaan "
+                    f"'{self.perusahaan}' untuk jasa '{self.jenis_jasa}'."
+                )
+
+    def __str__(self):
+        return f"{self.supervisor} → {self.perusahaan} [{self.jenis_jasa}]"
+
+    class Meta:
+        verbose_name        = 'Penugasan Supervisor'
+        verbose_name_plural = 'Penugasan Supervisor'
+        unique_together     = ['supervisor', 'perusahaan', 'jenis_jasa']
+
+
+class StaffSupervisor(models.Model):
+    """
+    Menghubungkan Staff Lapangan dengan Supervisor yang mengelolanya.
+    Dibuat oleh Supervisor Lapangan.
+    Staff hanya bisa dilihat oleh Supervisor yang memilikinya,
+    serta Kepala Supervisor dan Admin di atasnya.
+
+    Validasi: satu staff hanya boleh memiliki SATU supervisor aktif
+    di waktu yang sama. Supervisor bisa dirotasi dengan cara
+    menonaktifkan relasi lama (is_active=False) sebelum membuat yang baru.
+    """
+    staff       = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='supervisor_saya',
+        limit_choices_to={'role': RoleChoices.STAFF},
+    )
+    supervisor  = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='staff_dibawahnya',
+        limit_choices_to={'role': RoleChoices.SUPERVISOR},
+    )
+    is_active    = models.BooleanField(default=True)
+    dibuat_pada = models.DateTimeField(auto_now_add=True)
+    diubah_pada = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    aktif   = AktifManager()
+
+    def clean(self):
+        # Satu staff hanya boleh punya 1 supervisor aktif
+        if self.is_active and self.staff_id:
+            qs = StaffSupervisor.objects.filter(
+                staff=self.staff_id,
+                is_active=True,
+            )
+            if self.pk:
+                qs = qs.exclude(pk=self.pk)
+            if qs.exists():
+                existing = qs.first()
+                raise ValidationError(
+                    f"Staff '{self.staff}' sudah memiliki supervisor aktif: "
+                    f"'{existing.supervisor}'. Nonaktifkan relasi lama sebelum "
+                    f"menambahkan supervisor baru."
+                )
+
+    def __str__(self):
+        return f"{self.staff} → dibawah {self.supervisor}"
+
+    class Meta:
+        verbose_name        = 'Staff per Supervisor'
+        verbose_name_plural = 'Staff per Supervisor'
+        unique_together     = ['staff', 'supervisor']
+
+
+class StaffTask(models.Model):
+    """
+    Menghubungkan Staff dengan Task yang bisa dia kerjakan.
+    Satu staff bisa memiliki banyak task (skill).
+    Dibuat oleh Supervisor Lapangan saat membuat akun staff.
+    """
+    staff       = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='tasks_saya',
+        limit_choices_to={'role': RoleChoices.STAFF},
+    )
+    task        = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name='staff_yang_bisa',
+    )
+    is_active    = models.BooleanField(default=True)
+    dibuat_pada = models.DateTimeField(auto_now_add=True)
+
+    objects = models.Manager()
+    aktif   = AktifManager()
+
+    def __str__(self):
+        return f"{self.staff} → {self.task.nama_task}"
+
+    class Meta:
+        verbose_name        = 'Staff Task'
+        verbose_name_plural = 'Staff Task'
+        unique_together     = ['staff', 'task']
+
+
+# ============================================================
+# LAPORAN KEGIATAN
+# ============================================================
+
+class StatusLaporan(models.TextChoices):
+    DRAFT             = 'draft',              'Draft'
+    SELESAI           = 'selesai',            'Selesai'
+    DIKIRIM_CUSTOMER  = 'dikirim_customer',   'Dikirim ke Customer'
+
+
+class LaporanKegiatan(models.Model):
+    """
+    Laporan kegiatan yang dibuat oleh Supervisor Lapangan.
+    Satu laporan mencakup satu perusahaan, satu area, dan satu jenis jasa.
+    Berisi banyak ItemKegiatan (jadwal kerja staff).
+
+    PROTEKSI: Laporan dengan status 'dikirim_customer' tidak bisa
+    diedit atau dihapus. Ini dijaga di clean() dan delete().
+    """
+    perusahaan    = models.ForeignKey(
+        Perusahaan,
+        on_delete=models.CASCADE,
+        related_name='laporan_kegiatan',
+    )
+    jenis_jasa    = models.ForeignKey(
+        JenisJasa,
+        on_delete=models.CASCADE,
+        related_name='laporan_kegiatan',
+    )
+    area          = models.ForeignKey(
+        AreaKerja,
+        on_delete=models.CASCADE,
+        related_name='laporan_kegiatan',
+    )
+    supervisor    = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='laporan_yang_dibuat',
+        limit_choices_to={'role': RoleChoices.SUPERVISOR},
+    )
+    nama_laporan    = models.CharField(max_length=200)
+    tanggal_laporan = models.DateField()
+    status          = models.CharField(
+        max_length=20,
+        choices=StatusLaporan.choices,
+        default=StatusLaporan.DRAFT,
+    )
+    catatan         = models.TextField(blank=True)
+    dibuat_pada     = models.DateTimeField(auto_now_add=True)
+    diubah_pada     = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+
+    def clean(self):
+        # ── PROTEKSI EDIT ──────────────────────────────────────────────────
+        # Laporan yang sudah dikirim ke customer tidak boleh diubah sama sekali.
+        # Cek via database (bukan instance saat ini) agar tidak bisa di-bypass.
+        if self.pk:
+            try:
+                original = LaporanKegiatan.objects.get(pk=self.pk)
+                if original.status == StatusLaporan.DIKIRIM_CUSTOMER:
+                    raise ValidationError(
+                        "Laporan yang sudah dikirim ke customer tidak dapat diubah. "
+                        "Hubungi Admin jika diperlukan koreksi."
+                    )
+            except LaporanKegiatan.DoesNotExist:
+                pass  # Record baru, lanjutkan validasi lain
+
+        # ── VALIDASI AREA ──────────────────────────────────────────────────
+        if self.area_id and self.perusahaan_id:
+            if self.area.perusahaan_id != self.perusahaan_id:
+                raise ValidationError(
+                    f"Area '{self.area}' bukan milik perusahaan '{self.perusahaan}'."
+                )
+
+        # ── VALIDASI JENIS JASA ────────────────────────────────────────────
+        if self.perusahaan_id and self.jenis_jasa_id:
+            if not self.perusahaan.jenis_jasa.filter(pk=self.jenis_jasa_id).exists():
+                raise ValidationError(
+                    f"Perusahaan '{self.perusahaan}' tidak menggunakan jasa '{self.jenis_jasa}'."
+                )
+
+    def delete(self, *args, **kwargs):
+        # Proteksi hapus: laporan yang sudah dikirim ke customer tidak boleh dihapus
+        if self.status == StatusLaporan.DIKIRIM_CUSTOMER:
+            raise ValidationError(
+                "Laporan yang sudah dikirim ke customer tidak dapat dihapus."
+            )
+        super().delete(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.nama_laporan} — {self.perusahaan} ({self.tanggal_laporan})"
+
+    class Meta:
+        verbose_name        = 'Laporan Kegiatan'
+        verbose_name_plural = 'Laporan Kegiatan'
+        ordering            = ['-tanggal_laporan', 'perusahaan']
+        indexes             = [
+            models.Index(fields=['status'], name='idx_laporan_status'),
+            models.Index(fields=['perusahaan', 'tanggal_laporan'], name='idx_laporan_perusahaan_tgl'),
+            models.Index(fields=['supervisor', 'status'], name='idx_laporan_supervisor_status'),
+        ]
+
+
+# ============================================================
+# ITEM KEGIATAN
+# ============================================================
+
+class StatusItem(models.TextChoices):
+    TERJADWAL   = 'terjadwal',  'Terjadwal'
+    ON_PROGRESS = 'on_progress','On Progress'
+    SELESAI     = 'selesai',    'Selesai'
+
+
+class ItemKegiatan(models.Model):
+    """
+    Item kegiatan adalah tugas spesifik untuk satu atau lebih staff di satu sub area.
+    Dibuat oleh Supervisor Lapangan sebagai jadwal harian staff.
+    Staff mengisi: jam mulai, jam selesai, foto on progress, foto after.
+    is_insidental = True jika pekerjaan ini di luar jadwal (dibuat sendiri oleh staff).
+    """
+    laporan     = models.ForeignKey(
+        LaporanKegiatan,
+        on_delete=models.CASCADE,
+        related_name='item_kegiatan',
+    )
+    task        = models.ForeignKey(
+        Task,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='item_kegiatan',
+    )
+    sub_area    = models.ForeignKey(
+        SubArea,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='item_kegiatan',
+    )
+    staff       = models.ManyToManyField(
+        User,
+        related_name='item_kegiatan_saya',
+        limit_choices_to={'role': RoleChoices.STAFF},
+    )
+    nama_item       = models.CharField(max_length=200)
+    deskripsi       = models.TextField(blank=True)
+    tanggal         = models.DateField()
+    jam_mulai       = models.TimeField(null=True, blank=True)
+    jam_selesai     = models.TimeField(null=True, blank=True)
+    status          = models.CharField(
+        max_length=20,
+        choices=StatusItem.choices,
+        default=StatusItem.TERJADWAL,
+    )
+    foto_on_progress = models.ImageField(
+        upload_to='foto_item/on_progress/',
+        blank=True,
+        null=True,
+    )
+    foto_after       = models.ImageField(
+        upload_to='foto_item/after/',
+        blank=True,
+        null=True,
+    )
+    is_insidental   = models.BooleanField(
+        default=False,
+        help_text='True jika pekerjaan ini dibuat oleh staff di luar jadwal.',
+    )
+    catatan_staff   = models.TextField(
+        blank=True,
+        help_text='Catatan tambahan dari staff lapangan.',
+    )
+    dibuat_pada     = models.DateTimeField(auto_now_add=True)
+    diubah_pada     = models.DateTimeField(auto_now=True)
+
+    def clean(self):
+        # ── JAM SELESAI ────────────────────────────────────────────────────
+        if self.jam_mulai and self.jam_selesai:
+            if self.jam_selesai <= self.jam_mulai:
+                raise ValidationError("Jam selesai harus setelah jam mulai.")
+
+        # ── SUB AREA ───────────────────────────────────────────────────────
+        if self.sub_area_id and self.laporan_id:
+            if self.sub_area.area_id != self.laporan.area_id:
+                raise ValidationError(
+                    f"Sub area '{self.sub_area}' bukan bagian dari area '{self.laporan.area}'."
+                )
+
+        # ── TASK ───────────────────────────────────────────────────────────
+        if self.task_id and self.laporan_id:
+            if self.task.jenis_jasa_id != self.laporan.jenis_jasa_id:
+                raise ValidationError(
+                    f"Task '{self.task}' bukan bagian dari jenis jasa '{self.laporan.jenis_jasa}'."
+                )
+
+        # ── VALIDASI STAFF (hanya saat sudah tersimpan / ada pk) ──────────
+        if self.pk and self.laporan_id:
+            supervisor = self.laporan.supervisor
+
+            for staff_member in self.staff.all():
+                # Staff harus terdaftar di bawah supervisor pembuat laporan
+                if not self.is_insidental:
+                    is_staff_valid = StaffSupervisor.objects.filter(
+                        staff=staff_member,
+                        supervisor=supervisor,
+                        is_active=True,
+                    ).exists()
+                    if not is_staff_valid:
+                        raise ValidationError(
+                            f"Staff '{staff_member}' tidak terdaftar di bawah "
+                            f"supervisor '{supervisor}'."
+                        )
+
+                # Staff harus memiliki skill untuk task yang dipilih
+                if self.task_id and not self.is_insidental:
+                    has_skill = StaffTask.objects.filter(
+                        staff=staff_member,
+                        task=self.task_id,
+                        is_active=True,
+                    ).exists()
+                    if not has_skill:
+                        raise ValidationError(
+                            f"Staff '{staff_member}' tidak memiliki skill untuk "
+                            f"task '{self.task.nama_task}'."
+                        )
+
+    def __str__(self):
+        if not self.pk:
+            return self.nama_item or "Item Kegiatan (unsaved)"
+
+        try:
+            staff_names = ", ".join([s.nama_lengkap or s.username for s in self.staff.all()])
+        except Exception:
+            staff_names = "Staff"
+
+        if self.task_id:
+            return f"{self.task.nama_task} — {staff_names} ({self.tanggal})"
+        return f"{self.nama_item} — {staff_names} ({self.tanggal})"
+
+    class Meta:
+        verbose_name        = 'Item Kegiatan'
+        verbose_name_plural = 'Item Kegiatan'
+        ordering            = ['tanggal', 'jam_mulai']
+        indexes             = [
+            models.Index(fields=['tanggal', 'status'], name='idx_item_tanggal_status'),
+            models.Index(fields=['laporan', 'status'], name='idx_item_laporan_status'),
+        ]

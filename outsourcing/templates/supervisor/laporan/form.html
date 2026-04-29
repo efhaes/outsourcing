@@ -1,0 +1,100 @@
+{% extends 'supervisor/base_supervisor.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="mb-0">{{ page_title }}</h5>
+    {% if laporan %}
+        <a href="{% url 'supervisor_laporan_detail' laporan.pk %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+    {% else %}
+        <a href="{% url 'supervisor_laporan_list' %}" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+    {% endif %}
+</div>
+
+<div class="card p-4">
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="row g-3">
+            <div class="col-md-12">
+                <label class="form-label small text-muted">Nama Laporan</label>
+                {{ form.nama_laporan }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted">Perusahaan</label>
+                {{ form.perusahaan }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted">Jenis Jasa</label>
+                {{ form.jenis_jasa }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted">Area Kerja</label>
+                {{ form.area }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label small text-muted">Tanggal Laporan</label>
+                {{ form.tanggal_laporan }}
+            </div>
+            <div class="col-12">
+                <label class="form-label small text-muted">Catatan</label>
+                {{ form.catatan }}
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">{{ action }}</button>
+                {% if laporan %}
+                    <a href="{% url 'supervisor_laporan_detail' laporan.pk %}" class="btn btn-secondary">Batal</a>
+                {% else %}
+                    <a href="{% url 'supervisor_laporan_list' %}" class="btn btn-secondary">Batal</a>
+                {% endif %}
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const perusahaanSelect = document.querySelector('select[name="perusahaan"]');
+    const jenisJasaSelect = document.querySelector('select[name="jenis_jasa"]');
+    
+    if (perusahaanSelect && jenisJasaSelect) {
+        // Simpan semua opsi jenis jasa
+        const allJenisJasaOptions = Array.from(jenisJasaSelect.options);
+        
+        // Ambil mapping dari data attribute
+        const jasaMapping = perusahaanSelect.getAttribute('data-jasa-mapping');
+        const perusahaanJasaMapping = jasaMapping ? JSON.parse(jasaMapping) : {};
+        
+        // Filter jenis jasa saat perusahaan berubah
+        perusahaanSelect.addEventListener('change', function() {
+            const selectedPerusahaan = this.value;
+            const allowedJasaIds = perusahaanJasaMapping[selectedPerusahaan] || [];
+            
+            // Reset dan filter opsi
+            jenisJasaSelect.innerHTML = '';
+            
+            if (allowedJasaIds.length > 0) {
+                allJenisJasaOptions.forEach(option => {
+                    if (allowedJasaIds.includes(parseInt(option.value))) {
+                        jenisJasaSelect.appendChild(option.cloneNode(true));
+                    }
+                });
+            } else {
+                // Tampilkan semua jika tidak ada filter atau perusahaan tidak punya jenis jasa
+                allJenisJasaOptions.forEach(option => {
+                    jenisJasaSelect.appendChild(option.cloneNode(true));
+                });
+            }
+        });
+        
+        // Trigger saat load untuk edit mode
+        if (perusahaanSelect.value) {
+            perusahaanSelect.dispatchEvent(new Event('change'));
+        }
+    }
+});
+</script>
+{% endblock %}

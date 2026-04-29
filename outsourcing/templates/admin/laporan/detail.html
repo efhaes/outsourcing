@@ -1,0 +1,156 @@
+{% extends 'base/base_admin.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'css/admin/laporan-detail.css' %}">
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'admin_laporan_list' %}" class="back-link">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="18" height="18">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+  </svg>
+  Kembali
+</a>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-7">
+    <div class="info-card">
+      <div class="card-title">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Info Laporan
+      </div>
+      <table class="info-table">
+        <tr>
+          <td class="label">Nama Laporan</td>
+          <td class="value">{{ laporan.nama_laporan }}</td>
+        </tr>
+        <tr>
+          <td class="label">Perusahaan</td>
+          <td class="value">{{ laporan.perusahaan.nama_perusahaan }}</td>
+        </tr>
+        <tr>
+          <td class="label">Jenis Jasa</td>
+          <td class="value">{{ laporan.jenis_jasa.nama_jasa }}</td>
+        </tr>
+        <tr>
+          <td class="label">Area</td>
+          <td class="value">{{ laporan.area.nama_area }}</td>
+        </tr>
+        <tr>
+          <td class="label">Supervisor</td>
+          <td class="value">{{ laporan.supervisor.nama_lengkap }}</td>
+        </tr>
+        <tr>
+          <td class="label">Tanggal</td>
+          <td class="value">{{ laporan.tanggal_laporan }}</td>
+        </tr>
+        <tr>
+          <td class="label">Status</td>
+          <td class="value">{{ laporan.get_status_display }}</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+  <div class="col-md-5">
+    <div class="summary-card">
+      <div class="card-title">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        Ringkasan Item
+      </div>
+      <div class="summary-grid">
+        <div class="summary-item">
+          <div class="number total">{{ total }}</div>
+          <div class="label">Total</div>
+        </div>
+        <div class="summary-item">
+          <div class="number selesai">{{ total_selesai }}</div>
+          <div class="label">Selesai</div>
+        </div>
+       
+       
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="items-section">
+  <div class="section-title">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    </svg>
+    Item Kegiatan
+  </div>
+  <div class="items-grid">
+    {% for item in item_list %}
+    <div class="item-card" style="--status-color: {% if item.status == 'selesai' %}var(--green){% elif item.status == 'on_progress' %}var(--orange){% else %}var(--slate){% endif %}">
+      <div class="item-header">
+        <div class="item-name">{{ item.nama_item }}</div>
+        {% if item.is_insidental %}
+          <span class="insidental-badge">Insidental</span>
+        {% endif %}
+      </div>
+      <div class="item-details">
+        <div class="detail-item">
+          <div class="detail-label">Staff</div>
+          <div class="staff-list">
+            {% for staff in item.staff.all %}
+              <span class="staff-tag">{{ staff.nama_lengkap }}</span>
+            {% empty %}
+              <span class="detail-value">—</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Sub Area</div>
+          <div class="detail-value">{{ item.sub_area.nama_sub_area|default:'—' }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Tanggal</div>
+          <div class="detail-value">{{ item.tanggal }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Jam</div>
+          <div class="detail-value">{{ item.jam_mulai|default:'—' }} – {{ item.jam_selesai|default:'—' }}</div>
+        </div>
+      </div>
+      <div class="item-footer">
+        <span class="status-badge {% if item.status == 'selesai' %}selesai{% elif item.status == 'on_progress' %}on_progress{% else %}terjadwal{% endif %}">
+          {% if item.status == 'selesai' %}Selesai{% elif item.status == 'on_progress' %}On Progress{% else %}Terjadwal{% endif %}
+        </span>
+        <div class="foto-links">
+          {% if item.foto_on_progress %}
+            <a href="{{ item.foto_on_progress.url }}" target="_blank" class="foto-link has-foto" title="Foto Progress">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 001.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </a>
+          {% endif %}
+          {% if item.foto_after %}
+            <a href="{{ item.foto_after.url }}" target="_blank" class="foto-link has-foto" title="Foto After">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" width="18" height="18">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state" style="grid-column: 1 / -1">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+      <p>Belum ada item kegiatan.</p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends 'base/base.html' %}
+
+{% block sidebar %}
+<div class="nav-section-label">Menu</div>
+<a href="{% url 'staff_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'staff_dashboard' %}active{% endif %}">
+    <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7"/>
+            <rect x="14" y="3" width="7" height="7"/>
+            <rect x="14" y="14" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/>
+        </svg>
+    </div>
+    <span class="nav-label">Dashboard</span>
+</a>
+
+<div class="nav-section-label">Pekerjaan</div>
+<a href="{% url 'staff_item_list' %}" class="nav-link {% if 'item' in request.resolver_match.url_name %}active{% endif %}">
+    <div class="nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+    </div>
+    <span class="nav-label">Jadwal Pekerjaan</span>
+</a>
+{% endblock %}
