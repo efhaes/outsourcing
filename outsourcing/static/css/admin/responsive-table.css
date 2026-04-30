@@ -1,88 +1,393 @@
-/* ═══════════════════════════════════════════════════════════
-   RESPONSIVE TABLE — Transform to Cards on Mobile
-   ═══════════════════════════════════════════════════════════ */
+/* responsive-table.css — Akun List & Laporan List
+   Mengikuti tema dark glass dari base.html
+   Font: Montserrat
+   ============================================================ */
 
-@media (max-width: 768px) {
-  /* Hide table header on mobile */
-  .table thead {
-    display: none;
-  }
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
-  /* Transform table rows to cards */
-  .table tbody tr {
+/* ── Global font override for these pages ─────────────────── */
+.card,
+.table,
+.btn,
+.badge,
+.form-control,
+.form-select,
+.modal-content,
+h5, h6 {
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+/* ── Page Heading ─────────────────────────────────────────── */
+h5.mb-0 {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #f0f0ff;
+  letter-spacing: 0.01em;
+}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.card {
+  background: rgba(22, 22, 40, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.10) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* ── Filter Card ──────────────────────────────────────────── */
+.card.p-3 .form-control,
+.card.p-3 .form-select {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 8px !important;
+  color: #f0f0ff !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 500;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card.p-3 .form-control::placeholder { color: rgba(96, 96, 128, 0.8) !important; }
+
+.card.p-3 .form-control:focus,
+.card.p-3 .form-select:focus {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(108, 99, 255, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.12) !important;
+  color: #f0f0ff !important;
+}
+
+.card.p-3 .form-select option {
+  background: #1a1a2e;
+  color: #f0f0ff;
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+.table {
+  color: #f0f0ff !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13.5px;
+  margin-bottom: 0;
+  --bs-table-bg: transparent !important;
+  --bs-table-hover-bg: rgba(108, 99, 255, 0.06) !important;
+  --bs-table-striped-bg: transparent !important;
+}
+
+/* Reset semua background Bootstrap di dalam table */
+.table > :not(caption) > * > * {
+  background-color: transparent !important;
+}
+
+.table thead th,
+.table-light,
+.table-light > th,
+.table-light > td,
+thead.table-light > tr > th {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: rgba(160, 160, 192, 0.8) !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+}
+
+.table tbody td {
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+.table tbody tr { background-color: transparent !important; }
+.table tbody tr:last-child td { border-bottom: none !important; }
+
+.table-hover tbody tr {
+  transition: background 0.15s ease;
+}
+.table-hover tbody tr:hover,
+.table-hover tbody tr:hover td {
+  background-color: rgba(108, 99, 255, 0.06) !important;
+  --bs-table-accent-bg: transparent !important;
+}
+
+/* fw-semibold in table */
+.table .fw-semibold {
+  font-weight: 600 !important;
+  color: #f0f0ff;
+}
+
+/* text-muted in table */
+.table .text-muted {
+  color: rgba(160, 160, 192, 0.75) !important;
+  font-size: 13px !important;
+}
+
+/* ── Links in table ───────────────────────────────────────── */
+.table a.text-decoration-none.fw-semibold {
+  color: #a09cff;
+  font-weight: 600 !important;
+  transition: color 0.15s ease;
+}
+.table a.text-decoration-none.fw-semibold:hover {
+  color: #6c63ff;
+}
+
+/* ── Badges ───────────────────────────────────────────────── */
+.badge {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 20px !important;
+  letter-spacing: 0.02em;
+}
+
+/* Role badge */
+.badge.bg-light.text-dark.border {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: rgba(200, 200, 220, 0.9) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Status badges — akun */
+.badge.bg-success {
+  background: rgba(0, 212, 170, 0.13) !important;
+  color: #00d4aa !important;
+  border: 1px solid rgba(0, 212, 170, 0.22) !important;
+}
+.badge.bg-secondary {
+  background: rgba(96, 96, 128, 0.18) !important;
+  color: rgba(160, 160, 192, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Status badges — laporan */
+.badge-draft {
+  background: rgba(96, 96, 128, 0.18);
+  color: rgba(160, 160, 192, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+.badge-aktif {
+  background: rgba(61, 155, 255, 0.13);
+  color: #3d9bff;
+  border: 1px solid rgba(61, 155, 255, 0.22);
+  border-radius: 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+.badge-selesai {
+  background: rgba(0, 212, 170, 0.13);
+  color: #00d4aa;
+  border: 1px solid rgba(0, 212, 170, 0.22);
+  border-radius: 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+.badge-dikirim {
+  background: rgba(245, 166, 35, 0.13);
+  color: #f5a623;
+  border: 1px solid rgba(245, 166, 35, 0.22);
+  border-radius: 20px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  letter-spacing: 0.01em;
+  transition: all 0.2s ease !important;
+}
+
+.btn-primary {
+  background: #6c63ff !important;
+  border-color: #6c63ff !important;
+  color: #fff !important;
+}
+.btn-primary:hover {
+  background: #4f47cc !important;
+  border-color: #4f47cc !important;
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #f0f0ff !important;
+}
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.btn-outline-primary {
+  background: transparent !important;
+  border-color: rgba(108, 99, 255, 0.4) !important;
+  color: #a09cff !important;
+}
+.btn-outline-primary:hover {
+  background: rgba(108, 99, 255, 0.1) !important;
+  border-color: #6c63ff !important;
+  color: #6c63ff !important;
+}
+
+.btn-outline-warning {
+  background: transparent !important;
+  border-color: rgba(245, 166, 35, 0.4) !important;
+  color: #f5a623 !important;
+}
+.btn-outline-warning:hover {
+  background: rgba(245, 166, 35, 0.1) !important;
+}
+
+.btn-outline-success {
+  background: transparent !important;
+  border-color: rgba(0, 212, 170, 0.4) !important;
+  color: #00d4aa !important;
+}
+.btn-outline-success:hover {
+  background: rgba(0, 212, 170, 0.1) !important;
+}
+
+.btn-warning {
+  background: #f5a623 !important;
+  border-color: #f5a623 !important;
+  color: #0f0f1a !important;
+}
+.btn-success {
+  background: #00d4aa !important;
+  border-color: #00d4aa !important;
+  color: #0f0f1a !important;
+}
+
+/* ── Modal ────────────────────────────────────────────────── */
+.modal-content {
+  background: #1a1a2e !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  font-family: 'Montserrat', sans-serif !important;
+  color: #f0f0ff;
+}
+
+.modal-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+  padding: 1rem 1.25rem;
+}
+.modal-title, .modal-header h6 {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #f0f0ff;
+}
+.modal-body {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13.5px;
+  color: rgba(200, 200, 220, 0.9);
+  padding: 1.1rem 1.25rem;
+}
+.modal-body strong { color: #f0f0ff; font-weight: 600; }
+
+.modal-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.07) !important;
+  padding: 0.85rem 1.25rem;
+  gap: 8px;
+}
+
+.btn-close {
+  filter: invert(1) opacity(0.5) !important;
+}
+.btn-close:hover { filter: invert(1) opacity(0.9) !important; }
+
+/* ── Empty state ──────────────────────────────────────────── */
+.table tbody td.text-center.text-muted {
+  color: rgba(96, 96, 128, 0.7) !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13px !important;
+}
+
+/* ── Responsive table (mobile) ────────────────────────────── */
+@media (max-width: 640px) {
+  .table-responsive table,
+  .table-responsive thead,
+  .table-responsive tbody,
+  .table-responsive th,
+  .table-responsive td,
+  .table-responsive tr {
     display: block;
-    margin-bottom: 1rem;
-    border: 1px solid #edf2f7;
-    border-radius: 12px;
-    background: #ffffff;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
-    overflow: hidden;
   }
 
-  /* Transform table cells to card content */
-  .table tbody td {
+  .table-responsive thead tr {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+
+  .table-responsive tbody tr {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 10px;
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0;
+  }
+
+  .table-responsive tbody tr:hover {
+    background: rgba(108, 99, 255, 0.05) !important;
+  }
+
+  .table-responsive td {
+    border: none !important;
+    padding: 0.5rem 1rem !important;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.875rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
-    width: 100%;
-    box-sizing: border-box;
+    gap: 8px;
+    font-size: 13px !important;
   }
 
-  /* Remove border from last cell */
-  .table tbody td:last-child {
-    border-bottom: none;
-  }
-
-  /* Add field labels using data attributes or CSS content */
-  .table tbody td::before {
+  .table-responsive td::before {
     content: attr(data-label);
-    font-weight: 600;
-    color: #718096;
-    font-size: 0.8rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    margin-right: 1rem;
+    color: rgba(96, 96, 128, 0.8);
     flex-shrink: 0;
-    min-width: 100px;
+    min-width: 90px;
   }
 
-  /* Special styling for action buttons */
-  .table tbody td:last-child {
-    background: #f8fafc;
-    padding: 0.75rem 1rem;
+  .table-responsive td:last-child {
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    margin-top: 4px;
+    padding-top: 0.65rem !important;
     justify-content: flex-end;
-    gap: 0.5rem;
   }
+  .table-responsive td:last-child::before { display: none; }
 
-  .table tbody td:last-child::before {
-    content: 'Aksi';
-  }
+  /* Hide # column on mobile */
+  .table-responsive td:first-child { display: none; }
 
-  /* Hide the first column (index #) on mobile */
-  .table tbody td:first-child {
-    display: none;
-  }
-
-  /* Empty state styling */
-  .table tbody tr td[colspan] {
-    display: block;
-    text-align: center;
-    padding: 2rem 1rem;
-  }
-
-  .table tbody tr td[colspan]::before {
-    display: none;
-  }
-
-  /* Badge styling in cards */
-  .badge {
-    margin-left: auto;
-  }
-
-  /* Link styling */
-  .table tbody td a {
-    margin-left: auto;
-  }
+  /* Btn group in header */
+  .d-flex.justify-content-between { flex-wrap: wrap; gap: 10px; }
+  .btn-group { flex-wrap: wrap; gap: 6px; }
+  .btn-group .btn { border-radius: 8px !important; }
 }

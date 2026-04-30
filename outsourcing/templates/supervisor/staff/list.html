@@ -14,11 +14,12 @@
     font-weight: 700;
     letter-spacing: -0.01em;
     margin: 0;
+    color: var(--clr-text-primary);
 }
 
 /* ── Search Card ── */
 .search-card {
-    background: var(--clr-surface);
+    background: transparent;
     border: 1px solid var(--clr-border);
     border-radius: 12px;
     padding: 0.875rem 1rem;
@@ -28,130 +29,99 @@
     border-radius: 8px;
     font-size: 13.5px;
     border: 1px solid var(--clr-border);
+    background: rgba(255,255,255,0.05);
+    color: var(--clr-text-primary);
     padding: 7px 12px;
+    transition: all 0.15s;
 }
+.search-card .form-control::placeholder { color: var(--clr-text-muted); }
 .search-card .form-control:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 3px rgba(13,110,253,0.1);
+    border-color: var(--clr-accent);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    background: rgba(255,255,255,0.07);
+    outline: none;
+    color: var(--clr-text-primary);
 }
 
 /* ── Table Card ── */
 .table-card {
-    background: var(--clr-surface);
+    background: transparent;
     border: 1px solid var(--clr-border);
     border-radius: 14px;
     overflow: hidden;
 }
-.table-card .table {
-    margin: 0;
-    font-size: 13.5px;
-}
+.table-card .table { margin: 0; font-size: 13.5px; color: var(--clr-text-primary); }
 .table-card .table thead th {
-    background: var(--clr-bg);
+    background: rgba(255,255,255,0.03);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--clr-text-muted);
     border-bottom: 1px solid var(--clr-border);
+    border-color: var(--clr-border) !important;
     padding: 10px 16px;
 }
 .table-card .table tbody td {
     padding: 12px 16px;
     vertical-align: middle;
-    border-bottom: 1px solid var(--clr-border);
+    border-color: var(--clr-border) !important;
+    background: transparent;
+    color: var(--clr-text-primary);
 }
-.table-card .table tbody tr:last-child td {
-    border-bottom: none;
-}
-.table-card .table tbody tr {
-    transition: background 0.12s;
-}
-.table-card .table tbody tr:hover {
-    background: var(--clr-bg);
-}
+.table-card .table tbody tr:last-child td { border-bottom: none; }
+.table-card .table tbody tr { transition: background 0.12s; }
+.table-card .table tbody tr:hover td { background: rgba(255,255,255,0.03) !important; }
 
-/* ── Staff Name ── */
-.staff-name {
-    font-weight: 600;
-    font-size: 13.5px;
-    color: var(--clr-text);
-}
-.staff-meta {
-    font-size: 12px;
-    color: var(--clr-text-muted);
-}
+.staff-name { font-weight: 600; font-size: 13.5px; color: var(--clr-text-primary); }
+.staff-meta { font-size: 13px; color: var(--clr-text-secondary); }
 
-/* ── Badge ── */
+/* ── Badges ── */
 .badge-aktif {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11.5px;
-    font-weight: 600;
-    background: #dcfce7;
-    color: #16a34a;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11.5px; font-weight: 600;
+    background: rgba(34,197,94,0.12); color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.2);
 }
+.badge-aktif::before { content:''; width:6px; height:6px; border-radius:50%; background:#4ade80; }
+
 .badge-nonaktif {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-size: 11.5px;
-    font-weight: 600;
-    background: #f1f5f9;
-    color: #64748b;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11.5px; font-weight: 600;
+    background: rgba(255,255,255,0.07); color: var(--clr-text-secondary);
+    border: 1px solid var(--clr-border);
 }
-.badge-aktif::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #16a34a;
-    display: inline-block;
-}
-.badge-nonaktif::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #94a3b8;
-    display: inline-block;
-}
+.badge-nonaktif::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--clr-text-muted); }
 
 /* ── Action Buttons ── */
 .action-btn {
-    width: 32px;
-    height: 32px;
+    width: 32px; height: 32px;
     border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-flex; align-items: center; justify-content: center;
     font-size: 13px;
     border: 1px solid var(--clr-border);
     background: transparent;
     cursor: pointer;
     transition: all 0.15s;
     text-decoration: none;
+    color: var(--clr-text-secondary);
 }
 .action-btn:hover { transform: translateY(-1px); }
-.action-btn.edit   { color: #0d6efd; border-color: #0d6efd20; }
-.action-btn.edit:hover   { background: #eff6ff; border-color: #0d6efd; }
-.action-btn.toggle { color: #f59e0b; border-color: #f59e0b20; }
-.action-btn.toggle:hover { background: #fffbeb; border-color: #f59e0b; }
-.action-btn.delete { color: #ef4444; border-color: #ef444420; }
-.action-btn.delete:hover { background: #fef2f2; border-color: #ef4444; }
+.action-btn.edit   { color: #a5b4fc; border-color: rgba(99,102,241,0.2); }
+.action-btn.edit:hover   { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.4); }
+.action-btn.toggle { color: #fbbf24; border-color: rgba(251,191,36,0.2); }
+.action-btn.toggle:hover { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.4); }
+.action-btn.delete { color: #f87171; border-color: rgba(239,68,68,0.2); }
+.action-btn.delete:hover { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); }
 
-/* ── Mobile Card View ── */
+/* ── Mobile Cards ── */
 @media (max-width: 640px) {
     .table-card { display: none; }
     .staff-cards { display: flex; flex-direction: column; gap: 10px; }
-
     .staff-card-item {
-        background: var(--clr-surface);
+        background: transparent;
         border: 1px solid var(--clr-border);
         border-radius: 14px;
         padding: 1rem 1.1rem;
@@ -160,110 +130,82 @@
         gap: 12px;
     }
     .staff-avatar {
-        width: 42px;
-        height: 42px;
+        width: 42px; height: 42px;
         border-radius: 50%;
-        background: #eff6ff;
-        color: #0d6efd;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        font-weight: 700;
+        background: var(--clr-accent-light);
+        color: #a5b4fc;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px; font-weight: 700;
         flex-shrink: 0;
-        font-size: 15px;
+        border: 1px solid var(--clr-accent-mid);
     }
     .staff-card-info { flex: 1; min-width: 0; }
-    .staff-card-info .name {
-        font-weight: 600;
-        font-size: 14px;
-        color: var(--clr-text);
-        margin-bottom: 2px;
-    }
-    .staff-card-info .meta {
-        font-size: 12px;
-        color: var(--clr-text-muted);
-    }
-    .staff-card-actions {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-        flex-shrink: 0;
-    }
+    .staff-card-info .name { font-weight: 600; font-size: 14px; color: var(--clr-text-primary); margin-bottom: 2px; }
+    .staff-card-info .meta { font-size: 12px; color: var(--clr-text-muted); }
+    .staff-card-actions { display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
 }
-@media (min-width: 641px) {
-    .staff-cards { display: none; }
-}
+@media (min-width: 641px) { .staff-cards { display: none; } }
 
-/* ── Modal Shared ── */
-.modal-centered-custom .modal-content {
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--clr-border);
-    box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+/* ── Modal Dark ── */
+.modal-content {
+    background: #0d1629 !important;
+    border: 1px solid var(--clr-border) !important;
+    border-radius: 16px !important;
+    color: var(--clr-text-primary) !important;
 }
+.modal-header { border-bottom: 1px solid var(--clr-border) !important; }
+.modal-footer { border-top: 1px solid var(--clr-border) !important; }
+.modal-title { font-size: 14px !important; font-weight: 700 !important; color: var(--clr-text-primary) !important; }
+.modal-body { color: var(--clr-text-secondary) !important; font-size: 13.5px !important; }
+
 .modal-icon-wrap {
-    width: 60px;
-    height: 60px;
+    width: 60px; height: 60px;
     border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     font-size: 1.6rem;
     margin: 0 auto 1rem;
 }
-.modal-body-center {
-    text-align: center;
-    padding: 0.5rem 1.5rem 0;
-}
-.modal-body-center .modal-title-text {
-    font-size: 15px;
-    font-weight: 600;
-    color: var(--clr-text);
-    margin-bottom: 6px;
-}
-.modal-body-center .modal-desc {
-    font-size: 13px;
-    color: var(--clr-text-muted);
-    line-height: 1.6;
-}
+.modal-body-center { text-align: center; padding: 0.5rem 1.5rem 0; }
+.modal-title-text { font-size: 15px; font-weight: 600; color: var(--clr-text-primary); margin-bottom: 6px; }
+.modal-desc { font-size: 13px; color: var(--clr-text-muted); line-height: 1.6; }
+
 .modal-footer-custom {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
+    display: flex; gap: 10px; justify-content: center;
     padding: 1.25rem 1.5rem;
     border-top: 1px solid var(--clr-border);
     margin-top: 1.5rem;
 }
 .btn-modal-cancel {
-    padding: 9px 24px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 500;
+    padding: 9px 24px; border-radius: 8px;
+    font-size: 13px; font-weight: 500;
     border: 1px solid var(--clr-border);
-    background: transparent;
-    color: var(--clr-text-muted);
-    cursor: pointer;
-    transition: background 0.15s;
+    background: transparent; color: var(--clr-text-muted);
+    cursor: pointer; transition: background 0.15s;
+    font-family: 'Montserrat', sans-serif;
 }
-.btn-modal-cancel:hover { background: var(--clr-bg); }
+.btn-modal-cancel:hover { background: rgba(255,255,255,0.05); }
+
 .btn-modal-action {
-    padding: 9px 24px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    border: none;
-    color: #fff;
+    padding: 9px 24px; border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    border: none; color: #fff;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    display: flex; align-items: center; gap: 6px;
     transition: opacity 0.15s, transform 0.1s;
+    font-family: 'Montserrat', sans-serif;
 }
 .btn-modal-action:hover { opacity: 0.88; transform: translateY(-1px); }
-.btn-modal-action.warning { background: #f59e0b; }
-.btn-modal-action.success { background: #22c55e; }
-.btn-modal-action.danger  { background: #ef4444; }
+.btn-modal-action.warning { background: #f59e0b; box-shadow: 0 4px 12px rgba(245,158,11,0.3); }
+.btn-modal-action.success { background: #22c55e; box-shadow: 0 4px 12px rgba(34,197,94,0.3); }
+.btn-modal-action.danger  { background: #ef4444; box-shadow: 0 4px 12px rgba(239,68,68,0.3); }
+
+/* Btn overrides */
+.btn-primary { background: var(--clr-accent); border-color: var(--clr-accent); }
+.btn-primary:hover { background: #4f46e5; border-color: #4f46e5; }
+.btn-secondary { background: rgba(255,255,255,0.07); border-color: var(--clr-border); color: var(--clr-text-secondary); }
+.btn-secondary:hover { background: rgba(255,255,255,0.1); color: var(--clr-text-primary); }
+.btn-outline-secondary { border-color: var(--clr-border); color: var(--clr-text-muted); }
+.btn-outline-secondary:hover { background: rgba(255,255,255,0.05); color: var(--clr-text-secondary); }
 </style>
 {% endblock %}
 
@@ -276,7 +218,6 @@
     </a>
 </div>
 
-<!-- Search -->
 <div class="search-card">
     <form method="get" class="d-flex gap-2">
         <input type="text" name="q" value="{{ q }}"
@@ -288,10 +229,10 @@
     </form>
 </div>
 
-<!-- ── Desktop: Table ── -->
+<!-- Desktop Table -->
 <div class="table-card">
     <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table mb-0">
             <thead>
                 <tr>
                     <th>#</th>
@@ -325,8 +266,7 @@
                                 data-bs-toggle="modal" data-bs-target="#modalToggle{{ stf.pk }}">
                                 <i class="bi bi-power"></i>
                             </button>
-                            <button class="action-btn delete" title="Hapus"
-                                onclick="loadDeleteModal({{ stf.pk }})">
+                            <button class="action-btn delete" data-id="{{ stf.pk }}" onclick="loadDeleteModal(this)">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </div>
@@ -334,7 +274,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-5">
+                    <td colspan="6" class="text-center py-5" style="color:var(--clr-text-muted);">
                         <i class="bi bi-people" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>
                         Belum ada staff.
                     </td>
@@ -345,70 +285,62 @@
     </div>
 </div>
 
-<!-- ── Mobile: Cards ── -->
+<!-- Mobile Cards -->
 <div class="staff-cards">
     {% for stf in staff_list %}
     <div class="staff-card-item">
-        <div class="staff-avatar">
-            {{ stf.nama_lengkap|first|upper }}
-        </div>
+        <div class="staff-avatar">{{ stf.nama_lengkap|first|upper }}</div>
         <div class="staff-card-info">
             <div class="name">{{ stf.nama_lengkap }}</div>
             <div class="meta">@{{ stf.username }} · {{ stf.telepon|default:'—' }}</div>
             <div style="margin-top:5px;">
-                {% if stf.is_active %}
-                    <span class="badge-aktif">Aktif</span>
-                {% else %}
-                    <span class="badge-nonaktif">Nonaktif</span>
-                {% endif %}
+                {% if stf.is_active %}<span class="badge-aktif">Aktif</span>
+                {% else %}<span class="badge-nonaktif">Nonaktif</span>{% endif %}
             </div>
         </div>
         <div class="staff-card-actions">
-            <a href="{% url 'supervisor_staff_edit' stf.pk %}" class="action-btn edit">
-                <i class="bi bi-pencil"></i>
-            </a>
-            <button class="action-btn toggle"
-                data-bs-toggle="modal" data-bs-target="#modalToggle{{ stf.pk }}">
+            <a href="{% url 'supervisor_staff_edit' stf.pk %}" class="action-btn edit"><i class="bi bi-pencil"></i></a>
+            <button class="action-btn toggle" data-bs-toggle="modal" data-bs-target="#modalToggle{{ stf.pk }}">
                 <i class="bi bi-power"></i>
             </button>
-            <button class="action-btn delete" onclick="loadDeleteModal({{ stf.pk }})">
+            <button class="action-btn delete" data-id="{{ stf.pk }}" onclick="loadDeleteModal(this)">
                 <i class="bi bi-trash"></i>
             </button>
         </div>
     </div>
     {% empty %}
-    <div class="text-center text-muted py-5">
+    <div class="text-center py-5" style="color:var(--clr-text-muted);">
         <i class="bi bi-people" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>
         Belum ada staff.
     </div>
     {% endfor %}
 </div>
 
-<!-- ── Modal Toggle (per staff) ── -->
+<!-- Modal Toggle per Staff -->
 {% for stf in staff_list %}
 <div class="modal fade" id="modalToggle{{ stf.pk }}" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-centered-custom" style="max-width:400px;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
         <div class="modal-content">
             <div style="display:flex;justify-content:flex-end;padding:12px 16px 0;">
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body-center">
                 {% if stf.is_active %}
-                <div class="modal-icon-wrap" style="background:#fff8e1;color:#f59e0b;">
+                <div class="modal-icon-wrap" style="background:rgba(245,158,11,0.12);color:#fbbf24;border:1px solid rgba(245,158,11,0.25);">
                     <i class="bi bi-person-slash"></i>
                 </div>
                 <div class="modal-title-text">Nonaktifkan Akun</div>
                 <div class="modal-desc">
-                    Yakin ingin menonaktifkan <strong>{{ stf.nama_lengkap }}</strong>?<br>
+                    Yakin ingin menonaktifkan <strong style="color:var(--clr-text-primary);">{{ stf.nama_lengkap }}</strong>?<br>
                     Staff tidak bisa login sampai diaktifkan kembali.
                 </div>
                 {% else %}
-                <div class="modal-icon-wrap" style="background:#e8f5e9;color:#22c55e;">
+                <div class="modal-icon-wrap" style="background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.25);">
                     <i class="bi bi-person-check"></i>
                 </div>
                 <div class="modal-title-text">Aktifkan Akun</div>
                 <div class="modal-desc">
-                    Yakin ingin mengaktifkan <strong>{{ stf.nama_lengkap }}</strong>?<br>
+                    Yakin ingin mengaktifkan <strong style="color:var(--clr-text-primary);">{{ stf.nama_lengkap }}</strong>?<br>
                     Staff akan bisa login kembali setelah diaktifkan.
                 </div>
                 {% endif %}
@@ -433,17 +365,17 @@
 </div>
 {% endfor %}
 
-<!-- ── Delete Modal ── -->
+<!-- Delete Modal (shared, loaded via fetch) -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-centered-custom" style="max-width:400px;">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:400px;">
         <div class="modal-content">
-            <div class="modal-header" style="border-bottom:1px solid var(--clr-border);padding:1rem 1.25rem;">
-                <h6 class="modal-title" style="font-weight:600;">Hapus Staff</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <div class="modal-header">
+                <h6 class="modal-title">Hapus Staff</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="deleteModalBody">
                 <div class="text-center py-4">
-                    <div class="spinner-border spinner-border-sm text-secondary"></div>
+                    <div class="spinner-border spinner-border-sm" style="color:var(--clr-text-muted);"></div>
                 </div>
             </div>
         </div>
@@ -451,10 +383,11 @@
 </div>
 
 <script>
-function loadDeleteModal(staffId) {
+function loadDeleteModal(el) {
+    const staffId = el.dataset.id;
     const url = `/supervisor/staff/${staffId}/delete/`;
     document.getElementById('deleteModalBody').innerHTML =
-        '<div class="text-center py-4"><div class="spinner-border spinner-border-sm text-secondary"></div></div>';
+        '<div class="text-center py-4"><div class="spinner-border spinner-border-sm" style="color:var(--clr-text-muted);"></div></div>';
     fetch(url)
         .then(r => r.text())
         .then(html => {
@@ -462,7 +395,6 @@ function loadDeleteModal(staffId) {
             new bootstrap.Modal(document.getElementById('deleteModal')).show();
         });
 }
-
 function confirmDelete(staffId) {
     const url = `/supervisor/staff/${staffId}/delete/`;
     fetch(url, {
@@ -474,9 +406,7 @@ function confirmDelete(staffId) {
         if (data.success) {
             bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
             location.reload();
-        } else {
-            alert(data.message);
-        }
+        } else { alert(data.message); }
     });
 }
 </script>

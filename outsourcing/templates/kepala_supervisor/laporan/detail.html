@@ -1,147 +1,292 @@
 {% extends 'kepala_supervisor/base_kepala.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/kepala_spv/laporan_detail.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">{{ page_title }}</h5>
+
+<!-- Header -->
+<div class="page-header">
+    <h5>{{ page_title }}</h5>
     <a href="{% url 'kepala_laporan_list' %}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left"></i> Kembali
     </a>
 </div>
 
-<div class="row g-3 mb-3">
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Total Item</div>
-            <div class="fs-3 fw-bold">{{ stats.total }}</div>
-        </div>
+<!-- Stat Cards -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Item</div>
+        <div class="stat-value total">{{ stats.total }}</div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Terjadwal</div>
-            <div class="fs-3 fw-bold text-secondary">{{ stats.terjadwal }}</div>
-        </div>
+    <div class="stat-card">
+        <div class="stat-label">Terjadwal</div>
+        <div class="stat-value terjadwal">{{ stats.terjadwal }}</div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">On Progress</div>
-            <div class="fs-3 fw-bold text-warning">{{ stats.on_progress }}</div>
-        </div>
+    <div class="stat-card">
+        <div class="stat-label">On Progress</div>
+        <div class="stat-value progress">{{ stats.on_progress }}</div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Selesai</div>
-            <div class="fs-3 fw-bold text-success">{{ stats.selesai }}</div>
-        </div>
+    <div class="stat-card">
+        <div class="stat-label">Selesai</div>
+        <div class="stat-value selesai">{{ stats.selesai }}</div>
     </div>
 </div>
 
-<div class="card p-3 mb-3">
-    <div class="row g-3">
-        <div class="col-md-6">
-            <div class="small text-muted">Perusahaan</div>
-            <div class="fw-semibold">{{ laporan.perusahaan.nama_perusahaan }}</div>
+<!-- Info Card -->
+<div class="info-card">
+    <div class="info-grid">
+        <div class="info-item">
+            <div class="info-label">Perusahaan</div>
+            <div class="info-value">{{ laporan.perusahaan.nama_perusahaan }}</div>
         </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Jenis Jasa</div>
-            <div class="fw-semibold">{{ laporan.jenis_jasa.nama_jasa }}</div>
+        <div class="info-item">
+            <div class="info-label">Jenis Jasa</div>
+            <div class="info-value">{{ laporan.jenis_jasa.nama_jasa }}</div>
         </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Area Kerja</div>
-            <div class="fw-semibold">{{ laporan.area.nama_area }}</div>
+        <div class="info-item">
+            <div class="info-label">Area Kerja</div>
+            <div class="info-value">{{ laporan.area.nama_area }}</div>
         </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Supervisor</div>
-            <div class="fw-semibold">{{ laporan.supervisor.nama_lengkap }}</div>
+        <div class="info-item">
+            <div class="info-label">Supervisor</div>
+            <div class="info-value">{{ laporan.supervisor.nama_lengkap }}</div>
         </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Tanggal Laporan</div>
-            <div class="fw-semibold">{{ laporan.tanggal_laporan|date:"d/m/Y" }}</div>
+        <div class="info-item">
+            <div class="info-label">Tanggal Laporan</div>
+            <div class="info-value">{{ laporan.tanggal_laporan|date:"d/m/Y" }}</div>
         </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Status</div>
-            <div class="fw-semibold">
+        <div class="info-item">
+            <div class="info-label">Status</div>
+            <div class="info-value">
                 {% if laporan.status == 'draft' %}
-                    <span class="badge bg-secondary">Draft</span>
-                {% elif laporan.status == 'aktif' %}
-                    <span class="badge bg-success">Aktif</span>
+                    <span class="status-badge status-draft">Draft</span>
                 {% elif laporan.status == 'selesai' %}
-                    <span class="badge bg-primary">Selesai</span>
+                    <span class="status-badge status-selesai">Selesai</span>
                 {% elif laporan.status == 'dikirim_customer' %}
-                    <span class="badge bg-info">Dikirim</span>
+                    <span class="status-badge status-dikirim">Dikirim</span>
                 {% endif %}
             </div>
         </div>
-        {% if laporan.catatan %}
-        <div class="col-12">
-            <div class="small text-muted">Catatan</div>
-            <div>{{ laporan.catatan }}</div>
+    </div>
+    {% if laporan.catatan %}
+    <hr class="info-divider">
+    <div class="info-label">Catatan</div>
+    <div class="info-catatan">{{ laporan.catatan }}</div>
+    {% endif %}
+</div>
+
+<!-- Item Kegiatan Table -->
+<!-- Item Kegiatan Kanban -->
+<div class="kanban-wrap">
+    <div class="kanban-wrap-header">
+        <h6>Item Kegiatan</h6>
+        <span style="font-size:12px;color:var(--clr-text-muted);font-weight:500;">{{ stats.total }} item</span>
+    </div>
+
+    <div class="kanban-board">
+
+        <!-- Kolom Terjadwal -->
+        <div class="kanban-col col-terjadwal">
+            <div class="kanban-col-header">
+                <span class="kanban-col-title">Terjadwal</span>
+                <span class="kanban-count">{{ stats.terjadwal }}</span>
+            </div>
+            {% for item in item_list %}
+            {% if item.status == 'terjadwal' %}
+            <div class="k-card">
+                <!-- Foto Strip -->
+                <div class="k-foto-strip">
+                    <div class="k-foto-placeholder">
+                        <i class="bi bi-calendar-event"></i>
+                        Belum dimulai
+                    </div>
+                </div>
+                <!-- Body -->
+                <div class="k-body">
+                    <div class="k-name">
+                        {{ item.nama_item }}
+                        {% if item.is_insidental %}
+                            <span class="badge-insidental-sm">Insidental</span>
+                        {% endif %}
+                    </div>
+                    <div class="k-meta">
+                        <div class="k-meta-row">
+                            <i class="bi bi-person"></i>
+                            {% for s in item.staff.all %}{{ s.nama_lengkap }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+                        </div>
+                        <div class="k-meta-row">
+                            <i class="bi bi-geo-alt"></i>
+                            {{ item.sub_area.nama_sub_area|default:'—' }}
+                        </div>
+                        {% if item.catatan_staff %}
+                        <div class="k-meta-row" style="font-style:italic;">
+                            <i class="bi bi-chat-left-text"></i>
+                            {{ item.catatan_staff }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="k-footer">
+                    <div class="k-time">
+                        <i class="bi bi-clock"></i>
+                        {{ item.tanggal|date:"d/m" }} · {{ item.jam_mulai|default:"—" }}–{{ item.jam_selesai|default:"—" }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% empty %}{% endfor %}
+            {% if stats.terjadwal == 0 %}
+            <div class="k-empty"><i class="bi bi-inbox"></i>Tidak ada</div>
+            {% endif %}
         </div>
-        {% endif %}
+
+        <!-- Kolom On Progress -->
+        <div class="kanban-col col-progress">
+            <div class="kanban-col-header">
+                <span class="kanban-col-title">On Progress</span>
+                <span class="kanban-count">{{ stats.on_progress }}</span>
+            </div>
+            {% for item in item_list %}
+            {% if item.status == 'on_progress' %}
+            <div class="k-card">
+                <!-- Foto Strip -->
+                <div class="k-foto-strip {% if item.foto_on_progress %}{% else %}{% endif %}">
+                    {% if item.foto_on_progress %}
+                        <span class="k-foto-label">Progress</span>
+                        <img src="{{ item.foto_on_progress.url }}" class="k-foto-main" alt="Foto progress">
+                    {% else %}
+                        <div class="k-foto-placeholder">
+                            <i class="bi bi-image"></i>
+                            Belum ada foto
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="k-body">
+                    <div class="k-name">
+                        {{ item.nama_item }}
+                        {% if item.is_insidental %}
+                            <span class="badge-insidental-sm">Insidental</span>
+                        {% endif %}
+                    </div>
+                    <div class="k-meta">
+                        <div class="k-meta-row">
+                            <i class="bi bi-person"></i>
+                            {% for s in item.staff.all %}{{ s.nama_lengkap }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+                        </div>
+                        <div class="k-meta-row">
+                            <i class="bi bi-geo-alt"></i>
+                            {{ item.sub_area.nama_sub_area|default:'—' }}
+                        </div>
+                        {% if item.catatan_staff %}
+                        <div class="k-meta-row" style="font-style:italic;">
+                            <i class="bi bi-chat-left-text"></i>
+                            {{ item.catatan_staff }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="k-footer">
+                    <div class="k-time">
+                        <i class="bi bi-clock"></i>
+                        {{ item.tanggal|date:"d/m" }} · {{ item.jam_mulai|default:"—" }}–{{ item.jam_selesai|default:"—" }}
+                    </div>
+                    <div class="k-foto-links">
+                        {% if item.foto_on_progress %}
+                        <a href="{{ item.foto_on_progress.url }}" target="_blank" class="k-foto-link p" title="Foto Progress">
+                            <i class="bi bi-image"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% empty %}{% endfor %}
+            {% if stats.on_progress == 0 %}
+            <div class="k-empty"><i class="bi bi-inbox"></i>Tidak ada</div>
+            {% endif %}
+        </div>
+
+        <!-- Kolom Selesai -->
+        <div class="kanban-col col-selesai">
+            <div class="kanban-col-header">
+                <span class="kanban-col-title">Selesai</span>
+                <span class="kanban-count">{{ stats.selesai }}</span>
+            </div>
+            {% for item in item_list %}
+            {% if item.status == 'selesai' %}
+            <div class="k-card">
+                <!-- Foto Strip: tampilkan dua foto kalau ada -->
+                <div class="k-foto-strip {% if item.foto_on_progress and item.foto_after %}has-two{% endif %}">
+                    {% if item.foto_after and item.foto_on_progress %}
+                        <span class="k-foto-label">Before · After</span>
+                        <img src="{{ item.foto_on_progress.url }}" class="k-foto-main" alt="Foto progress">
+                        <img src="{{ item.foto_after.url }}" class="k-foto-side" alt="Foto after">
+                    {% elif item.foto_after %}
+                        <span class="k-foto-label">After</span>
+                        <img src="{{ item.foto_after.url }}" class="k-foto-main" alt="Foto after">
+                    {% elif item.foto_on_progress %}
+                        <span class="k-foto-label">Progress</span>
+                        <img src="{{ item.foto_on_progress.url }}" class="k-foto-main" alt="Foto progress">
+                    {% else %}
+                        <div class="k-foto-placeholder">
+                            <i class="bi bi-check-circle" style="color:#22c55e;opacity:0.4;"></i>
+                            Selesai tanpa foto
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="k-body">
+                    <div class="k-name">
+                        {{ item.nama_item }}
+                        {% if item.is_insidental %}
+                            <span class="badge-insidental-sm">Insidental</span>
+                        {% endif %}
+                    </div>
+                    <div class="k-meta">
+                        <div class="k-meta-row">
+                            <i class="bi bi-person"></i>
+                            {% for s in item.staff.all %}{{ s.nama_lengkap }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+                        </div>
+                        <div class="k-meta-row">
+                            <i class="bi bi-geo-alt"></i>
+                            {{ item.sub_area.nama_sub_area|default:'—' }}
+                        </div>
+                        {% if item.catatan_staff %}
+                        <div class="k-meta-row" style="font-style:italic;">
+                            <i class="bi bi-chat-left-text"></i>
+                            {{ item.catatan_staff }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="k-footer">
+                    <div class="k-time">
+                        <i class="bi bi-clock"></i>
+                        {{ item.tanggal|date:"d/m" }} · {{ item.jam_mulai|default:"—" }}–{{ item.jam_selesai|default:"—" }}
+                    </div>
+                    <div class="k-foto-links">
+                        {% if item.foto_on_progress %}
+                        <a href="{{ item.foto_on_progress.url }}" target="_blank" class="k-foto-link p" title="Foto Progress">
+                            <i class="bi bi-image"></i>
+                        </a>
+                        {% endif %}
+                        {% if item.foto_after %}
+                        <a href="{{ item.foto_after.url }}" target="_blank" class="k-foto-link a" title="Foto After">
+                            <i class="bi bi-check-circle"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% empty %}{% endfor %}
+            {% if stats.selesai == 0 %}
+            <div class="k-empty"><i class="bi bi-inbox"></i>Tidak ada</div>
+            {% endif %}
+        </div>
+
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header bg-light">
-        <h6 class="mb-0">Item Kegiatan</h6>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Item</th>
-                    <th>Staff</th>
-                    <th>Sub Area</th>
-                    <th>Tanggal</th>
-                    <th>Jam</th>
-                    <th>Status</th>
-                    <th>Foto</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in item_list %}
-                <tr>
-                    <td class="text-muted small">{{ forloop.counter }}</td>
-                    <td>
-                        <span class="fw-semibold">{{ item.nama_item }}</span>
-                        {% if item.is_insidental %}
-                            <span class="badge bg-warning text-dark ms-1">Insidental</span>
-                        {% endif %}
-                        {% if item.catatan_staff %}
-                            <div class="small text-muted">{{ item.catatan_staff }}</div>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.staff.nama_lengkap }}</td>
-                    <td>{{ item.sub_area.nama_sub_area|default:'—' }}</td>
-                    <td>{{ item.tanggal|date:"d/m/Y" }}</td>
-                    <td>{{ item.jam_mulai|default:"—" }} - {{ item.jam_selesai|default:"—" }}</td>
-                    <td>
-                        {% if item.status == 'terjadwal' %}
-                            <span class="badge bg-secondary">Terjadwal</span>
-                        {% elif item.status == 'on_progress' %}
-                            <span class="badge bg-warning">On Progress</span>
-                        {% elif item.status == 'selesai' %}
-                            <span class="badge bg-success">Selesai</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.foto_on_progress %}
-                            <a href="{{ item.foto_on_progress.url }}" target="_blank" class="btn btn-xs btn-outline-info btn-sm">
-                                <i class="bi bi-image"></i>
-                            </a>
-                        {% endif %}
-                        {% if item.foto_after %}
-                            <a href="{{ item.foto_after.url }}" target="_blank" class="btn btn-xs btn-outline-success btn-sm">
-                                <i class="bi bi-check-circle"></i>
-                            </a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="8" class="text-center text-muted py-4">Belum ada item kegiatan.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
 {% endblock %}

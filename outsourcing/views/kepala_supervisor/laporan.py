@@ -58,7 +58,7 @@ def laporan_list(request):
         'status_choices' : LaporanKegiatan._meta.get_field('status').choices,
         'filter'         : {
             'q'         : q,
-            'perusahaan': perusahaan,
+            'perusahaan': int(perusahaan) if perusahaan.isdigit() else '',  # ← fix
             'status'    : status,
             'tgl_dari'  : tgl_dari,
             'tgl_sampai': tgl_sampai,

@@ -1,139 +1,565 @@
 {% extends 'kepala_supervisor/base_kepala.html' %}
 
+{% block extra_css %}
+<style>
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.dash-header h5 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+.filter-form {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: 10px;
+    padding: 6px 10px;
+}
+.filter-form select {
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    color: var(--clr-text);
+    outline: none;
+    cursor: pointer;
+}
+.filter-form button {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #0d6efd;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+/* Stat Grid */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 1.25rem;
+}
+@media (max-width: 768px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 400px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+.stat-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: 14px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 14px 14px 0 0;
+}
+.stat-card.blue::before  { background: #3b82f6; }
+.stat-card.green::before { background: #22c55e; }
+.stat-card.amber::before { background: #f59e0b; }
+.stat-card.teal::before  { background: #14b8a6; }
+.stat-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+.stat-icon.blue  { background: #eff6ff; color: #3b82f6; }
+.stat-icon.green { background: #f0fdf4; color: #22c55e; }
+.stat-icon.amber { background: #fffbeb; color: #f59e0b; }
+.stat-icon.teal  { background: #f0fdfa; color: #14b8a6; }
+.stat-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-text-muted);
+}
+.stat-value {
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--clr-text);
+}
+
+/* Chart Cards */
+.chart-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+    height: 100%;
+}
+.chart-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+}
+.chart-card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--clr-text);
+    margin: 0;
+}
+.chart-card-sub {
+    font-size: 11.5px;
+    color: var(--clr-text-muted);
+    margin-top: 2px;
+}
+
+/* Bottom Tables */
+.section-card {
+    background: var(--clr-surface);
+    border: 1px solid var(--clr-border);
+    border-radius: 14px;
+    overflow: hidden;
+    height: 100%;
+}
+.section-card-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--clr-border);
+    background: var(--clr-bg);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.section-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--clr-text-muted);
+    margin: 0;
+}
+.section-card .table { margin: 0; font-size: 13px; }
+.section-card .table thead th {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--clr-text-muted);
+    background: var(--clr-bg);
+    border-bottom: 1px solid var(--clr-border);
+    padding: 9px 16px;
+}
+.section-card .table tbody td {
+    padding: 10px 16px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--clr-border);
+    color: var(--clr-text);
+}
+.section-card .table tbody tr:last-child td { border-bottom: none; }
+.section-card .table tbody tr { transition: background 0.1s; }
+.section-card .table tbody tr:hover { background: var(--clr-bg); }
+
+/* Item hari ini */
+.item-feed { padding: 0; }
+.item-feed-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--clr-border);
+    transition: background 0.1s;
+}
+.item-feed-row:last-child { border-bottom: none; }
+.item-feed-row:hover { background: var(--clr-bg); }
+.item-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.item-dot.terjadwal  { background: #94a3b8; }
+.item-dot.on_progress { background: #f59e0b; }
+.item-dot.selesai    { background: #22c55e; }
+.item-feed-name { font-weight: 500; font-size: 13px; color: var(--clr-text); flex: 1; }
+.item-feed-meta { font-size: 11.5px; color: var(--clr-text-muted); }
+
+/* Status badge */
+.status-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; }
+.status-badge::before { content:''; width:5px; height:5px; border-radius:50%; display:inline-block; }
+.s-draft    { background:#f1f5f9; color:#64748b; }
+.s-draft::before    { background:#94a3b8; }
+.s-selesai  { background:#eff6ff; color:#1d4ed8; }
+.s-selesai::before  { background:#3b82f6; }
+.s-dikirim  { background:#ecfdf5; color:#065f46; }
+.s-dikirim::before  { background:#10b981; }
+
+.laporan-link { font-weight:500; font-size:13px; color:var(--clr-text); text-decoration:none; }
+.laporan-link:hover { color:#0d6efd; }
+.cell-muted { font-size:12.5px; color:var(--clr-text-muted); }
+
+/* Donut legend */
+.donut-legend { display:flex; flex-direction:column; gap:8px; justify-content:center; }
+.legend-item { display:flex; align-items:center; gap:8px; font-size:12.5px; }
+.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.legend-label { color:var(--clr-text-muted); flex:1; }
+.legend-val { font-weight:600; color:var(--clr-text); }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Total Supervisor</div>
-            <div class="fs-3 fw-bold text-primary">{{ stats.total_supervisor|default:0 }}</div>
+
+<!-- Header + Filter -->
+<div class="dash-header">
+    <h5>{{ page_title }}</h5>
+    <form method="get" class="filter-form">
+        <select name="bulan">
+            {% for val, label in bulan_choices %}
+            <option value="{{ val }}" {% if val == bulan %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="tahun">
+            {% for y in tahun_choices %}
+            <option value="{{ y }}" {% if y == tahun %}selected{% endif %}>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit">Terapkan</button>
+    </form>
+</div>
+
+<!-- Stat Cards -->
+<div class="stat-grid">
+    <div class="stat-card blue">
+        <div class="stat-icon blue"><i class="bi bi-people"></i></div>
+        <div>
+            <div class="stat-label">Supervisor</div>
+            <div class="stat-value">{{ stats.total_supervisor|default:0 }}</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Total Staff</div>
-            <div class="fs-3 fw-bold text-success">{{ stats.total_staff|default:0 }}</div>
+    <div class="stat-card green">
+        <div class="stat-icon green"><i class="bi bi-person-badge"></i></div>
+        <div>
+            <div class="stat-label">Total Staff</div>
+            <div class="stat-value">{{ stats.total_staff|default:0 }}</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Total Laporan</div>
-            <div class="fs-3 fw-bold text-warning">{{ stats.total_laporan|default:0 }}</div>
+    <div class="stat-card amber">
+        <div class="stat-icon amber"><i class="bi bi-file-earmark-text"></i></div>
+        <div>
+            <div class="stat-label">Total Laporan</div>
+            <div class="stat-value">{{ stats.total_laporan|default:0 }}</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Laporan Aktif</div>
-            <div class="fs-3 fw-bold text-info">{{ stats.laporan_aktif|default:0 }}</div>
+    <div class="stat-card teal">
+        <div class="stat-icon teal"><i class="bi bi-check-circle"></i></div>
+        <div>
+            <div class="stat-label">Laporan Selesai</div>
+            <div class="stat-value">{{ stats.laporan_selesai|default:0 }}</div>
         </div>
     </div>
 </div>
 
-<div class="row g-3">
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h6 class="fw-semibold mb-3">Penugasan Supervisor</h6>
-            {% if penugasan %}
-            <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Supervisor</th>
-                            <th>Perusahaan</th>
-                            <th>Jasa</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for p in penugasan %}
-                        <tr>
-                            <td>{{ p.supervisor.nama_lengkap }}</td>
-                            <td>{{ p.perusahaan.nama_perusahaan }}</td>
-                            <td>{{ p.jenis_jasa.nama_jasa }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+<!-- Chart Row 1 -->
+<div class="row g-3 mb-3">
+    <!-- Bar Chart Laporan 12 Bulan -->
+    <div class="col-md-8">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <div>
+                    <div class="chart-card-title">Laporan per Bulan</div>
+                    <div class="chart-card-sub">12 bulan terakhir</div>
+                </div>
             </div>
-            {% else %}
-            <p class="text-muted small mb-0">Belum ada penugasan supervisor.</p>
-            {% endif %}
+            <canvas id="chartLaporan" height="100"></canvas>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="card p-3">
-            <h6 class="fw-semibold mb-3">Laporan Terbaru</h6>
-            {% if laporan_terbaru %}
+    <!-- Donut Item Hari Ini -->
+    <div class="col-md-4">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <div>
+                    <div class="chart-card-title">Item Kegiatan Hari Ini</div>
+                    <div class="chart-card-sub">{{ item_hari_ini.count }} total item</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:20px;">
+                <div style="width:130px;height:130px;flex-shrink:0;">
+                    <canvas id="chartDonut"></canvas>
+                </div>
+                <div class="donut-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#94a3b8;"></div>
+                        <span class="legend-label">Terjadwal</span>
+                        <span class="legend-val">{{ item_stats.terjadwal }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#f59e0b;"></div>
+                        <span class="legend-label">On Progress</span>
+                        <span class="legend-val">{{ item_stats.on_progress }}</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot" style="background:#22c55e;"></div>
+                        <span class="legend-label">Selesai</span>
+                        <span class="legend-val">{{ item_stats.selesai }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Row 2: Produktivitas Supervisor -->
+<div class="row g-3 mb-3">
+    <div class="col-12">
+        <div class="chart-card">
+            <div class="chart-card-header">
+                <div>
+                    <div class="chart-card-title">Produktivitas Supervisor</div>
+                    <div class="chart-card-sub">
+                        Jumlah laporan bulan
+                        {% for val, label in bulan_choices %}{% if val == bulan %}{{ label }}{% endif %}{% endfor %}
+                        {{ tahun }}
+                    </div>
+                </div>
+            </div>
+            <canvas id="chartSupervisor" height="60"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Row -->
+<div class="row g-3">
+    <!-- Laporan Terbaru -->
+    <div class="col-md-7">
+        <div class="section-card">
+            <div class="section-card-header">
+                <h6 class="section-card-title">Laporan Terbaru</h6>
+                <a href="{% url 'kepala_laporan_list' %}" style="font-size:12px;color:#0d6efd;text-decoration:none;">Lihat semua →</a>
+            </div>
             <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0">
-                    <thead class="table-light">
+                <table class="table mb-0">
+                    <thead>
                         <tr>
                             <th>Nama Laporan</th>
-                            <th>Perusahaan</th>
+                            <th>Supervisor</th>
                             <th>Tanggal</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for l in laporan_terbaru %}
                         <tr>
                             <td>
-                                <a href="{% url 'kepala_laporan_detail' l.pk %}" class="text-decoration-none">
+                                <a href="{% url 'kepala_laporan_detail' l.pk %}" class="laporan-link">
                                     {{ l.nama_laporan }}
                                 </a>
+                                <div class="cell-muted">{{ l.perusahaan.nama_perusahaan }}</div>
                             </td>
-                            <td>{{ l.perusahaan.nama_perusahaan }}</td>
-                            <td>{{ l.tanggal_laporan|date:"d/m/Y" }}</td>
+                            <td class="cell-muted">{{ l.supervisor.nama_lengkap }}</td>
+                            <td class="cell-muted">{{ l.tanggal_laporan|date:"d/m/Y" }}</td>
+                            <td>
+                                {% if l.status == 'draft' %}<span class="status-badge s-draft">Draft</span>
+                                {% elif l.status == 'selesai' %}<span class="status-badge s-selesai">Selesai</span>
+                                {% elif l.status == 'dikirim_customer' %}<span class="status-badge s-dikirim">Dikirim</span>
+                                {% endif %}
+                            </td>
                         </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted py-4">Belum ada laporan.</td></tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
-            {% else %}
-            <p class="text-muted small mb-0">Belum ada laporan.</p>
-            {% endif %}
+        </div>
+    </div>
+
+    <!-- Item Hari Ini Feed -->
+    <div class="col-md-5">
+        <div class="section-card">
+            <div class="section-card-header">
+                <h6 class="section-card-title">Item Kegiatan Hari Ini</h6>
+            </div>
+            <div class="item-feed">
+                {% for item in item_hari_ini %}
+                <div class="item-feed-row">
+                    <div class="item-dot {{ item.status }}"></div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="item-feed-name">{{ item.nama_item }}</div>
+                        <div class="item-feed-meta">
+                            {% for s in item.staff.all %}{{ s.nama_lengkap }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+                            · {{ item.laporan.perusahaan.nama_perusahaan }}
+                        </div>
+                    </div>
+                    <div class="item-feed-meta" style="flex-shrink:0;">
+                        {{ item.jam_mulai|default:"—" }}–{{ item.jam_selesai|default:"—" }}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center text-muted py-5" style="font-size:13px;">
+                    <i class="bi bi-calendar-check" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>
+                    Tidak ada item hari ini.
+                </div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </div>
 
-<div class="row g-3 mt-3">
-    <div class="col-12">
-        <div class="card p-3">
-            <h6 class="fw-semibold mb-3">Item Kegiatan Hari Ini</h6>
-            {% if item_hari_ini %}
-            <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Staff</th>
-                            <th>Item</th>
-                            <th>Perusahaan</th>
-                            <th>Jam</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in item_hari_ini %}
-                        <tr>
-                            <td>{{ item.staff.nama_lengkap }}</td>
-                            <td>{{ item.nama_item }}</td>
-                            <td>{{ item.laporan.perusahaan.nama_perusahaan }}</td>
-                            <td>{{ item.jam_mulai|default:"—" }} - {{ item.jam_selesai|default:"—" }}</td>
-                            <td>
-                                {% if item.status == 'terjadwal' %}
-                                    <span class="badge bg-secondary">Terjadwal</span>
-                                {% elif item.status == 'on_progress' %}
-                                    <span class="badge bg-warning">On Progress</span>
-                                {% elif item.status == 'selesai' %}
-                                    <span class="badge bg-success">Selesai</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <p class="text-muted small mb-0">Tidak ada item kegiatan hari ini.</p>
-            {% endif %}
-        </div>
-    </div>
-</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+const isDark = document.documentElement.classList.contains('dark');
+const gridColor = 'rgba(0,0,0,0.06)';
+const textColor = getComputedStyle(document.documentElement)
+    .getPropertyValue('--clr-text-muted') || '#94a3b8';
+
+Chart.defaults.font.family = "'Montserrat', sans-serif";
+Chart.defaults.font.size   = 11;
+
+// ================== DATA DARI DJANGO ==================
+const laporanLabels   = JSON.parse('{{ chart_laporan_labels|escapejs }}');
+const laporanDraft    = JSON.parse('{{ chart_laporan_draft|escapejs }}');
+const laporanSelesai  = JSON.parse('{{ chart_laporan_selesai|escapejs }}');
+const laporanDikirim  = JSON.parse('{{ chart_laporan_dikirim|escapejs }}');
+
+const donutData       = JSON.parse('{{ chart_donut_data|escapejs }}');
+
+const spvLabels       = JSON.parse('{{ chart_spv_labels|escapejs }}');
+const spvCounts       = JSON.parse('{{ chart_spv_counts|escapejs }}');
+
+// ================== CHART 1 ==================
+new Chart(document.getElementById('chartLaporan'), {
+    type: 'bar',
+    data: {
+        labels: laporanLabels,
+        datasets: [
+            {
+                label: 'Draft',
+                data: laporanDraft,
+                backgroundColor: '#e2e8f0',
+                borderRadius: 5,
+                borderSkipped: false,
+            },
+            {
+                label: 'Selesai',
+                data: laporanSelesai,
+                backgroundColor: '#93c5fd',
+                borderRadius: 5,
+                borderSkipped: false,
+            },
+            {
+                label: 'Dikirim',
+                data: laporanDikirim,
+                backgroundColor: '#6ee7b7',
+                borderRadius: 5,
+                borderSkipped: false,
+            },
+        ],
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: { boxWidth: 10, padding: 16, font: { size: 11 } }
+            },
+            tooltip: { mode: 'index', intersect: false },
+        },
+        scales: {
+            x: {
+                stacked: true,
+                grid: { display: false },
+                ticks: { color: textColor }
+            },
+            y: {
+                stacked: true,
+                grid: { color: gridColor },
+                ticks: { color: textColor, precision: 0 },
+                beginAtZero: true
+            },
+        },
+    },
+});
+
+// ================== CHART 2 ==================
+new Chart(document.getElementById('chartDonut'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Terjadwal', 'On Progress', 'Selesai'],
+        datasets: [{
+            data: donutData,
+            backgroundColor: ['#e2e8f0', '#fcd34d', '#6ee7b7'],
+            borderWidth: 0,
+            hoverOffset: 4,
+        }],
+    },
+    options: {
+        responsive: true,
+        cutout: '72%',
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ` ${ctx.label}: ${ctx.parsed}`
+                }
+            },
+        },
+    },
+});
+
+// ================== CHART 3 ==================
+new Chart(document.getElementById('chartSupervisor'), {
+    type: 'bar',
+    data: {
+        labels: spvLabels,
+        datasets: [{
+            label: 'Laporan',
+            data: spvCounts,
+            backgroundColor: '#818cf8',
+            borderRadius: 6,
+            borderSkipped: false,
+            barThickness: 32,
+        }],
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: ctx => ` ${ctx.parsed.y} laporan`
+                }
+            },
+        },
+        scales: {
+            x: {
+                grid: { display: false },
+                ticks: { color: textColor }
+            },
+            y: {
+                grid: { color: gridColor },
+                ticks: { color: textColor, precision: 0 },
+                beginAtZero: true
+            },
+        },
+    },
+});
+</script>
 {% endblock %}

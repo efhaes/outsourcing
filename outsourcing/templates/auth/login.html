@@ -6,193 +6,368 @@
     <title>Login · UNIPACS</title>
     {% load static %}
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'image/logo_u.png' %}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'image/logo_u.png' %}">
     <link rel="apple-touch-icon" href="{% static 'image/logo_u.png' %}">
-    <!-- Tailwind + Fonts -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        * {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --clr-bg:            #020617;
+            --clr-accent:        #6366f1;
+            --clr-accent-light:  rgba(99, 102, 241, 0.15);
+            --clr-accent-mid:    rgba(99, 102, 241, 0.35);
+            --clr-border:        rgba(255, 255, 255, 0.08);
+            --clr-border-strong: rgba(255, 255, 255, 0.14);
+            --clr-text-primary:  #f1f5f9;
+            --clr-text-secondary:#94a3b8;
+            --clr-text-muted:    #64748b;
+            --clr-danger:        #ef4444;
+            --clr-danger-light:  rgba(239, 68, 68, 0.12);
+            --clr-success:       #22c55e;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+            --transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         html, body {
             height: 100%;
+            font-family: 'Montserrat', sans-serif;
+            background: var(--clr-bg);
+            color: var(--clr-text-primary);
+            -webkit-font-smoothing: antialiased;
             overflow: hidden;
         }
 
-        body {
-            background: radial-gradient(circle at 0% 0%, #eff6ff 0%, #dbeafe 40%, #bfdbfe 100%);
-        }
-
-        /* Card */
-        .fluid-card {
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(12px);
-            border-radius: 2.5rem;
-            box-shadow: 0 30px 50px -20px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Input */
-        .input-soft {
-            background-color: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(147, 197, 253, 0.5);
-            border-radius: 1.2rem;
-            transition: all 0.3s ease;
-        }
-
-        .input-soft:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-            outline: none;
-            transform: translateY(-1px);
-        }
-
-        .input-soft:hover {
-            border-color: rgba(59, 130, 246, 0.3);
-        }
-
-        /* Button */
-        .btn-organic {
-            background: linear-gradient(120deg, #2563eb, #3b82f6, #60a5fa);
-            border-radius: 1.5rem;
-            transition: 0.3s;
-        }
-
-        .btn-organic:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
-        }
-
-        /* Blob */
-        .blob {
-            position: absolute;
-            border-radius: 60% 40% 60% 40%;
-            filter: blur(80px);
+        /* ── Orbs ───────────────────────────────────────── */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(120px);
             opacity: 0.4;
-            animation: float 12s infinite alternate ease-in-out;
-            max-width: 80vw;
-            max-height: 80vh;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .blob:nth-child(1) {
-            animation-delay: 0s;
+        .orb-1 {
+            width: 500px; height: 500px;
+            top: -160px; left: -160px;
+            background: rgb(99, 102, 241);
         }
 
-        .blob:nth-child(2) {
-            animation-delay: -6s;
+        .orb-2 {
+            width: 400px; height: 400px;
+            top: 30%; right: -140px;
+            background: rgb(139, 92, 246);
+            opacity: 0.3;
         }
 
-        @keyframes float {
-            0% { transform: translate(0,0) scale(1) rotate(0deg); }
-            50% { transform: translate(20px,-20px) scale(1.05) rotate(180deg); }
-            100% { transform: translate(-10px,10px) scale(0.95) rotate(360deg); }
+        .orb-3 {
+            width: 350px; height: 350px;
+            bottom: -120px; left: 35%;
+            background: rgb(59, 130, 246);
+            opacity: 0.25;
+        }
+
+        /* ── Layout ──────────────────────────────────────── */
+        .page {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        /* ── Card ────────────────────────────────────────── */
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--clr-border);
+            border-radius: var(--radius-xl);
+            padding: 40px 36px;
+            box-shadow:
+                inset 0 0 0 1px rgba(255,255,255,0.06),
+                0 32px 64px rgba(0, 0, 0, 0.5);
+        }
+
+        /* ── Logo area ───────────────────────────────────── */
+        .logo-wrap {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .logo-img-wrap {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px; height: 80px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid var(--clr-border-strong);
+            border-radius: var(--radius-lg);
+            margin-bottom: 14px;
+            overflow: hidden;
+        }
+
+        .logo-wrap img {
+            width: 160px;   /* ubah sesuai selera */
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .logo-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--clr-text-primary);
+            letter-spacing: -0.4px;
+        }
+
+        .logo-title span { color: #a5b4fc; }
+
+        .logo-subtitle {
+            font-size: 12.5px;
+            color: var(--clr-text-muted);
+            margin-top: 5px;
+            line-height: 1.5;
+        }
+
+        /* ── Divider ─────────────────────────────────────── */
+        .divider {
+            height: 1px;
+            background: var(--clr-border);
+            margin: 0 0 28px;
+        }
+
+        /* ── Alert ───────────────────────────────────────── */
+        .alert-error {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--clr-danger-light);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: var(--radius-md);
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #fca5a5;
+            margin-bottom: 20px;
+        }
+
+        .alert-error i { flex-shrink: 0; font-size: 13px; }
+
+        /* ── Form ────────────────────────────────────────── */
+        .form-group { margin-bottom: 18px; }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            color: var(--clr-text-muted);
+            margin-bottom: 7px;
+        }
+
+        .input-wrap { position: relative; }
+
+        .input-icon {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--clr-text-muted);
+            font-size: 13px;
+            pointer-events: none;
+        }
+
+        .form-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--clr-border);
+            border-radius: var(--radius-md);
+            color: var(--clr-text-primary);
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            padding: 11px 14px 11px 38px;
+            transition: all var(--transition);
+        }
+
+        .form-input::placeholder { color: var(--clr-text-muted); }
+
+        .form-input:hover {
+            border-color: var(--clr-border-strong);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--clr-accent);
+            background: rgba(99, 102, 241, 0.07);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        .toggle-pass {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--clr-text-muted);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 13px;
+            transition: color var(--transition);
+        }
+
+        .toggle-pass:hover { color: var(--clr-text-secondary); }
+
+        /* ── Submit Button ───────────────────────────────── */
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            background: linear-gradient(135deg, var(--clr-accent), #8b5cf6);
+            border: none;
+            border-radius: var(--radius-md);
+            color: #fff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 28px rgba(99, 102, 241, 0.5);
+            filter: brightness(1.08);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        /* ── Footer ──────────────────────────────────────── */
+        .page-footer {
+            margin-top: 24px;
+            text-align: center;
+        }
+
+        .page-footer p {
+            font-size: 11.5px;
+            color: var(--clr-text-muted);
+            line-height: 1.7;
+        }
+
+        /* ── Responsive ──────────────────────────────────── */
+        @media (max-width: 480px) {
+            .login-card { padding: 28px 22px; border-radius: var(--radius-lg); }
+            .logo-title { font-size: 20px; }
         }
     </style>
 </head>
 <body>
 
-<!-- BACKGROUND WRAPPER -->
-<div class="fixed inset-0 overflow-hidden">
-    <div class="blob w-[400px] h-[400px] bg-blue-300 top-[-100px] left-[-100px]"></div>
-    <div class="blob w-[500px] h-[500px] bg-indigo-300 bottom-[-150px] right-[-150px]"></div>
-</div>
+<!-- Orb Background -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
 
-<!-- CONTENT -->
-<div class="relative z-10 flex items-center justify-center h-screen px-4">
-    <div class="w-full max-w-md">
-        <div class="fluid-card p-10 md:p-12 min-h-[520px] flex flex-col justify-center">
-            <!-- LOGO -->
-            <div class="text-center mb-6">
-                <div class="flex items-center justify-center mx-auto mb-4">
-                    <img src="{% static 'image/logounipacs.jpeg' %}" alt="Logo" class="w-40 h-20 object-contain">
+<div class="page">
+    <div class="login-card">
+
+        <!-- Logo -->
+        <div class="logo-wrap">
+            
+                <img src="{% static 'image/logo.png' %}" alt="UNIPACS Logo">
+            
+            <div class="logo-title">Uni<span>Pacs</span></div>
+            <div class="logo-subtitle">Sistem Laporan Kegiatan Jasa Outsourcing</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Error Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert-error">
+                    <i class="fas fa-exclamation-circle"></i>
+                    {{ message }}
                 </div>
-                <h1 class="text-2xl font-bold text-gray-800">
-                    Uni<span class="text-blue-600">Pacs</span>
-                </h1>
-                <p class="text-sm text-gray-500 mt-2">
-                    Sistem Laporan Kegiatan Jasa Outsourcing 
-                </p>
-            </div>
+            {% endfor %}
+        {% endif %}
 
-            <!-- ERROR -->
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="mb-4 bg-red-50 text-red-600 p-3 rounded-lg text-sm">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endif %}
+        <!-- Form -->
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
 
-            <!-- FORM -->
-            <form method="POST" action="{% url 'login' %}" class="space-y-5">
-                {% csrf_token %}
-
-                <!-- USERNAME -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">
-                        Username
-                    </label>
-                    <input type="text" name="username"
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <div class="input-wrap">
+                    <i class="fas fa-user input-icon"></i>
+                    <input
+                        type="text"
+                        name="username"
                         value="{{ username|default:'' }}"
                         required
-                        class="input-soft w-full px-4 py-3"
+                        class="form-input"
                         placeholder="Masukkan username"
                         autocomplete="username"
                         autofocus>
                 </div>
+            </div>
 
-                <!-- PASSWORD -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-600 mb-1">
-                        Password
-                    </label>
-                    <div class="relative">
-                        <input type="password" name="password" id="password-field"
-                            required
-                            class="input-soft w-full px-4 py-3 pr-10"
-                            placeholder="Masukkan password"
-                            autocomplete="current-password">
-                        <button type="button" id="togglePassword"
-                            class="absolute right-3 top-3 text-gray-400">
-                            <i class="fas fa-eye-slash" id="toggleIcon"></i>
-                        </button>
-                    </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock input-icon"></i>
+                    <input
+                        type="password"
+                        name="password"
+                        id="passwordField"
+                        required
+                        class="form-input"
+                        placeholder="Masukkan password"
+                        autocomplete="current-password">
+                    <button type="button" class="toggle-pass" id="togglePassword">
+                        <i class="fas fa-eye-slash" id="toggleIcon"></i>
+                    </button>
                 </div>
+            </div>
 
-                <!-- BUTTON -->
-                <button type="submit"
-                    class="btn-organic w-full text-white py-3 font-semibold">
-                    Login
-                </button>
-            </form>
-        </div>
+            <button type="submit" class="btn-login">
+                <i class="fas fa-arrow-right-to-bracket" style="margin-right:8px;"></i>
+                Masuk
+            </button>
+        </form>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="page-footer">
+        <p>© 2026 UNIPACS · Sistem Laporan Layanan Lapangan</p>
+        <p>v1.0.0 · Dibangun dengan Django</p>
     </div>
 </div>
 
-<!-- FOOTER -->
-<div class="relative z-10 text-center mt-8">
-    <p class="text-xs text-gray-400">
-        2026 UNIPACS - Sistem Laporan Layanan Lapangan
-    </p>
-    <p class="text-xs text-gray-300 mt-1">
-        v1.0.0 | Dibangun dengan Django & Tailwind CSS
-    </p>
-</div>
-
 <script>
-const toggle = document.getElementById('togglePassword');
-const pass = document.getElementById('password-field');
-const icon = document.getElementById('toggleIcon');
+    const toggle   = document.getElementById('togglePassword');
+    const passField = document.getElementById('passwordField');
+    const icon     = document.getElementById('toggleIcon');
 
-toggle.addEventListener('click', () => {
-    const type = pass.type === 'password' ? 'text' : 'password';
-    pass.type = type;
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
-});
+    toggle.addEventListener('click', () => {
+        const isPass = passField.type === 'password';
+        passField.type = isPass ? 'text' : 'password';
+        icon.classList.toggle('fa-eye', isPass);
+        icon.classList.toggle('fa-eye-slash', !isPass);
+    });
 </script>
 
 </body>

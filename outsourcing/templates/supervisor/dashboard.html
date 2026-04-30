@@ -1,75 +1,608 @@
 {% extends 'supervisor/base_supervisor.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+/* ═══════════════════════════════════════
+   DASHBOARD SUPERVISOR
+   ═══════════════════════════════════════ */
+
+.dash-grid {
+    display: grid;
+    gap: 12px;
+}
+
+/* ── Stat Cards ── */
+.stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+.stat-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--clr-border);
+    border-radius: 14px;
+    padding: .9rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color .15s;
+}
+.stat-card:hover { border-color: var(--clr-border-strong); }
+.stat-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    pointer-events: none;
+}
+.stat-card.c-acc::after  { background: radial-gradient(circle at top left, rgba(99,102,241,.07), transparent 65%); }
+.stat-card.c-amb::after  { background: radial-gradient(circle at top left, rgba(245,158,11,.07), transparent 65%); }
+.stat-card.c-grn::after  { background: radial-gradient(circle at top left, rgba(34,197,94,.07),  transparent 65%); }
+.stat-card.c-sky::after  { background: radial-gradient(circle at top left, rgba(56,189,248,.07), transparent 65%); }
+
+.stat-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 1rem;
+}
+.si-acc { background: rgba(99,102,241,.12);  color: #a5b4fc; }
+.si-amb { background: rgba(245,158,11,.12);  color: #fcd34d; }
+.si-grn { background: rgba(34,197,94,.12);   color: #86efac; }
+.si-sky { background: rgba(56,189,248,.12);  color: #7dd3fc; }
+
+.stat-info { flex: 1; min-width: 0; }
+.stat-lbl {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--clr-text-muted); margin-bottom: 3px;
+}
+.stat-val {
+    font-size: 1.7rem; font-weight: 700;
+    letter-spacing: -.03em; line-height: 1;
+}
+.stat-sub {
+    font-size: 10.5px; color: var(--clr-text-muted);
+    margin-top: 3px;
+}
+
+/* ── Progress Today ── */
+.today-section {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--clr-border);
+    border-radius: 14px;
+    overflow: hidden;
+}
+.section-head {
+    padding: 11px 16px;
+    border-bottom: 1px solid var(--clr-border);
+    background: rgba(255,255,255,.02);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.section-title {
+    font-size: 10.5px; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase;
+    color: var(--clr-text-muted);
+    display: flex; align-items: center; gap: 7px;
+}
+.section-icon {
+    width: 22px; height: 22px; border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(99,102,241,.12);
+}
+.section-icon svg { width: 11px; height: 11px; color: #a5b4fc; }
+.section-badge {
+    font-size: 10.5px; font-weight: 600;
+    color: var(--clr-text-muted);
+}
+
+/* Progress bar area */
+.today-progress {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--clr-border);
+    display: flex; align-items: center; gap: 14px;
+}
+.pbar-track {
+    flex: 1; height: 6px;
+    background: rgba(255,255,255,.05);
+    border-radius: 4px; overflow: hidden;
+}
+.pbar-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, #6366f1, #22c55e);
+    transition: width .6s ease;
+}
+.pbar-pct {
+    font-size: 13px; font-weight: 700;
+    color: #22c55e; flex-shrink: 0; min-width: 36px; text-align: right;
+}
+.today-chips {
+    display: flex; gap: 8px; padding: 10px 16px;
+    border-bottom: 1px solid var(--clr-border);
+    flex-wrap: wrap;
+}
+.chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+}
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; }
+.chip-jadwal  { background: rgba(148,163,184,.08); color: var(--clr-text-secondary); border: 1px solid var(--clr-border); }
+.chip-prog    { background: rgba(245,158,11,.1);  color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
+.chip-selesai { background: rgba(34,197,94,.1);   color: #86efac; border: 1px solid rgba(34,197,94,.2); }
+
+/* Item list */
+.item-list { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.item-row {
+    background: rgba(255,255,255,.025);
+    border: 1px solid var(--clr-border);
+    border-radius: 9px;
+    padding: 9px 12px;
+    display: flex; align-items: center; gap: 10px;
+    transition: border-color .12s;
+}
+.item-row:hover { border-color: var(--clr-border-strong); }
+.item-acc {
+    width: 3px; height: 36px; border-radius: 2px; flex-shrink: 0;
+}
+.acc-j { background: #475569; }
+.acc-p { background: #f59e0b; }
+.acc-d { background: #22c55e; }
+.item-info { flex: 1; min-width: 0; }
+.item-name {
+    font-size: 12.5px; font-weight: 600;
+    color: var(--clr-text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+.item-meta {
+    display: flex; gap: 10px; flex-wrap: wrap;
+}
+.imeta {
+    font-size: 10.5px; color: var(--clr-text-muted);
+    display: flex; align-items: center; gap: 3px;
+}
+.imeta svg { width: 9px; height: 9px; flex-shrink: 0; }
+.item-right { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.spill {
+    font-size: 9.5px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px; white-space: nowrap;
+}
+.sp-j { background: rgba(148,163,184,.08); color: var(--clr-text-secondary); border: 1px solid var(--clr-border); }
+.sp-p { background: rgba(245,158,11,.1); color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
+.sp-d { background: rgba(34,197,94,.1); color: #86efac; border: 1px solid rgba(34,197,94,.2); }
+.bi-tag {
+    font-size: 9px; font-weight: 600;
+    padding: 1px 6px; border-radius: 20px;
+    background: rgba(245,158,11,.1); color: #fcd34d;
+    border: 1px solid rgba(245,158,11,.2);
+}
+.item-time { font-size: 10px; color: var(--clr-text-muted); }
+
+.item-empty {
+    text-align: center; padding: 2.5rem 1rem;
+    color: var(--clr-text-muted); font-size: 12.5px;
+}
+.item-empty svg { width: 28px; height: 28px; opacity: .15; display: block; margin: 0 auto 8px; }
+
+/* ── Two-col layout ── */
+.two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* ── Chart bars ── */
+.chart-wrap { padding: 14px 16px 10px; }
+.chart-bars {
+    display: flex; align-items: flex-end;
+    gap: 6px; height: 80px;
+}
+.bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.bar-track {
+    width: 100%; flex: 1; display: flex; flex-direction: column;
+    justify-content: flex-end; position: relative;
+}
+.bar-bg {
+    position: absolute; inset: 0; border-radius: 4px;
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--clr-border);
+}
+.bar-fill {
+    position: relative; border-radius: 4px;
+    background: linear-gradient(180deg, rgba(99,102,241,.8), rgba(99,102,241,.4));
+    min-height: 3px;
+    transition: height .5s ease;
+}
+.bar-fill.today { background: linear-gradient(180deg, rgba(34,197,94,.85), rgba(34,197,94,.45)); }
+.bar-lbl { font-size: 9.5px; color: var(--clr-text-muted); font-weight: 600; }
+.bar-date { font-size: 9px; color: var(--clr-text-muted); margin-top: -2px; }
+
+/* ── Staff list ── */
+.staff-list { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.staff-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,.025);
+    border: 1px solid var(--clr-border);
+    border-radius: 9px;
+    transition: border-color .12s;
+}
+.staff-row:hover { border-color: var(--clr-border-strong); }
+.staff-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.staff-name {
+    flex: 1; font-size: 12.5px; font-weight: 600;
+    color: var(--clr-text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.staff-prog-wrap { width: 60px; }
+.staff-prog-track {
+    height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,.05);
+    overflow: hidden; margin-bottom: 2px;
+}
+.staff-prog-fill {
+    height: 100%; border-radius: 2px;
+    background: #22c55e;
+    width: var(--prog, 0%);
+}
+.staff-prog-lbl { font-size: 9.5px; color: var(--clr-text-muted); text-align: right; }
+.staff-count {
+    font-size: 10.5px; font-weight: 600;
+    color: var(--clr-text-muted); flex-shrink: 0;
+    min-width: 30px; text-align: right;
+}
+
+/* ── Laporan terbaru ── */
+.lap-list { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.lap-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 10px;
+    background: rgba(255,255,255,.025);
+    border: 1px solid var(--clr-border);
+    border-radius: 9px;
+    text-decoration: none;
+    transition: border-color .12s, background .12s;
+}
+.lap-row:hover { border-color: var(--clr-border-strong); background: rgba(255,255,255,.04); }
+.lap-info { flex: 1; min-width: 0; }
+.lap-name {
+    font-size: 12.5px; font-weight: 600;
+    color: var(--clr-text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.lap-sub { font-size: 10.5px; color: var(--clr-text-muted); margin-top: 2px; }
+.lap-badge {
+    font-size: 9.5px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
+}
+.lb-aktif   { background: rgba(34,197,94,.1);   color: #86efac; border: 1px solid rgba(34,197,94,.2); }
+.lb-draft   { background: rgba(148,163,184,.08); color: var(--clr-text-secondary); border: 1px solid var(--clr-border); }
+.lb-selesai { background: rgba(99,102,241,.1);   color: #c4b5fd; border: 1px solid rgba(99,102,241,.2); }
+
+/* ── Insidental ── */
+.ins-list { padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.ins-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 10px;
+    background: rgba(245,158,11,.04);
+    border: 1px solid rgba(245,158,11,.12);
+    border-radius: 9px;
+}
+.ins-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #f59e0b; flex-shrink: 0; margin-top: 4px;
+    box-shadow: 0 0 6px rgba(245,158,11,.5);
+}
+.ins-info { flex: 1; min-width: 0; }
+.ins-name { font-size: 12px; font-weight: 600; color: var(--clr-text-primary); }
+.ins-sub  { font-size: 10.5px; color: var(--clr-text-muted); margin-top: 2px; }
+.ins-date { font-size: 10px; color: var(--clr-text-muted); flex-shrink: 0; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .two-col  { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+    .stat-val { font-size: 1.4rem; }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Laporan Aktif</div>
-            <div class="fs-3 fw-bold text-primary">{{ laporan_aktif }}</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Laporan Draft</div>
-            <div class="fs-3 fw-bold text-secondary">{{ laporan_draft }}</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Total Staff</div>
-            <div class="fs-3 fw-bold text-success">{{ total_staff }}</div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Item Hari Ini</div>
-            <div class="fs-3 fw-bold text-info">{{ item_hari_ini|length }}</div>
-        </div>
-    </div>
-</div>
+<div class="dash-grid">
 
-<div class="card p-3">
-    <h6 class="fw-semibold mb-3">Item Kegiatan Hari Ini — {{ today|date:"d/m/Y" }}</h6>
-    {% if item_hari_ini %}
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Staff</th>
-                    <th>Item</th>
-                    <th>Laporan</th>
-                    <th>Jam</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in item_hari_ini %}
-                <tr>
-                    <td>{{ item.staff.nama_lengkap }}</td>
-                    <td>
-                        <span class="fw-semibold">{{ item.nama_item }}</span>
-                        {% if item.is_insidental %}
-                            <span class="badge bg-warning text-dark ms-1">Insidental</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.laporan.nama_laporan }}</td>
-                    <td>{{ item.jam_mulai|default:"—" }} - {{ item.jam_selesai|default:"—" }}</td>
-                    <td>
-                        {% if item.status == 'terjadwal' %}
-                            <span class="badge bg-secondary">Terjadwal</span>
-                        {% elif item.status == 'on_progress' %}
-                            <span class="badge bg-warning">On Progress</span>
-                        {% elif item.status == 'selesai' %}
-                            <span class="badge bg-success">Selesai</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- ── Stat Cards ── -->
+    <div class="stat-row">
+        <div class="stat-card c-acc">
+            <div class="stat-icon si-acc">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-lbl">Laporan Aktif</div>
+                <div class="stat-val" style="color:#a5b4fc">{{ laporan_aktif }}</div>
+                <div class="stat-sub">sedang berjalan</div>
+            </div>
+        </div>
+        <div class="stat-card c-amb">
+            <div class="stat-icon si-amb">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-lbl">Draft</div>
+                <div class="stat-val" style="color:#fcd34d">{{ laporan_draft }}</div>
+                <div class="stat-sub">belum dikirim</div>
+            </div>
+        </div>
+        <div class="stat-card c-grn">
+            <div class="stat-icon si-grn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-lbl">Total Staff</div>
+                <div class="stat-val" style="color:#86efac">{{ total_staff }}</div>
+                <div class="stat-sub">staff aktif</div>
+            </div>
+        </div>
+        <div class="stat-card c-sky">
+            <div class="stat-icon si-sky">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
+                    <rect x="3" y="3" width="18" height="18" rx="3"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/>
+                </svg>
+            </div>
+            <div class="stat-info">
+                <div class="stat-lbl">Item Hari Ini</div>
+                <div class="stat-val" style="color:#7dd3fc">{{ total_item_hari_ini }}</div>
+                <div class="stat-sub">{{ pct_selesai }}% selesai</div>
+            </div>
+        </div>
     </div>
-    {% else %}
-    <p class="text-muted small mb-0">Tidak ada item kegiatan hari ini.</p>
-    {% endif %}
-</div>
+
+    <!-- ── Item Kegiatan Hari Ini ── -->
+    <div class="today-section">
+        <div class="section-head">
+            <div class="section-title">
+                <div class="section-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </div>
+                Item Kegiatan Hari Ini
+            </div>
+            <span class="section-badge">{{ today|date:"d M Y" }}</span>
+        </div>
+
+        {% if total_item_hari_ini %}
+        <div class="today-progress">
+            <div class="pbar-track">
+                <div class="pbar-fill" style="--val: {{ pct_selesai|default:0 }}"></div>
+            </div>
+            <div class="pbar-pct">{{ pct_selesai }}%</div>
+        </div>
+        <div class="today-chips">
+            <span class="chip chip-jadwal">
+                <span class="chip-dot" style="background:#64748b"></span>
+                Terjadwal {{ item_terjadwal_count }}
+            </span>
+            <span class="chip chip-prog">
+                <span class="chip-dot" style="background:#f59e0b"></span>
+                On Progress {{ item_progress_count }}
+            </span>
+            <span class="chip chip-selesai">
+                <span class="chip-dot" style="background:#22c55e"></span>
+                Selesai {{ item_selesai_count }}
+            </span>
+        </div>
+        {% endif %}
+
+        <div class="item-list">
+            {% for item in item_hari_ini %}
+            <div class="item-row">
+                <div class="item-acc {% if item.status == 'terjadwal' %}acc-j{% elif item.status == 'on_progress' %}acc-p{% else %}acc-d{% endif %}"></div>
+                <div class="item-info">
+                    <div class="item-name">
+                        {{ item.nama_item }}
+                        {% if item.is_insidental %}<span class="bi-tag">Insidental</span>{% endif %}
+                    </div>
+                    <div class="item-meta">
+                        <span class="imeta">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            {% for s in item.staff.all %}{{ s.nama_lengkap }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+                        </span>
+                        {% if item.sub_area %}
+                        <span class="imeta">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {{ item.sub_area.nama_sub_area }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="item-right">
+                    <span class="spill {% if item.status == 'terjadwal' %}sp-j{% elif item.status == 'on_progress' %}sp-p{% else %}sp-d{% endif %}">
+                        {% if item.status == 'terjadwal' %}Terjadwal{% elif item.status == 'on_progress' %}On Progress{% else %}Selesai{% endif %}
+                    </span>
+                    <span class="item-time">{{ item.jam_mulai|default:"—" }}–{{ item.jam_selesai|default:"—" }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="item-empty">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Tidak ada item kegiatan hari ini.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ── Two Col: Chart + Staff ── -->
+    <div class="two-col">
+
+        <!-- Aktivitas 7 Hari -->
+        <div class="today-section">
+            <div class="section-head">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    Aktivitas 7 Hari
+                </div>
+                <span class="section-badge">item selesai</span>
+            </div>
+            <div class="chart-wrap">
+                <div class="chart-bars" id="chartBars"></div>
+            </div>
+        </div>
+
+        <!-- Staff Beban Hari Ini -->
+        <div class="today-section">
+            <div class="section-head">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    Beban Staff Hari Ini
+                </div>
+                <span class="section-badge">{{ total_staff }} aktif</span>
+            </div>
+            <div class="staff-list">
+                {% for staff in staff_list %}
+                <div class="staff-row">
+                    <div class="staff-avatar">
+                        {{ staff.nama_lengkap|slice:":2"|upper }}
+                    </div>
+                    <div class="staff-name">{{ staff.nama_lengkap }}</div>
+                    <div class="staff-prog-wrap">
+                        <div class="staff-prog-track">
+                            <div class="staff-prog-fill" style="--prog: {% if staff.item_hari_ini_count %}{{ staff.item_selesai_count|floatformat:0 }}{% else %}0{% endif %};"></div>
+                        </div>
+                        <div class="staff-prog-lbl">
+                            {{ staff.item_selesai_count }}/{{ staff.item_hari_ini_count }}
+                        </div>
+                    </div>
+                    <div class="staff-count">{{ staff.item_hari_ini_count }} item</div>
+                </div>
+                {% empty %}
+                <div class="item-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    Belum ada staff aktif.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Two Col: Laporan Terbaru + Insidental ── -->
+    <div class="two-col">
+
+        <!-- Laporan Terbaru -->
+        <div class="today-section">
+            <div class="section-head">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    Laporan Terbaru
+                </div>
+                <a href="{% url 'supervisor_laporan_list' %}" style="font-size:10.5px;color:#a5b4fc;text-decoration:none;font-weight:600;">Lihat semua →</a>
+            </div>
+            <div class="lap-list">
+                {% for lap in laporan_terbaru %}
+                <a href="{% url 'supervisor_laporan_detail' lap.pk %}" class="lap-row">
+                    <div class="lap-info">
+                        <div class="lap-name">{{ lap.nama_laporan }}</div>
+                        <div class="lap-sub">{{ lap.perusahaan.nama_perusahaan }} · {{ lap.tanggal_laporan|date:"d/m/Y" }}</div>
+                    </div>
+                    <span class="lap-badge {% if lap.status == 'aktif' %}lb-aktif{% elif lap.status == 'draft' %}lb-draft{% else %}lb-selesai{% endif %}">
+                        {% if lap.status == 'aktif' %}Aktif{% elif lap.status == 'draft' %}Draft{% else %}Selesai{% endif %}
+                    </span>
+                </a>
+                {% empty %}
+                <div class="item-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    Belum ada laporan.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Item Insidental Bulan Ini -->
+        <div class="today-section">
+            <div class="section-head">
+                <div class="section-title">
+                    <div class="section-icon" style="background:rgba(245,158,11,.12)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#fcd34d" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    Insidental Bulan Ini
+                </div>
+                <span class="section-badge">{{ today|date:"M Y" }}</span>
+            </div>
+            <div class="ins-list">
+                {% for item in item_insidental %}
+                <div class="ins-row">
+                    <div class="ins-dot"></div>
+                    <div class="ins-info">
+                        <div class="ins-name">{{ item.nama_item }}</div>
+                        <div class="ins-sub">
+                            {{ item.laporan.nama_laporan }}
+                            {% if item.sub_area %} · {{ item.sub_area.nama_sub_area }}{% endif %}
+                        </div>
+                    </div>
+                    <div class="ins-date">{{ item.tanggal|date:"d/m" }}</div>
+                </div>
+                {% empty %}
+                <div class="item-empty">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    Tidak ada item insidental bulan ini.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div><!-- end dash-grid -->
+{% endblock %}
+
+{% block extra_js %}
+<div id="weekData" data-week="{{ week_data_json|safe }}" style="display:none;"></div>
+<script>
+// ── Bar Chart 7 Hari ──────────────────────────────────
+const weekData = JSON.parse(document.getElementById('weekData').dataset.week);
+const container = document.getElementById('chartBars');
+const maxVal = Math.max(...weekData.map(d => d.total), 1);
+const todayIdx = weekData.length - 1;
+
+weekData.forEach((d, i) => {
+    const pct    = d.total ? Math.round((d.selesai / d.total) * 100) : 0;
+    const height = Math.round((d.total / maxVal) * 100);
+    const isToday = i === todayIdx;
+
+    const group = document.createElement('div');
+    group.className = 'bar-group';
+    group.title = `${d.date}: ${d.selesai}/${d.total} selesai`;
+    group.innerHTML = `
+        <div class="bar-track">
+            <div class="bar-bg"></div>
+            <div class="bar-fill${isToday ? ' today' : ''}"
+                 style="height:${height}%;position:relative;z-index:1;margin-top:auto"></div>
+        </div>
+        <div class="bar-lbl" style="${isToday ? 'color:#86efac' : ''}">${d.label}</div>
+        <div class="bar-date">${d.date}</div>
+    `;
+    container.appendChild(group);
+});
+</script>
 {% endblock %}

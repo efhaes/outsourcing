@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from outsourcing.decorators import supervisor_required
 from outsourcing.models import LaporanKegiatan, ItemKegiatan, StaffTask
 from outsourcing.forms.laporan_forms import ItemKegiatanForm
-
+import json
 
 @supervisor_required
 def item_create(request, laporan_pk):
@@ -37,7 +37,7 @@ def item_create(request, laporan_pk):
         'laporan'   : laporan,
         'page_title': f'Tambah Item — {laporan.nama_laporan}',
         'action'    : 'Tambah Item',
-        'staff_task_mapping': staff_task_mapping,
+        'staff_task_mapping': json.dumps(staff_task_mapping),
     }
     return render(request, 'supervisor/item/form.html', context)
 
@@ -72,7 +72,7 @@ def item_edit(request, pk):
         'laporan'   : laporan,
         'page_title': f'Edit Item — {item.nama_item}',
         'action'    : 'Simpan Perubahan',
-        'staff_task_mapping': staff_task_mapping,
+        'staff_task_mapping': json.dumps(staff_task_mapping),
     }
     return render(request, 'supervisor/item/form.html', context)
 

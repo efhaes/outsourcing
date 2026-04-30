@@ -14,11 +14,12 @@
     font-weight: 700;
     letter-spacing: -0.01em;
     margin: 0;
+    color: var(--clr-text-primary);
 }
 
 /* ── Search Card ── */
 .search-card {
-    background: var(--clr-surface);
+    background: transparent;
     border: 1px solid var(--clr-border);
     border-radius: 12px;
     padding: 0.875rem 1rem;
@@ -29,17 +30,24 @@
     border-radius: 8px;
     font-size: 13.5px;
     border: 1px solid var(--clr-border);
+    background: rgba(255,255,255,0.05);
+    color: var(--clr-text-primary);
     padding: 7px 12px;
+    transition: all 0.15s;
 }
+.search-card .form-control::placeholder { color: var(--clr-text-muted); }
+.search-card .form-select option { background: #0d1629; }
 .search-card .form-control:focus,
 .search-card .form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 3px rgba(13,110,253,0.1);
+    border-color: var(--clr-accent);
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.15);
+    background: rgba(255,255,255,0.07);
+    outline: none;
 }
 
 /* ── Table Card ── */
 .table-card {
-    background: var(--clr-surface);
+    background: transparent;
     border: 1px solid var(--clr-border);
     border-radius: 14px;
     overflow: hidden;
@@ -47,41 +55,41 @@
 .table-card .table {
     margin: 0;
     font-size: 13.5px;
+    color: var(--clr-text-secondary);
 }
 .table-card .table thead th {
-    background: var(--clr-bg);
+    background: rgba(255,255,255,0.03);
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--clr-text-muted);
     border-bottom: 1px solid var(--clr-border);
+    border-color: var(--clr-border) !important;
     padding: 10px 16px;
 }
 .table-card .table tbody td {
     padding: 12px 16px;
     vertical-align: middle;
     border-bottom: 1px solid var(--clr-border);
+    border-color: var(--clr-border) !important;
+    background: transparent;
+    color: var(--clr-text-primary);
 }
-.table-card .table tbody tr:last-child td {
-    border-bottom: none;
-}
-.table-card .table tbody tr {
-    transition: background 0.12s;
-}
-.table-card .table tbody tr:hover {
-    background: var(--clr-bg);
-}
+.table-card .table tbody tr:last-child td { border-bottom: none; }
+.table-card .table tbody tr { transition: background 0.12s; }
+.table-card .table tbody tr:hover td { background: rgba(255,255,255,0.03) !important; }
 
 /* ── Laporan Name Link ── */
 .laporan-link {
     font-weight: 600;
     font-size: 13.5px;
-    color: var(--clr-text);
+    color: var(--clr-text-primary);
     text-decoration: none;
     transition: color 0.15s;
 }
-.laporan-link:hover { color: #0d6efd; }
+.laporan-link:hover { color: #a5b4fc; }
+
 .cell-muted {
     font-size: 13px;
     color: var(--clr-text-muted);
@@ -99,22 +107,20 @@
 }
 .status-badge::before {
     content: '';
-    width: 6px;
-    height: 6px;
+    width: 6px; height: 6px;
     border-radius: 50%;
     display: inline-block;
 }
-.status-draft      { background: #f1f5f9; color: #64748b; }
-.status-draft::before      { background: #94a3b8; }
-.status-selesai    { background: #eff6ff; color: #1d4ed8; }
-.status-selesai::before    { background: #3b82f6; }
-.status-dikirim    { background: #ecfdf5; color: #065f46; }
-.status-dikirim::before    { background: #10b981; }
+.status-draft   { background: rgba(255,255,255,0.07); color: var(--clr-text-secondary); }
+.status-draft::before   { background: var(--clr-text-muted); }
+.status-selesai { background: rgba(99,102,241,0.15);  color: #a5b4fc; }
+.status-selesai::before { background: #a5b4fc; }
+.status-dikirim { background: rgba(34,197,94,0.12);   color: #4ade80; }
+.status-dikirim::before { background: #4ade80; }
 
 /* ── Action Buttons ── */
 .action-btn {
-    width: 32px;
-    height: 32px;
+    width: 32px; height: 32px;
     border-radius: 8px;
     display: inline-flex;
     align-items: center;
@@ -125,14 +131,22 @@
     cursor: pointer;
     transition: all 0.15s;
     text-decoration: none;
+    color: var(--clr-text-secondary);
 }
 .action-btn:hover { transform: translateY(-1px); }
-.action-btn.view   { color: #0d6efd; border-color: #0d6efd20; }
-.action-btn.view:hover   { background: #eff6ff; border-color: #0d6efd; }
-.action-btn.edit   { color: #f59e0b; border-color: #f59e0b20; }
-.action-btn.edit:hover   { background: #fffbeb; border-color: #f59e0b; }
-.action-btn.done   { color: #22c55e; border-color: #22c55e20; font-size: 11px; font-weight: 600; width: auto; padding: 0 10px; gap: 4px; }
-.action-btn.done:hover   { background: #f0fdf4; border-color: #22c55e; }
+
+.action-btn.view { color: #a5b4fc; border-color: rgba(99,102,241,0.2); }
+.action-btn.view:hover { background: rgba(99,102,241,0.12); border-color: rgba(99,102,241,0.4); }
+
+.action-btn.edit { color: #fbbf24; border-color: rgba(251,191,36,0.2); }
+.action-btn.edit:hover { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.4); }
+
+.action-btn.done {
+    color: #4ade80; border-color: rgba(34,197,94,0.2);
+    font-size: 11px; font-weight: 600;
+    width: auto; padding: 0 10px; gap: 4px;
+}
+.action-btn.done:hover { background: rgba(34,197,94,0.1); border-color: rgba(34,197,94,0.4); }
 
 /* ── Mobile Cards ── */
 @media (max-width: 640px) {
@@ -140,7 +154,8 @@
     .laporan-cards { display: flex; flex-direction: column; gap: 10px; }
 
     .laporan-card-item {
-        background: var(--clr-surface);
+        background: rgba(255,255,255,0.04);
+        backdrop-filter: blur(12px);
         border: 1px solid var(--clr-border);
         border-radius: 14px;
         padding: 1rem 1.1rem;
@@ -154,12 +169,12 @@
     .laporan-card-name {
         font-weight: 600;
         font-size: 14px;
-        color: var(--clr-text);
+        color: var(--clr-text-primary);
         text-decoration: none;
         flex: 1;
         margin-right: 8px;
     }
-    .laporan-card-name:hover { color: #0d6efd; }
+    .laporan-card-name:hover { color: #a5b4fc; }
     .laporan-card-meta {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -172,7 +187,7 @@
     }
     .laporan-card-meta-item span {
         font-weight: 500;
-        color: var(--clr-text);
+        color: var(--clr-text-secondary);
     }
     .laporan-card-footer {
         display: flex;
@@ -184,32 +199,32 @@
     }
     .laporan-card-actions { display: flex; gap: 6px; }
 }
-@media (min-width: 641px) {
-    .laporan-cards { display: none; }
-}
+@media (min-width: 641px) { .laporan-cards { display: none; } }
 
 /* ── Modal Selesai ── */
 #modalSelesai .modal-content {
     border-radius: 16px;
     overflow: hidden;
+    background: #0d1629;
     border: 1px solid var(--clr-border);
-    box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+    color: var(--clr-text-primary);
 }
 #modalSelesai .modal-body-center {
     text-align: center;
     padding: 0.5rem 1.5rem 0;
 }
 .modal-icon-selesai {
-    width: 60px;
-    height: 60px;
+    width: 60px; height: 60px;
     border-radius: 50%;
-    background: #f0fdf4;
-    color: #22c55e;
+    background: rgba(34,197,94,0.12);
+    color: #4ade80;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.6rem;
     margin: 0 auto 1rem;
+    border: 1px solid rgba(34,197,94,0.25);
 }
 .modal-footer-custom {
     display: flex;
@@ -230,20 +245,22 @@
     cursor: pointer;
     transition: background 0.15s;
 }
-.btn-modal-cancel:hover { background: var(--clr-bg); }
+.btn-modal-cancel:hover { background: rgba(255,255,255,0.05); }
+
 .btn-modal-confirm {
     padding: 9px 24px;
     border-radius: 8px;
     font-size: 13px;
     font-weight: 600;
     border: none;
-    background: #22c55e;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
     color: #fff;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 6px;
     transition: opacity 0.15s, transform 0.1s;
+    box-shadow: 0 4px 14px rgba(34,197,94,0.3);
 }
 .btn-modal-confirm:hover { opacity: 0.88; transform: translateY(-1px); }
 .btn-modal-confirm:disabled { opacity: 0.6; transform: none; cursor: not-allowed; }
@@ -258,15 +275,34 @@
     font-size: 13.5px;
     font-weight: 500;
     z-index: 9999;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    backdrop-filter: blur(12px);
     animation: slideUp 0.25s ease;
 }
-.toast-success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
-.toast-danger  { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+.toast-success {
+    background: rgba(34,197,94,0.12);
+    color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.25);
+}
+.toast-danger {
+    background: rgba(239,68,68,0.12);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.25);
+}
 @keyframes slideUp {
     from { opacity: 0; transform: translateY(12px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+/* ── Btn overrides ── */
+.btn-primary {
+    background: var(--clr-accent);
+    border-color: var(--clr-accent);
+}
+.btn-primary:hover { background: #4f46e5; border-color: #4f46e5; }
+.btn-secondary { background: rgba(255,255,255,0.07); border-color: var(--clr-border); color: var(--clr-text-secondary); }
+.btn-secondary:hover { background: rgba(255,255,255,0.1); color: var(--clr-text-primary); }
+.btn-outline-secondary { border-color: var(--clr-border); color: var(--clr-text-muted); }
+.btn-outline-secondary:hover { background: rgba(255,255,255,0.05); color: var(--clr-text-secondary); border-color: var(--clr-border-strong); }
 </style>
 {% endblock %}
 
@@ -359,7 +395,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8" class="text-center text-muted py-5">
+                    <td colspan="8" class="text-center py-5" style="color:var(--clr-text-muted);">
                         <i class="bi bi-file-earmark-text" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>
                         Belum ada laporan.
                     </td>
@@ -412,7 +448,7 @@
         </div>
     </div>
     {% empty %}
-    <div class="text-center text-muted py-5">
+    <div class="text-center py-5" style="color:var(--clr-text-muted);">
         <i class="bi bi-file-earmark-text" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>
         Belum ada laporan.
     </div>
@@ -424,18 +460,18 @@
     <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
         <div class="modal-content">
             <div style="display:flex;justify-content:flex-end;padding:12px 16px 0;">
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body-center">
                 <div class="modal-icon-selesai">
                     <i class="bi bi-check-circle"></i>
                 </div>
-                <div style="font-size:15px;font-weight:600;color:var(--clr-text);margin-bottom:6px;">
+                <div style="font-size:15px;font-weight:600;color:var(--clr-text-primary);margin-bottom:6px;">
                     Selesaikan Laporan
                 </div>
                 <div style="font-size:13px;color:var(--clr-text-muted);line-height:1.6;">
                     Apakah Anda yakin ingin menyelesaikan laporan<br>
-                    <strong id="modalNamaLaporan"></strong>?
+                    <strong id="modalNamaLaporan" style="color:var(--clr-text-primary);"></strong>?
                 </div>
             </div>
             <div class="modal-footer-custom">
@@ -481,7 +517,6 @@ document.getElementById('btnKonfirmasiSelesai').addEventListener('click', functi
     .then(data => {
         bootstrap.Modal.getInstance(document.getElementById('modalSelesai')).hide();
         if (data.success) {
-            // Update semua baris/card yang punya data-pk ini
             document.querySelectorAll(`.btn-selesai[data-pk="${targetPk}"]`).forEach(el => {
                 const row = el.closest('tr') || el.closest('.laporan-card-item');
                 if (row) {

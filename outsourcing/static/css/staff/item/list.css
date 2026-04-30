@@ -1,0 +1,596 @@
+/* list.css — Jadwal Pekerjaan Staff
+   Tema: dark glass, ikut base.html
+   Font: Montserrat
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+* { font-family: 'Montserrat', sans-serif !important; }
+
+/* ════════════════════════════════════════════════════════════
+   PAGE HEADER
+   ════════════════════════════════════════════════════════════ */
+h5.fw-bold {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #f0f0ff !important;
+  letter-spacing: 0.01em;
+}
+
+/* Breadcrumb nav */
+.period-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  margin-top: 4px;
+}
+.period-nav a {
+  color: rgba(160,160,192,0.75);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s;
+}
+.period-nav a:hover { color: #a09cff; }
+.period-nav .sep { color: rgba(96,96,128,0.5); }
+.period-nav .current {
+  color: #f0f0ff;
+  font-weight: 600;
+}
+
+/* ════════════════════════════════════════════════════════════
+   SECTION HEADER
+   ════════════════════════════════════════════════════════════ */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(160,160,192,0.7);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-title::before {
+  content: '';
+  width: 3px; height: 13px;
+  background: #6c63ff;
+  border-radius: 2px;
+}
+
+.period-grid{
+  display:grid;
+  grid-template-columns:repeat(5, minmax(0,1fr));
+  gap:20px;
+}
+
+.period-card{
+  background: linear-gradient(145deg,#11152c,#0b1022);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;
+  padding:24px;
+  min-height:180px;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  transition:.25s ease;
+  box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+
+.period-card:hover{
+  transform:translateY(-6px);
+  border-color:#6c63ff;
+  box-shadow:0 20px 40px rgba(108,99,255,.18);
+}
+
+.period-card::before{
+  content:'';
+  position:absolute;
+  top:-40px;
+  right:-40px;
+  width:120px;
+  height:120px;
+  background:radial-gradient(circle,#6c63ff55,transparent 70%);
+}
+
+.period-label{
+  font-size:.78rem;
+  color:#8c92b8;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+
+.period-year{
+  font-size:3rem;
+  font-weight:800;
+  color:#fff;
+  line-height:1;
+}
+
+.period-footer{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.badge-done{
+  background:#00e5b412;
+  color:#00ffc8;
+  padding:8px 14px;
+  border-radius:999px;
+  font-size:.8rem;
+  font-weight:700;
+  border:1px solid #00ffc844;
+}
+
+.period-total{
+  color:#8c92b8;
+  font-size:.9rem;
+}
+/* Tahun card — accent biru-ungu */
+.period-card:not(.bulan-card) {
+  border-top: 2.5px solid rgba(108,99,255,0.5);
+}
+/* Bulan card — accent teal */
+.period-card.bulan-card {
+  border-top: 2.5px solid rgba(0,212,170,0.5);
+}
+
+.pc-icon {
+  position: absolute;
+  top: 10px; right: 12px;
+  font-size: 1.5rem;
+  opacity: 0.18;
+}
+.pc-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(96,96,128,0.75);
+}
+.pc-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #f0f0ff;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.bulan-card .pc-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.pc-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+}
+.pc-pill {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(0,212,170,0.12);
+  color: #00d4aa;
+  border: 1px solid rgba(0,212,170,0.2);
+}
+.pc-total {
+  font-size: 11px;
+  color: rgba(96,96,128,0.7);
+  font-weight: 500;
+}
+
+/* ════════════════════════════════════════════════════════════
+   FILTER BAR
+   ════════════════════════════════════════════════════════════ */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.filter-bar .form-select {
+  background: rgba(22,22,40,0.78) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  border-radius: 8px !important;
+  color: #f0f0ff !important;
+  font-size: 13px !important;
+  font-weight: 500;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.filter-bar .form-select:focus {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(108,99,255,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(108,99,255,0.12) !important;
+  color: #f0f0ff !important;
+}
+.filter-bar .form-select option { background: #1a1a2e; color: #f0f0ff; }
+
+/* ════════════════════════════════════════════════════════════
+   BUTTONS
+   ════════════════════════════════════════════════════════════ */
+.btn {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+.btn-secondary {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #f0f0ff !important;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.12) !important; }
+
+.btn-outline-secondary {
+  background: transparent !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: rgba(160,160,192,0.85) !important;
+}
+.btn-outline-secondary:hover { background: rgba(255,255,255,0.06) !important; color: #f0f0ff !important; }
+
+.btn-primary {
+  background: #6c63ff !important;
+  border-color: #6c63ff !important;
+  color: #fff !important;
+}
+.btn-primary:hover { background: #4f47cc !important; border-color: #4f47cc !important; }
+
+.btn-warning {
+  background: rgba(245,166,35,0.18) !important;
+  border-color: rgba(245,166,35,0.35) !important;
+  color: #f5a623 !important;
+}
+.btn-warning:hover { background: rgba(245,166,35,0.28) !important; }
+
+/* ════════════════════════════════════════════════════════════
+   TABLE CARD
+   ════════════════════════════════════════════════════════════ */
+.card {
+  background: rgba(22,22,40,0.82) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  overflow: hidden;
+}
+
+.table {
+  color: #f0f0ff !important;
+  font-size: 13.5px;
+  margin-bottom: 0;
+  --bs-table-bg: transparent !important;
+  --bs-table-hover-bg: rgba(108,99,255,0.05) !important;
+}
+.table > :not(caption) > * > * { background-color: transparent !important; }
+
+.table thead th,
+.table-light,
+thead.table-light > tr > th {
+  background: rgba(255,255,255,0.03) !important;
+  color: rgba(160,160,192,0.7) !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+  padding: 0.7rem 1rem;
+  white-space: nowrap;
+}
+.table tbody td {
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+.table tbody tr { background-color: transparent !important; }
+.table tbody tr:last-child td { border-bottom: none !important; }
+.table-hover tbody tr:hover,
+.table-hover tbody tr:hover td { background-color: rgba(108,99,255,0.05) !important; }
+
+/* Cell helpers — semua td putih */
+.table tbody td { color: #f0f0ff !important; }
+.fw-semibold { font-weight: 600 !important; color: #f0f0ff !important; }
+.text-muted  { color: rgba(160,160,192,0.6) !important; }
+.small       { font-size: 12px !important; }
+.text-nowrap { white-space: nowrap; }
+
+/* Badges */
+.badge {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  padding: 3px 9px !important;
+  border-radius: 20px !important;
+}
+.badge.bg-secondary {
+  background: rgba(96,96,128,0.2) !important;
+  color: rgba(160,160,192,0.8) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+.badge.bg-warning.text-dark {
+  background: rgba(245,166,35,0.15) !important;
+  color: #f5a623 !important;
+  border: 1px solid rgba(245,166,35,0.25) !important;
+}
+.badge.bg-success {
+  background: rgba(0,212,170,0.13) !important;
+  color: #00d4aa !important;
+  border: 1px solid rgba(0,212,170,0.22) !important;
+}
+
+/* Empty state in table */
+.table tbody td.text-center { color: rgba(96,96,128,0.65) !important; }
+
+/* ════════════════════════════════════════════════════════════
+   MODAL — Input Jam Kerja
+   ════════════════════════════════════════════════════════════ */
+.modal-content {
+  background: #14142a !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 16px !important;
+  color: #f0f0ff;
+  overflow: hidden;
+}
+.modal-header {
+  border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+  padding: 1.1rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.modal-title {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #f0f0ff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.title-icon { font-size: 1.2rem; }
+
+.btn-close { filter: invert(1) opacity(0.45) !important; }
+.btn-close:hover { filter: invert(1) opacity(0.85) !important; }
+
+.modal-body { padding: 1.25rem 1.4rem; }
+.modal-footer {
+  border-top: 1px solid rgba(255,255,255,0.07) !important;
+  padding: 0.9rem 1.4rem;
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Jam fields */
+.jam-field {
+  margin-bottom: 1.1rem;
+}
+.jam-field label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(160,160,192,0.8);
+  margin-bottom: 0.5rem;
+}
+.req { color: #ff5c7c; }
+
+.jam-input-wrap {
+  position: relative;
+}
+.ji-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(96,96,128,0.6);
+  pointer-events: none;
+  display: flex;
+}
+
+.jam-input-wrap input[type="time"] {
+  width: 100%;
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  border-radius: 10px;
+  color: rgba(96,96,128,0.5) !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 1.05rem !important;
+  font-weight: 600;
+  padding: 0.65rem 0.85rem 0.65rem 2.5rem !important;
+  transition: border-color 0.2s, box-shadow 0.2s, color 0.2s;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+.jam-input-wrap input[type="time"].has-value {
+  color: #f0f0ff !important;
+}
+.jam-input-wrap input[type="time"]:focus {
+  outline: none;
+  border-color: rgba(108,99,255,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(108,99,255,0.12) !important;
+  color: #f0f0ff !important;
+  background: rgba(255,255,255,0.07) !important;
+}
+.jam-input-wrap input[type="time"].is-invalid {
+  border-color: rgba(255,92,124,0.5) !important;
+  box-shadow: 0 0 0 3px rgba(255,92,124,0.1) !important;
+}
+/* Override browser default time input colors */
+.jam-input-wrap input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.5) opacity(0.6);
+  cursor: pointer;
+}
+
+.jam-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  font-size: 11.5px;
+  color: rgba(96,96,128,0.7);
+  margin-top: 7px;
+  line-height: 1.5;
+}
+.jam-hint em { font-style: italic; }
+
+/* Error box */
+.jam-error-box {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255,92,124,0.1);
+  border: 1px solid rgba(255,92,124,0.25);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #ff9ab0;
+  margin-top: 4px;
+}
+.jam-error-box.show { display: flex; }
+.jam-error-box svg { flex-shrink: 0; color: #ff5c7c; }
+
+/* Modal footer buttons */
+.btn-jam-batal {
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(160,160,192,0.8);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.btn-jam-batal:hover { background: rgba(255,255,255,0.06); color: #f0f0ff; }
+
+.btn-jam-simpan {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  background: #6c63ff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: background 0.18s, transform 0.12s;
+}
+.btn-jam-simpan:hover:not(:disabled) {
+  background: #4f47cc;
+  transform: translateY(-1px);
+}
+.btn-jam-simpan:disabled { opacity: 0.6; cursor: not-allowed; }
+
+/* Spinner */
+.spin {
+  display: none;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+.btn-jam-simpan.loading .spin { display: block; }
+.btn-jam-simpan.loading .btn-text { opacity: 0.7; }
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ════════════════════════════════════════════════════════════
+   EMPTY & MUTED
+   ════════════════════════════════════════════════════════════ */
+.text-center.text-muted { color: rgba(96,96,128,0.65) !important; }
+.fs-2, .fs-3 { opacity: 0.4; }
+
+/* ════════════════════════════════════════════════════════════
+   RESPONSIVE — Mobile card layout untuk table
+   ════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  .period-grid { grid-template-columns: repeat(2, 1fr); }
+  .filter-bar { gap: 6px; }
+  .filter-bar .form-select { max-width: 100% !important; flex: 1; }
+
+  /* Sembunyikan thead, ubah tbody jadi card */
+  .table-responsive table { display: block; }
+  .table-responsive thead { display: none; }
+  .table-responsive tbody { display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+  .table-responsive tbody tr {
+    display: flex;
+    flex-direction: column;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    gap: 0;
+  }
+  .table-responsive tbody tr:hover {
+    background: rgba(108,99,255,0.05) !important;
+    border-color: rgba(108,99,255,0.25);
+  }
+
+  /* Semua td jadi row dengan label */
+  .table-responsive tbody td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0 !important;
+    border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+    font-size: 13px !important;
+    color: #f0f0ff !important;
+    gap: 8px;
+  }
+  .table-responsive tbody td:last-child { border-bottom: none !important; }
+
+  /* Label dari data-label */
+  .table-responsive tbody td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: rgba(96,96,128,0.7);
+    flex-shrink: 0;
+    min-width: 80px;
+  }
+
+  /* Nomor urut — sembunyikan di mobile */
+  .table-responsive tbody td:first-child { display: none; }
+
+  /* Nama item — kasih emphasis */
+  .table-responsive tbody td:nth-child(2) {
+    padding-bottom: 8px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  }
+  .table-responsive tbody td:nth-child(2)::before { display: none; }
+  .table-responsive tbody td:nth-child(2) .fw-semibold {
+    font-size: 14px !important;
+  }
+
+  /* Kolom Aksi */
+  .table-responsive tbody td:last-child {
+    justify-content: flex-end;
+    padding-top: 8px !important;
+  }
+  .table-responsive tbody td:last-child::before { display: none; }
+}

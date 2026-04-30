@@ -31,7 +31,7 @@ from outsourcing.views.supervisor import (
 )
 from outsourcing.views.staff import (
     dashboard_view as staff_dashboard,
-    item_list, item_update, item_update_jam,
+    item_list, item_update, item_update_jam,item_create_insidental,
 )
 from outsourcing.views.customer import (
     dashboard_view as customer_dashboard,
@@ -119,6 +119,7 @@ urlpatterns = [
     # Staff
     path('staff/', staff_dashboard, name='staff_dashboard'),
     path('staff/item/', item_list, name='staff_item_list'),
+    path("staff/item/insidental/create/", item_create_insidental, name="staff_item_create_insidental"),
     path('staff/item/<int:pk>/update/', item_update, name='staff_item_update'),
     path('staff/item/update-jam/', item_update_jam, name='staff_item_update_jam'),
 

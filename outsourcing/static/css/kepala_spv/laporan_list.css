@@ -1,0 +1,261 @@
+/* laporan-list.css — Pantau Laporan Kegiatan (Kepala Supervisor)
+   Tema: dark glass | Font: Montserrat
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+* { font-family: 'Montserrat', sans-serif !important; }
+
+/* ── Base Reset dari Bootstrap ─────────────────────────────── */
+.card,
+.search-card,
+.table-card {
+  background: rgba(22, 22, 40, 0.82) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Page Header ───────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+.page-header h5 {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #f0f0ff !important;
+  letter-spacing: 0.01em;
+  margin: 0 !important;
+}
+
+/* ── Filter / Search Card ──────────────────────────────────── */
+.search-card {
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.25rem;
+}
+.search-card .form-control,
+.search-card .form-select {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  border-radius: 8px !important;
+  color: #f0f0ff !important;
+  font-size: 13px !important;
+  font-weight: 500;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-card .form-control::placeholder { color: rgba(96,96,128,0.8) !important; }
+.search-card .form-control:focus,
+.search-card .form-select:focus {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(108,99,255,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(108,99,255,0.12) !important;
+  color: #f0f0ff !important;
+}
+.search-card .form-select option { background: #1a1a2e; color: #f0f0ff; }
+
+/* date input kalender icon override */
+.search-card input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.6);
+  cursor: pointer;
+}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+}
+.btn-secondary {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #f0f0ff !important;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.12) !important; }
+.btn-outline-secondary {
+  background: transparent !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: rgba(160,160,192,0.9) !important;
+}
+.btn-outline-secondary:hover { background: rgba(255,255,255,0.06) !important; color: #f0f0ff !important; }
+
+/* ── Table ─────────────────────────────────────────────────── */
+.table {
+  color: #f0f0ff !important;
+  font-size: 13.5px;
+  margin-bottom: 0;
+  --bs-table-bg: transparent !important;
+  --bs-table-hover-bg: rgba(108,99,255,0.06) !important;
+}
+.table > :not(caption) > * > * { background-color: transparent !important; }
+.table thead th {
+  background: rgba(255,255,255,0.03) !important;
+  color: rgba(160,160,192,0.7) !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.07) !important;
+  padding: 0.7rem 1rem;
+  white-space: nowrap;
+}
+.table tbody td {
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+.table tbody tr { background-color: transparent !important; }
+.table tbody tr:last-child td { border-bottom: none !important; }
+.table-hover tbody tr:hover,
+.table-hover tbody tr:hover td { background-color: rgba(108,99,255,0.05) !important; }
+
+/* cell helpers */
+.cell-muted { color: rgba(160,160,192,0.75) !important; font-size: 13px; }
+
+/* laporan link */
+.laporan-link {
+  font-weight: 600;
+  color: #a09cff;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.laporan-link:hover { color: #6c63ff; }
+
+/* ── Status Badges ─────────────────────────────────────────── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-draft {
+  background: rgba(96,96,128,0.18);
+  color: rgba(160,160,192,0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.status-draft::before { background: rgba(148,163,184,0.6); }
+
+.status-selesai {
+  background: rgba(61,155,255,0.13);
+  color: #3d9bff;
+  border: 1px solid rgba(61,155,255,0.22);
+}
+.status-selesai::before { background: #3d9bff; }
+
+.status-dikirim {
+  background: rgba(0,212,170,0.13);
+  color: #00d4aa;
+  border: 1px solid rgba(0,212,170,0.22);
+}
+.status-dikirim::before { background: #00d4aa; animation: pulse-dot 2s infinite; }
+
+@keyframes pulse-dot {
+  0%,100% { opacity:1; transform:scale(1); }
+  50%      { opacity:.4; transform:scale(.75); }
+}
+
+/* ── Action button — view ──────────────────────────────────── */
+.action-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-decoration: none;
+  color: rgba(160,160,192,0.7);
+}
+.action-btn.view {
+  color: #a09cff;
+  border-color: rgba(108,99,255,0.25);
+}
+.action-btn.view:hover {
+  background: rgba(108,99,255,0.12);
+  border-color: rgba(108,99,255,0.5);
+  color: #6c63ff;
+  transform: translateY(-1px);
+}
+
+/* ── Mobile: Laporan Cards ─────────────────────────────────── */
+@media (max-width: 640px) {
+  .table-card { display: none !important; }
+  .laporan-cards { display: flex !important; flex-direction: column; gap: 10px; }
+}
+@media (min-width: 641px) {
+  .laporan-cards { display: none !important; }
+}
+
+.laporan-card-item {
+  background: rgba(22,22,40,0.82);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  transition: border-color 0.2s;
+}
+.laporan-card-item:hover { border-color: rgba(108,99,255,0.3); }
+
+.laporan-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.laporan-card-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #a09cff;
+  text-decoration: none;
+  flex: 1;
+  line-height: 1.35;
+}
+.laporan-card-name:hover { color: #6c63ff; }
+
+.laporan-card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+}
+.laporan-card-meta-item {
+  font-size: 11.5px;
+  color: rgba(96,96,128,0.8);
+  line-height: 1.4;
+}
+.laporan-card-meta-item span {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(200,200,220,0.9);
+  margin-top: 1px;
+}
+
+.laporan-card-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 10px;
+}
+
+/* ── Empty state ───────────────────────────────────────────── */
+.table tbody td.text-center { color: rgba(96,96,128,0.7) !important; font-size: 13px; }
+.text-muted { color: rgba(96,96,128,0.7) !important; }

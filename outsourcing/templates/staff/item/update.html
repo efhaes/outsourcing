@@ -1,128 +1,10 @@
 {% extends 'staff/base_staff.html' %}
-
+{% load static %}
+{% block extra_css %}
+<link href="{% static 'css/staff/item/update.css' %}" rel="stylesheet">
+{% endblock %}
 {% block content %}
-<style>
-.update-page { max-width: 1200px; margin: 0 auto; padding-bottom: 40px; }
 
-/* Topbar */
-.topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
-.topbar h5 { font-size: 17px; font-weight: 600; margin: 0 0 3px; }
-.topbar .sub { font-size: 12px; color: #888; }
-.btn-back { font-size: 12px; color: #666; border: 1px solid #ddd; border-radius: 8px; padding: 6px 12px; background: #fff; text-decoration: none; white-space: nowrap; }
-
-/* Card */
-.ucard { background: #fff; border: 1px solid #ececec; border-radius: 14px; padding: 16px; margin-bottom: 14px; }
-
-/* Info grid */
-.section-label { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #aaa; margin-bottom: 12px; }
-.info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.info-item .il { font-size: 11px; color: #aaa; margin-bottom: 2px; }
-.info-item .iv { font-size: 14px; font-weight: 600; color: #1a1a1a; }
-
-/* Badge */
-.badge-pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
-.badge-progress { background: #FFF3CD; color: #856404; }
-.badge-terjadwal { background: #f0f0f0; color: #555; }
-.badge-selesai { background: #D1FAE5; color: #065F46; }
-
-/* Jam boxes */
-.jam-row { display: flex; gap: 10px; margin-bottom: 14px; }
-.jam-box { flex: 1; border-radius: 12px; padding: 14px 12px; text-align: center; border: 1px solid #ececec; background: #fff; }
-.jam-box .jl { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #aaa; margin-bottom: 6px; }
-.jam-box .jv { font-size: 26px; font-weight: 700; color: #1a1a1a; }
-.jam-box .js { font-size: 11px; margin-top: 4px; }
-.jam-box.mulai { border-top: 3px solid #10B981; }
-.jam-box.selesai { border-top: 3px solid #3B82F6; }
-.jam-box.selesai .jv { color: #3B82F6; }
-.jam-box.mulai .jv { color: #10B981; }
-
-/* Countdown */
-.countdown-bar { background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 12px; }
-.countdown-bar .ci { font-size: 22px; flex-shrink: 0; }
-.countdown-bar .ct { font-size: 13px; font-weight: 600; color: #92400E; }
-.countdown-bar .ctimer { font-size: 20px; font-weight: 700; color: #B45309; margin-top: 2px; font-variant-numeric: tabular-nums; }
-
-/* Foto section */
-.step-hint { display: flex; gap: 8px; align-items: flex-start; padding: 9px 12px; background: #F8F9FA; border-radius: 8px; margin-bottom: 10px; }
-.step-hint .sn { width: 20px; height: 20px; border-radius: 50%; background: #E0F2FE; color: #0369A1; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.step-hint .st { font-size: 12px; color: #555; line-height: 1.5; }
-.step-hint .st strong { color: #1a1a1a; }
-
-.foto-item { border: 1.5px dashed #ddd; border-radius: 12px; overflow: hidden; background: #FAFAFA; }
-.foto-item.uploaded { border-style: solid; border-color: #10B981; background: #fff; }
-.foto-item.uploaded-blue { border-style: solid; border-color: #3B82F6; background: #fff; }
-.foto-item.locked { opacity: .5; pointer-events: none; }
-
-.foto-header { padding: 12px 14px 0; display: flex; align-items: center; gap: 10px; }
-.foto-icon-wrap { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.fi-progress { background: #E0F2FE; }
-.fi-after { background: #D1FAE5; }
-.fi-locked { background: #F3F4F6; }
-.foto-header-text .ft { font-size: 14px; font-weight: 600; color: #1a1a1a; }
-.foto-header-text .fs { font-size: 11px; color: #888; margin-top: 1px; }
-.foto-header-text .fs.success { color: #10B981; }
-.foto-header-text .fs.success-blue { color: #3B82F6; }
-.foto-header-text .fs.locked { color: #B45309; }
-
-/* Foto tersimpan — thumbnail besar */
-.foto-saved-thumb { margin: 10px 14px 0; }
-.fst-label { font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
-.fst-label.green { color: #10B981; }
-.fst-label.blue  { color: #3B82F6; }
-.fst-wrap { display: block; position: relative; border-radius: 10px; overflow: hidden; cursor: pointer; }
-.fst-wrap.green-border { border: 2px solid #10B981; }
-.fst-wrap.blue-border  { border: 2px solid #3B82F6; }
-.fst-img { width: 100%; max-height: 180px; object-fit: cover; display: block; }
-.fst-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0); display: flex; align-items: center; justify-content: center; gap: 6px; color: #fff; font-size: 12px; font-weight: 600; opacity: 0; transition: background .2s, opacity .2s; }
-.fst-wrap:hover .fst-overlay { background: rgba(0,0,0,.45); opacity: 1; }
-.fst-ganti { font-size: 11px; color: #aaa; margin-top: 6px; text-align: center; }
-
-/* Divider ganti foto */
-.ganti-label { font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #bbb; text-align: center; margin: 12px 14px 0; display: flex; align-items: center; gap: 8px; }
-.ganti-label::before, .ganti-label::after { content: ''; flex: 1; height: 1px; background: #ececec; }
-
-/* Pilihan kamera / file */
-.foto-actions { display: flex; gap: 8px; padding: 12px 14px 0; }
-.foto-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 12px 8px; border: 1px solid #e0e0e0; border-radius: 10px; background: #fff; cursor: pointer; transition: background .15s, border-color .15s; }
-.foto-btn:hover { background: #F0FDF4; border-color: #10B981; }
-.foto-btn.after:hover { background: #EFF6FF; border-color: #3B82F6; }
-.foto-btn svg { width: 22px; height: 22px; }
-.foto-btn span { font-size: 12px; font-weight: 600; color: #333; }
-.foto-btn small { font-size: 10px; color: #aaa; }
-
-/* Preview thumbnail (foto baru dipilih, belum disimpan) */
-.foto-preview { margin: 10px 14px 0; border-radius: 8px; overflow: hidden; position: relative; }
-.foto-preview img { width: 100%; max-height: 160px; object-fit: cover; display: block; border-radius: 8px; }
-.foto-preview .fp-remove { position: absolute; top: 6px; right: 6px; background: rgba(0,0,0,.55); border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.foto-preview .fp-remove svg { width: 12px; height: 12px; }
-
-/* Tombol simpan per-foto */
-.btn-save-foto { width: 100%; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; border: none; cursor: pointer; margin: 10px 0 0; display: flex; align-items: center; justify-content: center; gap: 6px; transition: opacity .2s, transform .1s; background: #10B981; color: #fff; }
-.btn-save-foto:hover { opacity: .88; }
-.btn-save-foto:active { transform: scale(.98); }
-.btn-save-foto.blue { background: #3B82F6; }
-.foto-save-wrap { padding: 10px 14px 14px; }
-
-/* Catatan */
-.catatan-wrap textarea { width: 100%; border: 1px solid #e0e0e0; border-radius: 10px; padding: 10px 12px; font-size: 13px; font-family: inherit; color: #1a1a1a; background: #FAFAFA; resize: none; outline: none; transition: border-color .15s; box-sizing: border-box; }
-.catatan-wrap textarea:focus { border-color: #10B981; background: #fff; }
-
-/* Info bar */
-.info-bar { display: flex; gap: 8px; align-items: flex-start; background: #EFF6FF; border-radius: 10px; padding: 10px 12px; }
-.info-bar svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
-.info-bar p { font-size: 12px; color: #1E40AF; line-height: 1.6; margin: 0; }
-.info-bar p strong { color: #1E3A8A; }
-
-/* Save button */
-.btn-save { width: 100%; padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 700; border: none; cursor: pointer; margin-top: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; transition: opacity .2s; }
-.btn-save.active { background: #10B981; color: #fff; }
-.btn-save.active:hover { opacity: .9; }
-.btn-save.disabled { background: #F3F4F6; color: #9CA3AF; cursor: not-allowed; }
-.btn-cancel { display: block; text-align: center; margin-top: 10px; color: #aaa; font-size: 13px; text-decoration: none; }
-
-/* Hidden real inputs */
-.hidden-input { display: none !important; }
-</style>
 
 <div class="update-page">
   <!-- Topbar -->
@@ -199,7 +81,7 @@
     <div class="ci">⏳</div>
     <div>
       <div class="ct">Foto selesai bisa diupload pukul {{ item.jam_selesai|date:'H:i' }}</div>
-      <div class="ctimer" id="countdown">Menghitung...</div>
+      <div class="ctimer" id="countdown" data-target-time="{% if item.jam_selesai %}{{ item.tanggal|date:'Y-m-d' }}T{{ item.jam_selesai|date:'H:i' }}:00{% endif %}" data-disable-save="{% if disable_save %}true{% else %}false{% endif %}">Menghitung...</div>
     </div>
   </div>
   {% endif %}
@@ -219,7 +101,7 @@
         <div class="st"><strong>Foto sedang berjalan</strong> — ambil foto kondisi pekerjaan saat ini. Tekan <strong>Simpan</strong> segera agar tidak hilang.</div>
       </div>
 
-      <div class="foto-item {% if item.foto_on_progress %}uploaded{% endif %}" id="boxProgress">
+      <div class="foto-item {% if item.foto_on_progress %}uploaded{% endif %}" id="boxProgress" data-has-progress="{% if item.foto_on_progress %}true{% else %}false{% endif %}">
         <div class="foto-header">
           <div class="foto-icon-wrap fi-progress">
             <svg viewBox="0 0 24 24" fill="none" stroke="#0369A1" stroke-width="1.8">
@@ -302,7 +184,7 @@
         <div class="st"><strong>Foto setelah selesai</strong> — bisa diupload setelah pukul {% if item.jam_selesai %}{{ item.jam_selesai|date:'H:i' }}{% else %}jam selesai{% endif %}. Tekan <strong>Simpan</strong> segera agar tidak hilang.</div>
       </div>
 
-      <div class="foto-item {% if item.foto_after %}uploaded-blue{% elif disable_save %}locked{% endif %}" id="boxAfter">
+      <div class="foto-item {% if item.foto_after %}uploaded-blue{% elif disable_save %}locked{% endif %}" id="boxAfter" data-has-after="{% if item.foto_after %}true{% else %}false{% endif %}">
         <div class="foto-header">
           <div class="foto-icon-wrap {% if disable_save %}fi-locked{% else %}fi-after{% endif %}">
             {% if disable_save %}
@@ -460,29 +342,33 @@ function clearFoto(which) {
     document.getElementById('real_foto_progress_cam').value  = '';
     document.getElementById('previewProgress').style.display = 'none';
     document.getElementById('imgProgress').src               = '';
-    {% if item.foto_on_progress %}
-    document.getElementById('statusProgress').textContent    = '✓ Sudah tersimpan';
-    document.getElementById('statusProgress').className      = 'fs success';
-    document.getElementById('boxProgress').classList.add('uploaded');
-    {% else %}
-    document.getElementById('statusProgress').textContent    = 'Belum ada foto';
-    document.getElementById('statusProgress').className      = 'fs';
-    document.getElementById('boxProgress').classList.remove('uploaded');
-    {% endif %}
+    var boxProgress = document.getElementById('boxProgress');
+    var hasProgress = boxProgress.dataset.hasProgress === 'true';
+    if (hasProgress) {
+      document.getElementById('statusProgress').textContent    = '✓ Sudah tersimpan';
+      document.getElementById('statusProgress').className      = 'fs success';
+      boxProgress.classList.add('uploaded');
+    } else {
+      document.getElementById('statusProgress').textContent    = 'Belum ada foto';
+      document.getElementById('statusProgress').className      = 'fs';
+      boxProgress.classList.remove('uploaded');
+    }
   } else {
     document.getElementById('real_foto_after').value         = '';
     document.getElementById('real_foto_after_cam').value     = '';
     document.getElementById('previewAfter').style.display    = 'none';
     document.getElementById('imgAfter').src                  = '';
-    {% if item.foto_after %}
-    document.getElementById('statusAfter').textContent       = '✓ Sudah tersimpan';
-    document.getElementById('statusAfter').className         = 'fs success-blue';
-    document.getElementById('boxAfter').classList.add('uploaded-blue');
-    {% else %}
-    document.getElementById('statusAfter').textContent       = 'Belum ada foto';
-    document.getElementById('statusAfter').className         = 'fs';
-    document.getElementById('boxAfter').classList.remove('uploaded-blue');
-    {% endif %}
+    var boxAfter = document.getElementById('boxAfter');
+    var hasAfter = boxAfter.dataset.hasAfter === 'true';
+    if (hasAfter) {
+      document.getElementById('statusAfter').textContent       = '✓ Sudah tersimpan';
+      document.getElementById('statusAfter').className         = 'fs success-blue';
+      boxAfter.classList.add('uploaded-blue');
+    } else {
+      document.getElementById('statusAfter').textContent       = 'Belum ada foto';
+      document.getElementById('statusAfter').className         = 'fs';
+      boxAfter.classList.remove('uploaded-blue');
+    }
   }
 }
 
@@ -498,25 +384,26 @@ document.getElementById('formAfter').addEventListener('submit', function() {
 });
 
 // Countdown & auto-unlock
-{% if item.jam_selesai and disable_save %}
-var targetTime = new Date("{{ item.tanggal|date:'Y-m-d' }}T{{ item.jam_selesai|date:'H:i' }}:00");
-function updateCountdown() {
-  var now  = new Date();
-  var diff = targetTime - now;
-  if (diff <= 0) {
-    document.getElementById('countdown').textContent = 'Jam selesai sudah tiba!';
-    setTimeout(function() { location.reload(); }, 800);
-    return;
+var countdownEl = document.getElementById('countdown');
+if (countdownEl && countdownEl.dataset.disableSave === 'true' && countdownEl.dataset.targetTime) {
+  var targetTime = new Date(countdownEl.dataset.targetTime);
+  function updateCountdown() {
+    var now  = new Date();
+    var diff = targetTime - now;
+    if (diff <= 0) {
+      countdownEl.textContent = 'Jam selesai sudah tiba!';
+      setTimeout(function() { location.reload(); }, 800);
+      return;
+    }
+    var h = Math.floor(diff / 3600000);
+    var m = Math.floor((diff % 3600000) / 60000);
+    var s = Math.floor((diff % 60000) / 1000);
+    countdownEl.textContent =
+      'Sisa: ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
   }
-  var h = Math.floor(diff / 3600000);
-  var m = Math.floor((diff % 3600000) / 60000);
-  var s = Math.floor((diff % 60000) / 1000);
-  document.getElementById('countdown').textContent =
-    'Sisa: ' + String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
 }
-updateCountdown();
-setInterval(updateCountdown, 1000);
-{% endif %}
 </script>
 
 {% endblock %}

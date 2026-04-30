@@ -1,0 +1,408 @@
+{% extends 'staff/base_staff.html' %}
+{% block extra_css %}
+<style>
+.insidental-wrap {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+/* HERO */
+.insidental-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f172a 100%);
+  border-radius: 20px;
+  padding: 28px 28px 24px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.insidental-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 10% 50%, rgba(16,185,129,.15) 0%, transparent 50%),
+    radial-gradient(circle at 90% 20%, rgba(59,130,246,.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+.insidental-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #10B981, #3B82F6, #10B981);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(245,158,11,.15);
+  border: 1px solid rgba(245,158,11,.3);
+  color: #fbbf24;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+.hero-title {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  margin: 0 0 6px;
+  line-height: 1.2;
+}
+.hero-sub {
+  color: #94a3b8;
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* CARD */
+.form-card {
+  background: #fff;
+  border: 1.5px solid #e8f5f0;
+  border-radius: 18px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  animation: fadeUp .3s ease both;
+}
+.form-card:nth-child(1) { animation-delay:  0ms; }
+.form-card:nth-child(2) { animation-delay: 60ms; }
+.form-card:nth-child(3) { animation-delay:120ms; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.form-card-header {
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fafcff;
+}
+.fch-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, #10B981, #059669);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.fch-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: #0f172a;
+}
+.fch-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+.form-card-body { padding: 20px; }
+
+/* FIELDS */
+.field-wrap { margin-bottom: 18px; }
+.field-wrap:last-child { margin-bottom: 0; }
+.field-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #475569;
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.field-label .req { color: #ef4444; }
+.field-help {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 5px;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  line-height: 1.5;
+}
+.field-error {
+  font-size: 12px;
+  color: #dc2626;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.form-control, .form-select {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 11px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #f8fafc;
+  transition: border-color .18s, background .18s, box-shadow .18s;
+  padding: 10px 14px;
+}
+.form-control:focus, .form-select:focus {
+  border-color: #10B981;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(16,185,129,.1);
+  outline: none;
+}
+.form-control.is-invalid {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+textarea.form-control { resize: vertical; }
+
+/* LAPORAN AUTO CARD */
+.laporan-info-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f0fdf4;
+  border: 1.5px solid #86efac;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 18px;
+}
+.lic-icon { font-size: 22px; flex-shrink: 0; }
+.lic-body { flex: 1; min-width: 0; }
+.lic-company {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lic-meta { font-size: 11px; color: #64748b; margin-top: 2px; }
+.lic-check { font-size: 18px; color: #10B981; font-weight: 700; flex-shrink: 0; }
+
+.laporan-empty-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #fef9ec;
+  border: 1.5px solid #fcd34d;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+/* INFO NEXT STEP */
+.next-step-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #1e40af;
+  line-height: 1.6;
+}
+.next-step-info strong { color: #1e3a8a; }
+
+/* ACTION BAR */
+.action-bar {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  padding-bottom: 32px;
+}
+.btn-submit {
+  flex: 1;
+  background: linear-gradient(135deg, #10B981, #059669);
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 6px 20px rgba(16,185,129,.3);
+  transition: opacity .18s, transform .12s;
+}
+.btn-submit:hover { opacity: .9; transform: translateY(-1px); }
+.btn-submit:active { transform: scale(.98); }
+.btn-batal {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .15s, border-color .15s;
+}
+.btn-batal:hover { background: #f1f5f9; border-color: #cbd5e1; color: #475569; text-decoration: none; }
+
+/* ERROR BANNER */
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #dc2626;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.error-banner ul { margin: 0; padding-left: 16px; }
+.error-banner ul li { margin-top: 4px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="insidental-wrap">
+
+  <!-- HERO -->
+  <div class="insidental-hero">
+    <div class="hero-badge">⚡ Insidental</div>
+    <h5 class="hero-title">Tambah Kegiatan Dadakan</h5>
+    <p class="hero-sub">
+      Pekerjaan ini di luar jadwal yang sudah dibuat supervisor.<br>
+      Supervisor akan otomatis melihat laporan ini.
+    </p>
+  </div>
+
+  <!-- ERROR BANNER -->
+  {% if form.non_field_errors %}
+  <div class="error-banner">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <ul>{% for err in form.non_field_errors %}<li>{{ err }}</li>{% endfor %}</ul>
+  </div>
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- ── CARD 1: INFO DASAR ── -->
+    <div class="form-card">
+      <div class="form-card-header">
+        <div class="fch-icon">📋</div>
+        <div>
+          <div class="fch-label">Informasi Kegiatan</div>
+          <div class="fch-sub">Apa yang dikerjakan?</div>
+        </div>
+      </div>
+      <div class="form-card-body">
+
+        <!-- Laporan — hidden input + info card -->
+        {{ form.laporan }}
+        {% if laporan_otomatis %}
+          <div class="laporan-info-card">
+            <div class="lic-icon">🏢</div>
+            <div class="lic-body">
+              <div class="lic-company">{{ laporan_otomatis.perusahaan.nama_perusahaan }}</div>
+              <div class="lic-meta">{{ laporan_otomatis.area.nama_area }}&nbsp;·&nbsp;{{ laporan_otomatis.tanggal_laporan|date:"M Y" }}</div>
+            </div>
+            <div class="lic-check">✓</div>
+          </div>
+        {% else %}
+          <div class="laporan-empty-card">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <div>
+              <div style="font-weight:700;margin-bottom:2px">Tidak ada laporan aktif bulan ini</div>
+              <div style="font-size:11px;opacity:.8">Hubungi supervisor kamu untuk membuat laporan terlebih dahulu.</div>
+            </div>
+          </div>
+        {% endif %}
+        {% if form.laporan.errors %}
+          <div class="field-error" style="margin-top:8px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            {{ form.laporan.errors.0 }}
+          </div>
+        {% endif %}
+
+        <!-- Nama Item -->
+        <div class="field-wrap">
+          <label class="field-label" for="{{ form.nama_item.id_for_label }}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="13" y1="18" x2="3" y2="18"/></svg>
+            Nama Kegiatan <span class="req">*</span>
+          </label>
+          {{ form.nama_item }}
+          {% if form.nama_item.errors %}
+            <div class="field-error">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              {{ form.nama_item.errors.0 }}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Keterangan -->
+        <div class="field-wrap">
+          <label class="field-label" for="{{ form.catatan_staff.id_for_label }}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Keterangan / Alasan
+          </label>
+          {{ form.catatan_staff }}
+          {% if form.catatan_staff.errors %}
+            <div class="field-error">{{ form.catatan_staff.errors.0 }}</div>
+          {% endif %}
+          <div class="field-help">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Jelaskan singkat kenapa pekerjaan ini muncul di luar jadwal.
+          </div>
+        </div>
+
+        <!-- Tanggal -->
+        <div class="field-wrap">
+          <label class="field-label" for="{{ form.tanggal.id_for_label }}">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Tanggal <span class="req">*</span>
+          </label>
+          {{ form.tanggal }}
+          {% if form.tanggal.errors %}
+            <div class="field-error">{{ form.tanggal.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── INFO NEXT STEP ── -->
+    <div class="next-step-info" style="margin-bottom:20px">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div>Setelah simpan, kamu akan diarahkan ke halaman <strong>Kerjakan</strong> untuk mengisi <strong>jam mulai & selesai</strong> dan upload <strong>foto dokumentasi</strong>.</div>
+    </div>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar">
+      <a href="{% url 'staff_item_list' %}" class="btn-batal">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        Batal
+      </a>
+      <button type="submit" class="btn-submit" {% if not laporan_otomatis %}disabled style="opacity:.5;cursor:not-allowed;"{% endif %}>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="5 12 12 5 19 12"/><line x1="12" y1="5" x2="12" y2="19"/></svg>
+        Lanjut & Kerjakan
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

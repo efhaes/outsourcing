@@ -1,35 +1,46 @@
 {% extends 'supervisor/base_supervisor.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/supervisor/staff_form_list.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">{{ page_title }}</h5>
+
+<div class="page-header">
+    <h5>{{ page_title }}</h5>
     <a href="{% url 'supervisor_subarea_list' %}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left"></i> Kembali
     </a>
 </div>
 
-<div class="card p-4">
+<div class="form-card">
     <form method="post">
         {% csrf_token %}
-        
         <div class="row g-3">
             <div class="col-md-12">
-                <label class="form-label small text-muted">Area</label>
+                <label class="field-label">Area</label>
                 {{ form.area }}
             </div>
             <div class="col-md-12">
-                <label class="form-label small text-muted">Nama Sub Area</label>
+                <label class="field-label">Nama Sub Area</label>
                 {{ form.nama_sub_area }}
             </div>
             <div class="col-md-12">
-                <label class="form-label small text-muted">Keterangan</label>
+                <label class="field-label">Keterangan</label>
                 {{ form.keterangan }}
             </div>
             <div class="col-12">
-                <button type="submit" class="btn btn-primary">{{ action }}</button>
-                <a href="{% url 'supervisor_subarea_list' %}" class="btn btn-secondary">Batal</a>
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-check-lg"></i> {{ action }}
+                    </button>
+                    <a href="{% url 'supervisor_subarea_list' %}" class="btn-cancel">
+                        <i class="bi bi-x"></i> Batal
+                    </a>
+                </div>
             </div>
         </div>
     </form>
 </div>
+
 {% endblock %}

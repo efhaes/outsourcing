@@ -1,332 +1,167 @@
 {% extends 'supervisor/base_supervisor.html' %}
-
+{% load static %}
 {% block extra_css %}
-<style>
-.card {
-  border-radius: 14px;
-  border: none;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-}
-
-h5 {
-  font-weight: 600;
-}
-
-form .form-control,
-form .form-select {
-  border-radius: 10px;
-}
-
-/* ===== TABLE MODERN ===== */
-.table {
-  border-collapse: separate;
-  border-spacing: 0 10px; /* kasih jarak antar row */
-}
-
-.table thead th {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: .6px;
-  color: #98a2b3;
-  border: none;
-  padding-bottom: 10px;
-}
-
-/* ROW STYLE */
-.table tbody tr {
-  background: #ffffff;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
-  border-radius: 12px;
-  transition: all .25s ease;
-}
-
-/* biar rounded jalan */
-.table tbody tr td:first-child {
-  border-top-left-radius: 12px;
-  border-bottom-left-radius: 12px;
-}
-
-.table tbody tr td:last-child {
-  border-top-right-radius: 12px;
-  border-bottom-right-radius: 12px;
-}
-
-/* CELL */
-.table td {
-  border: none;
-  padding: 14px 12px;
-  vertical-align: middle;
-}
-
-/* HOVER EFFECT */
-.table tbody tr:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
-  background: #f9fbff;
-}
-
-/* TITLE */
-.table td .fw-semibold {
-  color: #111827;
-  font-size: 14px;
-}
-
-/* SUBTEXT */
-.table .text-muted {
-  font-size: 12px;
-}
-
-/* BADGE UPGRADE */
-.badge.bg-success {
-  background: #ecfdf3 !important;
-  color: #027a48;
-  font-weight: 500;
-}
-
-.badge.bg-secondary {
-  background: #f2f4f7 !important;
-  color: #667085;
-  font-weight: 500;
-}
-
-/* ACTION BUTTON */
-.table .btn {
-  transition: all .2s ease;
-}
-
-.table .btn:hover {
-  transform: scale(1.08);
-}
-
-.badge {
-  padding: 6px 10px;
-  font-size: 11px;
-  border-radius: 20px;
-}
-
-.btn-sm {
-  border-radius: 8px;
-}
-
-/* MODAL */
-.modal-content {
-  border-radius: 16px;
-  border: none;
-}
-
-.modal-body {
-  text-align: center;
-  padding: 25px;
-}
-
-.modal-body i {
-  font-size: 45px;
-  color: #dc3545;
-  margin-bottom: 10px;
-}
-
-/* MOBILE */
-@media (max-width: 768px) {
-  .table-wrapper {
-    display: none;
-  }
-
-  .card-mobile {
-    display: block;
-  }
-
-  .subarea-card {
-    border-radius: 14px;
-    padding: 14px;
-    margin-bottom: 12px;
-    background: #fff;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.05);
-  }
-
-  .subarea-card .title {
-    font-weight: 600;
-    font-size: 15px;
-  }
-
-  .subarea-card .meta {
-    font-size: 12px;
-    color: #6c757d;
-  }
-
-  .subarea-card .actions {
-    margin-top: 10px;
-    display: flex;
-    gap: 6px;
-  }
-}
-
-@media (min-width: 769px) {
-  .card-mobile {
-    display: none;
-  }
-}
-</style>
+<link rel="stylesheet" href="{% static 'css/supervisor/list_subarea.css' %}">
 {% endblock %}
-
 
 {% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">Sub Area</h5>
-    <a href="{% url 'supervisor_subarea_create' %}" class="btn btn-primary btn-sm">
+<div class="page-header">
+    <h5>Sub Area</h5>
+    <a href="{% url 'supervisor_subarea_create' %}" class="btn-tambah">
         <i class="bi bi-plus-lg"></i> Tambah Sub Area
     </a>
 </div>
 
-<!-- FILTER -->
-<div class="card p-3 mb-3">
+<div class="filter-card">
     <form method="get" class="row g-2">
         <div class="col-md-4">
-            <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Cari sub area...">
+            <input type="text" name="q" value="{{ q }}"
+                   class="form-control" placeholder="Cari sub area...">
         </div>
         <div class="col-md-3">
-            <select name="area_pk" class="form-select form-select-sm">
+            <select name="area_pk" class="form-select">
                 <option value="">— Semua Area —</option>
                 {% for area in area_qs %}
-                    <option value="{{ area.pk }}" {% if area_pk == area.pk|stringformat:"s" %}selected{% endif %}>
-                        {{ area.nama_area }} ({{ area.perusahaan.nama_perusahaan }})
-                    </option>
+                <option value="{{ area.pk }}"
+                    {% if area_pk == area.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ area.nama_area }} ({{ area.perusahaan.nama_perusahaan }})
+                </option>
                 {% endfor %}
             </select>
         </div>
         <div class="col-md-2">
-            <button class="btn btn-sm btn-secondary w-100">Filter</button>
+            <button type="submit" class="btn-filter">
+                <i class="bi bi-funnel"></i> Filter
+            </button>
         </div>
         <div class="col-md-3">
             {% if q or area_pk %}
-                <a href="?" class="btn btn-sm btn-outline-secondary w-100">Reset</a>
+            <a href="?" class="btn-reset">
+                <i class="bi bi-x"></i> Reset
+            </a>
             {% endif %}
         </div>
     </form>
 </div>
 
-<!-- TABLE DESKTOP -->
-<div class="card table-wrapper">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>No</th>
-                    <th>Nama Sub Area</th>
-                    <th>Area</th>
-                    <th>Perusahaan</th>
-                    <th>Keterangan</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for subarea in subarea_list %}
-                <tr>
-                    <td class="text-muted small">{{ forloop.counter }}</td>
-                    <td class="fw-semibold">{{ subarea.nama_sub_area }}</td>
-                    <td>{{ subarea.area.nama_area }}</td>
-                    <td>{{ subarea.area.perusahaan.nama_perusahaan }}</td>
-                    <td class="text-muted small">{{ subarea.keterangan|default:'—' }}</td>
-                    <td>
-                        {% if subarea.is_active %}
-                            <span class="badge bg-success">Aktif</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Nonaktif</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <a href="{% url 'supervisor_subarea_edit' subarea.pk %}" class="btn btn-outline-primary btn-sm">
+<!-- Desktop Table -->
+<div class="table-card">
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Nama Sub Area</th>
+                <th>Area</th>
+                <th>Perusahaan</th>
+                <th>Keterangan</th>
+                <th>Status</th>
+                <th>Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subarea in subarea_list %}
+            <tr>
+                <td class="td-no">{{ forloop.counter }}</td>
+                <td class="td-nama">{{ subarea.nama_sub_area }}</td>
+                <td>{{ subarea.area.nama_area }}</td>
+                <td>{{ subarea.area.perusahaan.nama_perusahaan }}</td>
+                <td class="td-muted">{{ subarea.keterangan|default:'—' }}</td>
+                <td>
+                    {% if subarea.is_active %}
+                        <span class="badge-aktif">Aktif</span>
+                    {% else %}
+                        <span class="badge-nonaktif">Nonaktif</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="action-btns">
+                        <a href="{% url 'supervisor_subarea_edit' subarea.pk %}" class="btn-edit">
                             <i class="bi bi-pencil"></i>
                         </a>
-                        <button class="btn btn-outline-danger btn-sm"
-                            data-bs-toggle="modal" data-bs-target="#modalHapus{{ subarea.pk }}">
+                        <button class="btn-hapus"
+                            data-bs-toggle="modal"
+                            data-bs-target="#modalHapus{{ subarea.pk }}">
                             <i class="bi bi-trash"></i>
                         </button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center text-muted py-4">Belum ada sub area.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr class="empty-row">
+                <td colspan="7">Belum ada sub area.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
-<!-- MOBILE CARD -->
-<div class="card-mobile">
+<!-- Mobile Cards -->
+<div class="mobile-cards">
     {% for subarea in subarea_list %}
-    <div class="subarea-card">
-
-        <div class="title">{{ subarea.nama_sub_area }}</div>
-
-        <div class="meta">
-            {{ subarea.area.nama_area }} • {{ subarea.area.perusahaan.nama_perusahaan }}
-        </div>
-
-        <div class="meta mt-1">
-            {{ subarea.keterangan|default:'—' }}
-        </div>
-
-        <div class="mt-2">
+    <div class="m-card">
+        <div class="m-card-top">
+            <div>
+                <div class="m-card-nama">{{ subarea.nama_sub_area }}</div>
+                <div class="m-card-area">
+                    {{ subarea.area.nama_area }}
+                    <span class="m-card-sep">·</span>
+                    {{ subarea.area.perusahaan.nama_perusahaan }}
+                </div>
+            </div>
             {% if subarea.is_active %}
-                <span class="badge bg-success">Aktif</span>
+                <span class="badge-aktif">Aktif</span>
             {% else %}
-                <span class="badge bg-secondary">Nonaktif</span>
+                <span class="badge-nonaktif">Nonaktif</span>
             {% endif %}
         </div>
-
-        <div class="actions">
-            <a href="{% url 'supervisor_subarea_edit' subarea.pk %}" class="btn btn-outline-primary btn-sm w-100">
-                Edit
-            </a>
-
-            <button class="btn btn-outline-danger btn-sm w-100"
-                data-bs-toggle="modal" data-bs-target="#modalHapus{{ subarea.pk }}">
-                Hapus
-            </button>
+        {% if subarea.keterangan %}
+        <div class="m-card-keterangan">{{ subarea.keterangan }}</div>
+        {% endif %}
+        <div class="m-card-footer">
+            <span style="font-size:11px;color:var(--clr-text-muted);">#{{ forloop.counter }}</span>
+            <div class="m-card-actions">
+                <a href="{% url 'supervisor_subarea_edit' subarea.pk %}" class="btn-edit-full">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <button class="btn-hapus-full"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalHapus{{ subarea.pk }}">
+                    <i class="bi bi-trash"></i> Hapus
+                </button>
+            </div>
         </div>
-
     </div>
     {% empty %}
-    <p class="text-center text-muted">Belum ada data</p>
+    <div style="text-align:center;padding:2.5rem 1rem;color:var(--clr-text-muted);font-size:13px;">
+        Belum ada sub area.
+    </div>
     {% endfor %}
 </div>
 
-
-<!-- MODALS (DI LUAR TABLE) -->
+<!-- Modals -->
 {% for subarea in subarea_list %}
 <div class="modal fade" id="modalHapus{{ subarea.pk }}" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content text-center">
-
-      <div class="modal-body">
-        <i class="bi bi-exclamation-circle-fill"></i>
-
-        <h6 class="mt-2 fw-semibold">Nonaktifkan Sub Area?</h6>
-
-        <p class="text-muted small mb-3">
-          Sub area <strong>{{ subarea.nama_sub_area }}</strong> akan dinonaktifkan.
-        </p>
-
-        <div class="d-flex justify-content-center gap-2">
-          <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal">
-            Batal
-          </button>
-
-          <form method="post" action="{% url 'supervisor_subarea_delete' subarea.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger btn-sm">
-              Ya, Nonaktifkan
-            </button>
-          </form>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <i class="bi bi-exclamation-circle-fill modal-danger-icon"></i>
+                <h6>Nonaktifkan Sub Area?</h6>
+                <p>Sub area <strong>{{ subarea.nama_sub_area }}</strong> akan dinonaktifkan.</p>
+                <div class="modal-actions">
+                    <button type="button" class="btn-modal-batal" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <form method="post" action="{% url 'supervisor_subarea_delete' subarea.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-modal-hapus">
+                            <i class="bi bi-trash"></i> Ya, Nonaktifkan
+                        </button>
+                    </form>
+                </div>
+            </div>
         </div>
-      </div>
-
     </div>
-  </div>
 </div>
 {% endfor %}
 

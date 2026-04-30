@@ -1,0 +1,563 @@
+/* kepala.css — Semua halaman Kepala Supervisor
+   Tema: dark glass, ikut base.html
+   Font: Montserrat
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap');
+
+* { font-family: 'Montserrat', sans-serif !important; }
+
+/* ════════════════════════════════════════════════════════════
+   SHARED — dipakai semua halaman
+   ════════════════════════════════════════════════════════════ */
+
+/* ── Page Header ───────────────────────────────────────────── */
+.page-header,
+.d-flex.justify-content-between.align-items-center.mb-3 {
+  display: flex !important;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+h5.mb-0, .page-header h5 {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  color: #f0f0ff !important;
+  letter-spacing: 0.01em;
+  margin: 0 !important;
+}
+
+/* ── Card (filter, table, form) ────────────────────────────── */
+.card,
+.search-card,
+.table-card {
+  background: rgba(22, 22, 40, 0.82) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 14px !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Inputs & Selects ──────────────────────────────────────── */
+.form-control,
+.form-select {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+  border-radius: 8px !important;
+  color: #f0f0ff !important;
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13.5px !important;
+  font-weight: 500;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.form-control::placeholder { color: rgba(96,96,128,0.8) !important; }
+.form-control:focus,
+.form-select:focus {
+  background: rgba(255,255,255,0.08) !important;
+  border-color: rgba(108,99,255,0.55) !important;
+  box-shadow: 0 0 0 3px rgba(108,99,255,0.12) !important;
+  color: #f0f0ff !important;
+}
+.form-select option { background: #1a1a2e; color: #f0f0ff; }
+
+.form-control-sm,
+.form-select-sm {
+  font-size: 13px !important;
+  padding: 0.35rem 0.7rem !important;
+}
+
+/* ── Buttons ───────────────────────────────────────────────── */
+.btn {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  letter-spacing: 0.01em;
+}
+.btn-primary {
+  background: #6c63ff !important;
+  border-color: #6c63ff !important;
+  color: #fff !important;
+}
+.btn-primary:hover { background: #4f47cc !important; border-color: #4f47cc !important; }
+
+.btn-secondary {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #f0f0ff !important;
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.12) !important; }
+
+.btn-outline-secondary {
+  background: transparent !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: rgba(160,160,192,0.9) !important;
+}
+.btn-outline-secondary:hover {
+  background: rgba(255,255,255,0.06) !important;
+  color: #f0f0ff !important;
+}
+.btn-outline-primary {
+  background: transparent !important;
+  border-color: rgba(108,99,255,0.4) !important;
+  color: #a09cff !important;
+}
+.btn-outline-primary:hover {
+  background: rgba(108,99,255,0.1) !important;
+  border-color: #6c63ff !important;
+  color: #6c63ff !important;
+}
+.btn-outline-warning {
+  background: transparent !important;
+  border-color: rgba(245,166,35,0.4) !important;
+  color: #f5a623 !important;
+}
+.btn-outline-warning:hover { background: rgba(245,166,35,0.1) !important; }
+
+.btn-warning {
+  background: #f5a623 !important;
+  border-color: #f5a623 !important;
+  color: #0f0f1a !important;
+}
+
+/* ── Badges ────────────────────────────────────────────────── */
+.badge {
+  font-family: 'Montserrat', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 10px !important;
+  border-radius: 20px !important;
+}
+.badge.bg-success {
+  background: rgba(0,212,170,0.13) !important;
+  color: #00d4aa !important;
+  border: 1px solid rgba(0,212,170,0.22) !important;
+}
+.badge.bg-secondary {
+  background: rgba(96,96,128,0.18) !important;
+  color: rgba(160,160,192,0.85) !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+}
+
+/* status-badge dari kepala_staff_list */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px !important;
+  font-weight: 600;
+}
+.status-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.badge-aktif {
+  background: rgba(0,212,170,0.13) !important;
+  color: #00d4aa !important;
+  border: 1px solid rgba(0,212,170,0.22);
+}
+.badge-aktif::before { background: #00d4aa; }
+.badge-nonaktif {
+  background: rgba(96,96,128,0.18) !important;
+  color: rgba(160,160,192,0.8) !important;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.badge-nonaktif::before { background: rgba(160,160,192,0.5); }
+
+/* ── Modal ─────────────────────────────────────────────────── */
+.modal-content {
+  background: #1a1a2e !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 14px !important;
+  color: #f0f0ff;
+}
+.modal-header {
+  border-bottom: 1px solid rgba(255,255,255,0.07) !important;
+  padding: 1rem 1.25rem;
+}
+.modal-title, .modal-header h6 {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: #f0f0ff;
+}
+.modal-body {
+  font-size: 13.5px;
+  color: rgba(200,200,220,0.9);
+  padding: 1.1rem 1.25rem;
+}
+.modal-body strong { color: #f0f0ff; font-weight: 600; }
+.modal-footer {
+  border-top: 1px solid rgba(255,255,255,0.07) !important;
+  padding: 0.85rem 1.25rem;
+  gap: 8px;
+}
+.btn-close { filter: invert(1) opacity(0.5) !important; }
+.btn-close:hover { filter: invert(1) opacity(0.9) !important; }
+
+/* ════════════════════════════════════════════════════════════
+   TABLE — supervisor_list & staff_list
+   ════════════════════════════════════════════════════════════ */
+
+.table {
+  color: #f0f0ff !important;
+  font-size: 13.5px;
+  margin-bottom: 0;
+  --bs-table-bg: transparent !important;
+  --bs-table-hover-bg: rgba(108,99,255,0.06) !important;
+}
+.table > :not(caption) > * > * {
+  background-color: transparent !important;
+}
+.table thead th,
+.table-light,
+thead.table-light > tr > th {
+  background: rgba(255,255,255,0.04) !important;
+  color: rgba(160,160,192,0.75) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  padding: 0.75rem 1rem;
+  white-space: nowrap;
+}
+.table tbody td {
+  background-color: transparent !important;
+  border-bottom: 1px solid rgba(255,255,255,0.05) !important;
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+}
+.table tbody tr { background-color: transparent !important; }
+.table tbody tr:last-child td { border-bottom: none !important; }
+.table-hover tbody tr:hover,
+.table-hover tbody tr:hover td {
+  background-color: rgba(108,99,255,0.05) !important;
+}
+
+/* Cell helpers */
+.cell-name, .fw-semibold {
+  font-weight: 600 !important;
+  color: #f0f0ff !important;
+}
+.cell-muted, .text-muted {
+  color: rgba(160,160,192,0.75) !important;
+  font-size: 13px !important;
+}
+.small { font-size: 12.5px !important; }
+
+/* Staff avatar */
+.staff-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(108,99,255,0.18);
+  color: #a09cff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid rgba(108,99,255,0.25);
+}
+
+/* Penugasan list dalam td */
+.table tbody td .small {
+  color: rgba(160,160,192,0.75);
+  line-height: 1.5;
+}
+
+/* Empty state */
+.table tbody td.text-center {
+  color: rgba(96,96,128,0.7) !important;
+  font-size: 13px !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE CARDS — staff_list
+   ════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+  .table-card { display: none !important; }
+  .mobile-cards { display: flex !important; flex-direction: column; gap: 10px; }
+}
+@media (min-width: 641px) {
+  .mobile-cards { display: none !important; }
+}
+
+.m-card {
+  background: rgba(22,22,40,0.82);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 0.2s;
+}
+.m-card:hover { border-color: rgba(108,99,255,0.3); }
+
+.m-card-avatar {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: rgba(108,99,255,0.18);
+  color: #a09cff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+  flex-shrink: 0;
+  border: 1px solid rgba(108,99,255,0.25);
+}
+.m-card-info { flex: 1; min-width: 0; }
+.m-card-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #f0f0ff;
+  margin-bottom: 2px;
+}
+.m-card-sub {
+  font-size: 12px;
+  color: rgba(160,160,192,0.7);
+  line-height: 1.5;
+}
+.m-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+/* ════════════════════════════════════════════════════════════
+   FORM — create / edit supervisor
+   ════════════════════════════════════════════════════════════ */
+
+.form-container {
+  max-width: 560px;
+  padding: 1.5rem 0;
+}
+
+.form-card {
+  background: rgba(22,22,40,0.85);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 14px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 1.75rem 2rem;
+}
+
+/* Back link di form */
+.form-header { margin-bottom: 1.5rem; }
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: rgba(160,160,192,0.85);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color 0.18s;
+}
+.back-link:hover { color: #f0f0ff; }
+
+/* form group */
+.form-group,
+.card.p-4 .col-12,
+.card.p-4 .col-md-6,
+.card.p-4 .col-md-12 {
+  margin-bottom: 1.1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(160,160,192,0.85) !important;
+  margin-bottom: 0.4rem;
+}
+/* label dari template kedua (small text-muted) */
+label.form-label.small.text-muted {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: rgba(160,160,192,0.85) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.form-text {
+  font-size: 11.5px !important;
+  color: rgba(96,96,128,0.85) !important;
+  margin-top: 4px;
+}
+.form-error {
+  font-size: 12px;
+  font-weight: 500;
+  color: #ff5c7c;
+  margin-top: 4px;
+}
+
+/* foto profil preview */
+.img-thumbnail {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 8px !important;
+  padding: 4px !important;
+}
+
+/* form actions */
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* card p-4 dari template versi kedua */
+.card.p-4 {
+  padding: 1.75rem !important;
+}
+
+/* ════════════════════════════════════════════════════════════
+   ACTION BUTTONS — area_list, penugasan_list
+   ════════════════════════════════════════════════════════════ */
+
+.action-btn {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.18s;
+  text-decoration: none;
+  color: rgba(160,160,192,0.7);
+}
+.action-btn:hover { transform: translateY(-1px); }
+.action-btn.edit { color:#a09cff; border-color:rgba(108,99,255,0.25); }
+.action-btn.edit:hover { background:rgba(108,99,255,0.12); border-color:rgba(108,99,255,0.5); color:#6c63ff; }
+.action-btn.delete { color:#ff5c7c; border-color:rgba(255,92,124,0.2); }
+.action-btn.delete:hover { background:rgba(255,92,124,0.1); border-color:rgba(255,92,124,0.45); }
+.action-btn.toggle { color:#f5a623; border-color:rgba(245,166,35,0.22); }
+.action-btn.toggle:hover { background:rgba(245,166,35,0.1); border-color:rgba(245,166,35,0.45); }
+
+/* ════════════════════════════════════════════════════════════
+   MODAL CUSTOM — centered icon style (area & penugasan)
+   ════════════════════════════════════════════════════════════ */
+
+.modal-icon-wrap {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.6rem;
+  margin: 0 auto 1rem;
+}
+.modal-icon-wrap[style*="background:#fef2f2"] { background:rgba(255,92,124,0.12) !important; color:#ff5c7c !important; }
+.modal-icon-wrap[style*="background:#fff8e1"] { background:rgba(245,166,35,0.12) !important; color:#f5a623 !important; }
+.modal-icon-wrap[style*="background:#e8f5e9"] { background:rgba(0,212,170,0.12) !important; color:#00d4aa !important; }
+
+.modal-footer-custom {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  margin-top: 1rem;
+}
+.btn-modal-cancel {
+  padding: 9px 24px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px; font-weight: 600;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: rgba(160,160,192,0.85);
+  cursor: pointer; transition: all 0.18s;
+}
+.btn-modal-cancel:hover { background:rgba(255,255,255,0.06); color:#f0f0ff; }
+
+.btn-modal-danger {
+  padding: 9px 24px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px; font-weight: 600;
+  background: rgba(255,92,124,0.15);
+  color: #ff5c7c;
+  border: 1px solid rgba(255,92,124,0.3);
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: all 0.18s;
+}
+.btn-modal-danger:hover { background:rgba(255,92,124,0.25); border-color:rgba(255,92,124,0.5); }
+
+.btn-modal-action {
+  padding: 9px 24px;
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  transition: all 0.18s;
+}
+.btn-modal-action.warning { background:rgba(245,166,35,0.15); color:#f5a623; border:1px solid rgba(245,166,35,0.3); }
+.btn-modal-action.warning:hover { background:rgba(245,166,35,0.25); border-color:rgba(245,166,35,0.5); }
+.btn-modal-action.success { background:rgba(0,212,170,0.13); color:#00d4aa; border:1px solid rgba(0,212,170,0.25); }
+.btn-modal-action.success:hover { background:rgba(0,212,170,0.22); border-color:rgba(0,212,170,0.45); }
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE CARD VARIANTS — area_list, penugasan_list
+   ════════════════════════════════════════════════════════════ */
+
+.m-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.m-card-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+}
+.m-card-meta-item {
+  font-size: 12px;
+  color: rgba(160,160,192,0.65);
+  line-height: 1.5;
+}
+.m-card-meta-item span {
+  font-weight: 600;
+  color: rgba(200,200,220,0.9);
+  display: block;
+  font-size: 12.5px;
+}
+.m-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 10px;
+}
+.m-card-actions { display: flex; gap: 6px; }
+
+/* DESKTOP */
+@media (min-width: 768px) {
+  .card-mobile {
+    display: none;
+  }
+}
+
+/* MOBILE */
+@media (max-width: 767px) {
+  .table-wrapper {
+    display: none;
+  }
+}

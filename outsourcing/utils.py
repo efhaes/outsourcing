@@ -291,7 +291,6 @@ def get_dashboard_stats(user, bulan=None, tahun=None):
     # ── STATS LAPORAN (terikat periode) ────────────────────────────────────
     total_laporan         = laporan_qs.count()
     total_laporan_draft   = laporan_qs.filter(status=StatusLaporan.DRAFT).count()
-    total_laporan_aktif   = laporan_qs.filter(status=StatusLaporan.AKTIF).count()
     total_laporan_selesai = laporan_qs.filter(status=StatusLaporan.SELESAI).count()
     total_laporan_dikirim = laporan_qs.filter(status=StatusLaporan.DIKIRIM_CUSTOMER).count()
 
@@ -375,7 +374,6 @@ def get_dashboard_stats(user, bulan=None, tahun=None):
         # Laporan
         'total_laporan'       : total_laporan,
         'total_laporan_draft' : total_laporan_draft,
-        'total_laporan_aktif' : total_laporan_aktif,
         'total_laporan_selesai': total_laporan_selesai,
         'total_laporan_dikirim': total_laporan_dikirim,
 

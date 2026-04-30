@@ -10,10 +10,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from outsourcing.decorators import staff_required
-from outsourcing.forms.staff_forms import ItemKegiatanStaffForm
+from outsourcing.forms.staff_forms import ItemKegiatanStaffForm,ItemKegiatanInsidentalForm
 from outsourcing.models import ItemKegiatan
-
-
+from django.db.models import Case, Count, IntegerField, Q, Value, When
 # ---------------------------------------------------------------------------
 # Constants — no more magic strings scattered everywhere
 # ---------------------------------------------------------------------------
@@ -143,6 +142,8 @@ def item_list(request: HttpRequest):
     Staff melihat item kegiatan miliknya.
     Flow: Pilih Tahun → Pilih Bulan → Lihat daftar item.
     """
+
+
     tahun_dipilih = request.GET.get("tahun", "").strip()
     bulan_dipilih = request.GET.get("bulan", "").strip()
     status        = request.GET.get("status", "").strip()
@@ -155,7 +156,6 @@ def item_list(request: HttpRequest):
     )
 
     # ── Data untuk card Tahun ─────────────────────────────────────── #
-    from django.db.models import Count, Q
     tahun_qs = (
         base_qs
         .values_list("tanggal__year", flat=True)
@@ -165,13 +165,9 @@ def item_list(request: HttpRequest):
     tahun_list = []
     for tahun in tahun_qs:
         if tahun:
-            total      = base_qs.filter(tanggal__year=tahun).count()
-            selesai    = base_qs.filter(tanggal__year=tahun, status="selesai").count()
-            tahun_list.append({
-                "tahun"  : tahun,
-                "total"  : total,
-                "selesai": selesai,
-            })
+            total   = base_qs.filter(tanggal__year=tahun).count()
+            selesai = base_qs.filter(tanggal__year=tahun, status="selesai").count()
+            tahun_list.append({"tahun": tahun, "total": total, "selesai": selesai})
 
     # ── Data untuk card Bulan (jika tahun sudah dipilih) ─────────── #
     NAMA_BULAN = [
@@ -207,6 +203,23 @@ def item_list(request: HttpRequest):
         )
         if status:
             item_qs = item_qs.filter(status=status)
+
+        # Urutan: hari ini dulu → status (terjadwal/on_progress/selesai) → jam mulai
+        today = timezone.localdate()
+        item_qs = item_qs.annotate(
+            is_today=Case(
+                When(tanggal=today, then=Value(0)),
+                default=Value(1),
+                output_field=IntegerField(),
+            ),
+            status_order=Case(
+                When(status=Status.TERJADWAL,   then=Value(0)),
+                When(status=Status.ON_PROGRESS, then=Value(1)),
+                When(status=Status.SELESAI,     then=Value(2)),
+                default=Value(3),
+                output_field=IntegerField(),
+            ),
+        ).order_by("is_today", "status_order", "tanggal", "jam_mulai")
 
     return render(request, "staff/item/list.html", {
         "tahun_list"    : tahun_list,
@@ -303,4 +316,57 @@ def item_update_jam(request: HttpRequest):
     return JsonResponse({
         "success"     : True,
         "redirect_url": f"/staff/item/{item.pk}/update/",
+    })
+
+
+
+
+@staff_required
+def item_create_insidental(request: HttpRequest):
+    """
+    Staff membuat item kegiatan insidental (pekerjaan dadakan di luar jadwal).
+
+    Flow:
+    1. Staff isi nama, keterangan, tanggal -> simpan
+    2. Redirect ke staff_item_update -> isi jam via modal + upload foto
+
+    Behaviour:
+    - is_insidental = True  (otomatis)
+    - task          = None  (staff ketik bebas di nama_item)
+    - sub_area      = None  (tidak diekspos)
+    - status awal   = 'terjadwal'
+    - staff         = [request.user] (M2M, di-assign setelah save)
+    """
+    from outsourcing.forms.staff_forms import ItemKegiatanInsidentalForm
+
+    if request.method == "POST":
+        form = ItemKegiatanInsidentalForm(
+            request.POST,
+            request.FILES,
+            user=request.user,
+        )
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.is_insidental = True
+            item.task          = None
+            item.sub_area      = None
+            item.status        = "terjadwal"
+            item.save()
+
+            # Assign staff ke item (M2M, harus setelah save)
+            item.staff.add(request.user)
+
+            messages.success(
+                request,
+                f'Kegiatan insidental "{item.nama_item}" dibuat. Sekarang isi jam dan foto.',
+            )
+            # Langsung ke halaman update untuk isi jam + foto
+            return redirect("staff_item_list")
+    else:
+        form = ItemKegiatanInsidentalForm(user=request.user)
+
+    return render(request, "staff/item/create_insidental.html", {
+        "form"             : form,
+        "laporan_otomatis" : getattr(form, "laporan_otomatis", None),
+        "page_title"       : "Tambah Kegiatan Insidental",
     })
