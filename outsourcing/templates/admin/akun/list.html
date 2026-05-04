@@ -59,9 +59,15 @@
                         {% endif %}
                     </td>
                     <td data-label="Aksi">
+                        {% if akun.role == 'kepala_supervisor' %}
+                        <a href="{% url 'admin_akun_edit_kepala' akun.pk %}" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        {% else %}
                         <a href="{% url 'admin_akun_edit' akun.pk %}" class="btn btn-sm btn-outline-primary">
                             <i class="bi bi-pencil"></i>
                         </a>
+                        {% endif %}
                         <button class="btn btn-sm btn-outline-{% if akun.is_active %}warning{% else %}success{% endif %}"
                             data-bs-toggle="modal" data-bs-target="#modalToggle{{ akun.pk }}">
                             <i class="bi bi-{% if akun.is_active %}pause{% else %}play{% endif %}"></i>

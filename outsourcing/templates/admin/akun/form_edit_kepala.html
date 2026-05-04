@@ -1,0 +1,217 @@
+{% extends 'admin/base_admin.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="page-content">
+  <div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+      
+      <!-- Header -->
+      <div class="text-center mb-4">
+        <div style="width:80px;height:80px;background:var(--clr-accent-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="13" r="4"/>
+            <path d="M12 13v8"/>
+          </svg>
+        </div>
+        <h5 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:8px">{{ page_title }}</h5>
+        <p style="color:var(--clr-text-muted);font-size:14px;margin:0">Edit data Kepala Supervisor</p>
+      </div>
+      
+      <!-- Form Card -->
+      <div class="card" style="background:rgba(255,255,255,0.02);border:1px solid var(--clr-border)">
+        <div class="card-body p-4">
+          <form method="post" enctype="multipart/form-data" id="kepalaForm">
+            {% csrf_token %}
+            
+            <!-- Informasi Dasar -->
+            <div class="mb-4">
+              <h6 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:16px;border-bottom:1px solid var(--clr-border);padding-bottom:8px">Informasi Dasar</h6>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label style="color:var(--clr-text-secondary);font-size:13px;font-weight:500">Nama Lengkap</label>
+                  {{ form.nama_lengkap }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label style="color:var(--clr-text-secondary);font-size:13px;font-weight:500">Username</label>
+                  {{ form.username }}
+                </div>
+              </div>
+              
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label style="color:var(--clr-text-secondary);font-size:13px;font-weight:500">Email</label>
+                  {{ form.email }}
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label style="color:var(--clr-text-secondary);font-size:13px;font-weight:500">Telepon</label>
+                  {{ form.telepon }}
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label style="color:var(--clr-text-secondary);font-size:13px;font-weight:500">Password (kosongkan jika tidak ingin ubah)</label>
+                {{ form.password }}
+                <small style="color:var(--clr-text-muted);font-size:11px">Kosongkan jika tidak ingin mengubah password</small>
+              </div>
+            </div>
+            
+            <!-- Jenis Jasa -->
+            <div class="mb-4">
+              <h6 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:16px;border-bottom:1px solid var(--clr-border);padding-bottom:8px">Jenis Jasa</h6>
+              {{ form.jenis_jasa }}
+              <small style="color:var(--clr-text-muted);font-size:11px">Pilih jenis jasa yang bisa ditangani oleh Kepala Supervisor ini</small>
+            </div>
+            
+            <!-- Foto Profil -->
+            <div class="mb-4">
+              <h6 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:16px;border-bottom:1px solid var(--clr-border);padding-bottom:8px">Foto Profil</h6>
+              
+              {% if akun.foto_profil %}
+              <div class="text-center mb-3">
+                <img src="{{ akun.foto_profil.url }}" 
+                     alt="{{ akun.nama_lengkap }}" 
+                     style="width:120px;height:120px;border-radius:50%;object-fit:cover;border:2px solid var(--clr-accent)">
+                <div style="margin-top:8px">
+                  <button type="button" class="btn btn-sm" style="background:var(--clr-danger-light);color:var(--clr-danger);border:none;font-size:12px" onclick="document.getElementById('id_foto_profil').click()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                      <polyline points="3,6 5,6 21,6"/>
+                      <path d="M19,6v14a2,2 0 0,0,2,2H5a2,2 0 0,0-2-2V6m3,2V4a2,2 0 0,0-2-2H8a2,2 0 0,0-2,2v2"/>
+                    </svg>
+                    Hapus Foto
+                  </button>
+                </div>
+              </div>
+              {% endif %}
+              
+              {{ form.foto_profil }}
+              <small style="color:var(--clr-text-muted);font-size:11px">Format: JPG, PNG. Maksimal: 2MB</small>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="d-flex gap-2 justify-content-end">
+              <a href="{% url 'admin_akun_list' %}" class="btn" style="background:rgba(255,255,255,0.05);color:var(--clr-text-secondary);border:1px solid var(--clr-border)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                  <line x1="19" y1="12" x2="5" y2="12"/>
+                  <polyline points="12,19 12,5 12,5"/>
+                </svg>
+                Batal
+              </a>
+              <button type="submit" class="btn" style="background:var(--clr-accent);color:#fff;border:none">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l-1-1H7l-1 1a2 2 0 0 1-2 2z"/>
+                  <polyline points="17,21 17,13 7,13 7,21"/>
+                </svg>
+                {{ action }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+      <!-- Info Card -->
+      <div class="card" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);margin-top:20px">
+        <div class="card-body p-3">
+          <h6 style="color:var(--clr-accent);font-weight:600;margin-bottom:12px">Informasi Edit</h6>
+          <ul style="margin:0;padding-left:20px;color:var(--clr-text-muted);font-size:13px;line-height:1.6">
+            <li style="margin-bottom:8px">Username tidak dapat diubah setelah akun dibuat</li>
+            <li style="margin-bottom:8px">Password hanya diubah jika diisi kolom password</li>
+            <li style="margin-bottom:8px">Jenis jasa akan menggantikan semua jenis jasa yang ada</li>
+            <li style="margin-bottom:8px">Foto profil akan diganti jika upload foto baru</li>
+          </ul>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<style>
+.form-control, .form-select {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--clr-border);
+  color: var(--clr-text-primary);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+  background: rgba(255,255,255,0.08);
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 0 3px rgba(165,180,252,0.1);
+  outline: none;
+}
+
+.form-label {
+  color: var(--clr-text-secondary);
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.errorlist {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid var(--clr-danger);
+  color: var(--clr-danger);
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.errorlist li {
+  margin-bottom: 4px;
+}
+
+#id_foto_profil {
+  display: none;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('kepalaForm');
+  
+  // Auto-clear password field untuk keamanan
+  form.addEventListener('submit', function(e) {
+    const passwordField = document.getElementById('id_password');
+    if (passwordField && !passwordField.value.trim()) {
+      passwordField.removeAttribute('name');
+    }
+  });
+  
+  // Preview foto jika ada yang diupload
+  const fotoInput = document.getElementById('id_foto_profil');
+  if (fotoInput) {
+    fotoInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          // Update preview jika perlu
+          console.log('File selected:', file.name);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

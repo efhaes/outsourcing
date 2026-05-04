@@ -9,7 +9,7 @@ from .jenis_jasa import (
 )
 from .akun import (
     akun_list, akun_create_kepala, akun_create_customer,
-    akun_edit, akun_toggle_aktif
+    akun_edit, akun_toggle_aktif,akun_edit_kepala
 )
 from .area import (
     area_list, area_create, area_edit, area_delete,

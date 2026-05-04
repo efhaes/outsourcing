@@ -128,6 +128,56 @@ def akun_edit(request, pk):
 
 
 @admin_required
+def akun_edit_kepala(request, pk):
+    """Edit data Kepala Supervisor (nama, telepon, foto profil, jenis jasa)."""
+    akun = get_object_or_404(User, pk=pk, role=RoleChoices.KEPALA_SUPERVISOR)
+    
+    if request.method == 'POST':
+        form = CreateKepalaSupervisorForm(request.POST, request.FILES, instance=akun)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.role = RoleChoices.KEPALA_SUPERVISOR
+            user.is_active = True
+            if form.cleaned_data.get('password'):
+                user.set_password(form.cleaned_data['password'])
+            user.save()
+
+            # Update jenis jasa
+            KepalaSupervisorJasa.objects.filter(kepala_supervisor=user).delete()
+            jenis_jasa_list = form.cleaned_data.get('jenis_jasa', [])
+            for jasa in jenis_jasa_list:
+                KepalaSupervisorJasa.objects.get_or_create(
+                    kepala_supervisor=user,
+                    jenis_jasa=jasa,
+                )
+
+            messages.success(
+                request,
+                f'Akun Kepala Supervisor "{user.nama_lengkap}" berhasil diperbarui.'
+            )
+            return redirect('admin_akun_list')
+    else:
+        # Pre-populate form dengan data existing
+        initial_data = {
+            'nama_lengkap': akun.nama_lengkap,
+            'username': akun.username,
+            'email': akun.email,
+            'telepon': akun.telepon,
+            'jenis_jasa': list(akun.kepala_supervisor_jasa.values_list('jenis_jasa', flat=True)),
+        }
+        form = CreateKepalaSupervisorForm(initial=initial_data)
+
+    context = {
+        'form'      : form,
+        'akun'      : akun,
+        'page_title': f'Edit Kepala Supervisor — {akun.nama_lengkap}',
+        'action'    : 'Simpan Perubahan',
+        'is_edit'   : True,
+    }
+    return render(request, 'admin/akun/form_kepala.html', context)
+
+
+@admin_required
 def akun_toggle_aktif(request, pk):
     """Aktifkan / nonaktifkan akun user. Hanya menerima POST."""
     # Tolak GET — toggle state via GET berbahaya (bisa ditrigger tanpa sengaja)

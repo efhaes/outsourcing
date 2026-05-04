@@ -29,13 +29,7 @@ class AbsenMasukForm(forms.ModelForm):
 
     class Meta:
         model  = Absensi
-        fields = ['foto_masuk', 'lat_masuk', 'lon_masuk']
-        widgets = {
-            'foto_masuk': forms.FileInput(attrs={
-                'accept'  : 'image/*',
-                'capture' : 'user',   # langsung buka kamera depan di mobile
-            }),
-        }
+        fields = ['lat_masuk', 'lon_masuk']
 
 
 class AbsenPulangForm(forms.ModelForm):
@@ -51,10 +45,5 @@ class AbsenPulangForm(forms.ModelForm):
 
     class Meta:
         model  = Absensi
-        fields = ['foto_pulang', 'lat_pulang', 'lon_pulang']
-        widgets = {
-            'foto_pulang': forms.FileInput(attrs={
-                'accept'  : 'image/*',
-                'capture' : 'user',
-            }),
-        }
+        fields = [ 'lat_pulang', 'lon_pulang']
+        

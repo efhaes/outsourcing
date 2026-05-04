@@ -38,7 +38,7 @@
                 <tr>
                     <td class="text-muted small">{{ forloop.counter }}</td>
                     <td>
-                        <span class="fw-semibold">{{ data.supervisor.nama_lengkap }}</span>
+                        <span class="fw-semibold">{{ data.supervisor.nama_lengkap|default:data.supervisor.username }}</span>
                     </td>
                     <td class="text-muted small">{{ data.supervisor.username }}</td>
                     <td class="text-muted small">{{ data.supervisor.telepon|default:'—' }}</td>
@@ -77,9 +77,9 @@
                             </div>
                             <div class="modal-body">
                                 {% if data.supervisor.is_active %}
-                                    Yakin ingin menonaktifkan <strong>{{ data.supervisor.nama_lengkap }}</strong>?
+                                    Yakin ingin menonaktifkan <strong>{{ data.supervisor.nama_lengkap|default:data.supervisor.username }}</strong>?
                                 {% else %}
-                                    Yakin ingin mengaktifkan <strong>{{ data.supervisor.nama_lengkap }}</strong>?
+                                    Yakin ingin mengaktifkan <strong>{{ data.supervisor.nama_lengkap|default:data.supervisor.username }}</strong>?
                                 {% endif %}
                             </div>
                             <div class="modal-footer">

@@ -5,7 +5,7 @@ from outsourcing.views.admin import (
     perusahaan_list, perusahaan_create, perusahaan_detail,
     perusahaan_edit, perusahaan_delete,
     jenis_jasa_list, jenis_jasa_create, jenis_jasa_edit, jenis_jasa_delete,
-    akun_list, akun_create_kepala, akun_create_customer, akun_edit, akun_toggle_aktif,
+    akun_list, akun_create_kepala, akun_create_customer, akun_edit, akun_edit_kepala, akun_toggle_aktif,
     area_list, area_create, area_edit, area_delete,
     subarea_create, subarea_edit, subarea_delete,
     laporan_list as admin_laporan_list, laporan_detail as admin_laporan_detail,
@@ -32,7 +32,7 @@ from outsourcing.views.supervisor import (
 from outsourcing.views.staff import (
     dashboard_view as staff_dashboard,
     item_list, item_update, item_update_jam,item_create_insidental,
-    qr_scan_landing,absen_masuk,absen_pulang,absensi_riwayat,
+    qr_scan_landing, qr_scan_page, absensi_riwayat, api_today_status,
 )
 from outsourcing.views.customer import (
     dashboard_view as customer_dashboard,
@@ -57,9 +57,10 @@ urlpatterns = [
     path('admin/jenis-jasa/<int:pk>/edit/', jenis_jasa_edit, name='admin_jenis_jasa_edit'),
     path('admin/jenis-jasa/<int:pk>/hapus/', jenis_jasa_delete, name='admin_jenis_jasa_delete'),
     path('admin/akun/', akun_list, name='admin_akun_list'),
-    path('admin/akun/tambah-kepala/', akun_create_kepala, name='admin_akun_create_kepala'),
-    path('admin/akun/tambah-customer/', akun_create_customer, name='admin_akun_create_customer'),
+    path('admin/akun/create/kepala/', akun_create_kepala, name='admin_akun_create_kepala'),
+    path('admin/akun/create/customer/', akun_create_customer, name='admin_akun_create_customer'),
     path('admin/akun/<int:pk>/edit/', akun_edit, name='admin_akun_edit'),
+    path('admin/akun/<int:pk>/edit/kepala/', akun_edit_kepala, name='admin_akun_edit_kepala'),
     path('admin/akun/<int:pk>/toggle/', akun_toggle_aktif, name='admin_akun_toggle_aktif'),
     path('admin/perusahaan/<int:perusahaan_pk>/area/', area_list, name='admin_area_list'),
     path('admin/perusahaan/<int:perusahaan_pk>/area/tambah/', area_create, name='admin_area_create'),
@@ -117,9 +118,9 @@ urlpatterns = [
     path('supervisor/task/<int:pk>/delete/', task_delete, name='supervisor_task_delete'),
     path('supervisor/customer/tambah/', customer_create, name='supervisor_customer_create'),
     path('supervisor/qr/', qr_list, name='supervisor_qr_list'),
-    path('supervisor/laporan/<int:laporan_pk>/qr/generate/', qr_generate, name='supervisor_qr_generate'),
+    path('supervisor/qr/generate/', qr_generate, name='supervisor_qr_generate'),
     path('supervisor/qr/<int:pk>/nonaktifkan/', qr_nonaktifkan, name='supervisor_qr_nonaktifkan'),
-    path('supervisor/laporan/<int:laporan_pk>/absensi/', absensi_rekap, name='supervisor_absensi_rekap'),
+    path('supervisor/absensi/rekap/', absensi_rekap, name='supervisor_absensi_rekap'),
     path('supervisor/absensi/<int:pk>/', absensi_detail, name='supervisor_absensi_detail'),
 
     # Staff
@@ -129,9 +130,9 @@ urlpatterns = [
     path('staff/item/<int:pk>/update/', item_update, name='staff_item_update'),
     path('staff/item/update-jam/', item_update_jam, name='staff_item_update_jam'),
     path('absensi/scan/<uuid:token>/', qr_scan_landing, name='staff_qr_scan_landing'),
-    path('absensi/scan/<uuid:token>/masuk/', absen_masuk, name='staff_absen_masuk'),
-    path('absensi/scan/<uuid:token>/pulang/', absen_pulang, name='staff_absen_pulang'),
-    path('staff/absensi/', absensi_riwayat, name='staff_absensi_riwayat'),
+    path('staff/absensi/scan/', qr_scan_page, name='staff_absensi_scan'),
+    path('staff/absensi/riwayat/', absensi_riwayat, name='staff_absensi_riwayat'),
+    path('staff/api/today-status/', api_today_status, name='staff_api_today_status'),
 
     # Customer
     path('customer/', customer_dashboard, name='customer_dashboard'),

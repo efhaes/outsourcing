@@ -1,183 +1,250 @@
-from django.shortcuts         import render, redirect, get_object_or_404
-from django.contrib           import messages
-from django.utils             import timezone
-from outsourcing.models       import QRAbsensi, Absensi, StaffSupervisor
-from outsourcing.forms.absensi import AbsenMasukForm, AbsenPulangForm
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseForbidden, JsonResponse
+from django.utils import timezone
+
+from outsourcing.models import (
+    QRAbsensi, QRTypeChoices,
+    Absensi, AbsensiStatusChoices,
+    StaffSupervisor,
+)
 from outsourcing.decorators import staff_required
 
 
+# ─────────────────────────────────────────────
+# QR Scan Page
+# ─────────────────────────────────────────────
 
+@staff_required
+def qr_scan_page(request):
+    """Halaman scan QR untuk staff"""
+    return render(request, 'staff/absensi/qr_scan.html')
 
-# ------------------------------------------------------------------ #
-# Scan QR → landing page
-# ------------------------------------------------------------------ #
+# ─────────────────────────────────────────────
+# Scan QR → proses masuk atau pulang
+# ─────────────────────────────────────────────
 
 @staff_required
 def qr_scan_landing(request, token):
     """
-    URL ini yang di-encode di dalam QR code.
-    Bisa diakses siapa saja yang login — validasi role di dalam.
-    
-    Flow:
-    1. Validasi token & expired
-    2. Validasi staff terdaftar di bawah supervisor laporan ini
-    3. Cek sudah absen masuk atau belum
-    4. Redirect ke form yang sesuai
+    Handle QR scan with AJAX support.
+    Returns JSON for AJAX requests, renders page for direct access.
     """
     if not request.user.is_staff_lapangan:
-        return HttpResponseForbidden("Hanya staff yang bisa absen via QR.")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': 'Hanya staff lapangan yang bisa absen.'})
+        return HttpResponseForbidden("Hanya staff lapangan yang bisa absen.")
 
     qr_obj = get_object_or_404(QRAbsensi, token=token)
 
-    # Validasi QR masih berlaku
-    if not qr_obj.is_valid():
+    # Validasi QR (aktif, belum expired, time window)
+    valid, alasan = qr_obj.is_valid()
+    if not valid:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False, 
+                'error': alasan,
+                'tipe': qr_obj.tipe,
+                'supervisor': qr_obj.supervisor.nama_lengkap or qr_obj.supervisor.username
+            })
         return render(request, 'staff/absensi/qr_invalid.html', {
-            'alasan': 'QR sudah tidak aktif atau sudah expired.'
+            'alasan'  : alasan,
+            'tipe'    : qr_obj.tipe,
+            'qr_obj'  : qr_obj,
         })
 
-    laporan    = qr_obj.laporan
-    supervisor = laporan.supervisor
-    hari_ini   = timezone.localdate()
+    hari_ini = timezone.localdate()
 
-    # Validasi: staff harus di bawah supervisor laporan ini
+    # Validasi staff terdaftar di bawah supervisor ini
     terdaftar = StaffSupervisor.objects.filter(
         staff      = request.user,
-        supervisor = supervisor,
+        supervisor = qr_obj.supervisor,
         is_active  = True,
     ).exists()
 
     if not terdaftar:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False, 
+                'error': 'Kamu tidak terdaftar di bawah supervisor ini.',
+                'tipe': qr_obj.tipe,
+                'supervisor': qr_obj.supervisor.nama_lengkap or qr_obj.supervisor.username
+            })
         return render(request, 'staff/absensi/qr_invalid.html', {
-            'alasan': 'Kamu tidak terdaftar di laporan ini.'
+            'alasan' : 'Kamu tidak terdaftar di bawah supervisor ini.',
+            'tipe'   : qr_obj.tipe,
+            'qr_obj' : qr_obj,
         })
 
-    # Cek record absensi hari ini
-    absensi = Absensi.objects.filter(
+    # Ambil atau buat record absensi hari ini
+    absensi, created = Absensi.objects.get_or_create(
         staff   = request.user,
-        laporan = laporan,
         tanggal = hari_ini,
-    ).first()
-
-    if absensi is None:
-        # Belum absen masuk sama sekali → redirect ke form masuk
-        return redirect('staff_absen_masuk', token=token)
-
-    if absensi.sudah_masuk and not absensi.sudah_pulang:
-        # Sudah masuk, belum pulang → redirect ke form pulang
-        return redirect('staff_absen_pulang', token=token)
-
-    # Sudah lengkap masuk & pulang
-    return render(request, 'staff/absensi/sudah_absen.html', {
-        'absensi': absensi,
-    })
-
-
-# ------------------------------------------------------------------ #
-# Absen Masuk
-# ------------------------------------------------------------------ #
-
-
-@staff_required
-def absen_masuk(request, token):
-    qr_obj = get_object_or_404(QRAbsensi, token=token)
-
-    if not qr_obj.is_valid():
-        return render(request, 'staff/absensi/qr_invalid.html', {
-            'alasan': 'QR sudah tidak aktif atau expired.'
-        })
-
-    laporan  = qr_obj.laporan
-    hari_ini = timezone.localdate()
-
-    # Guard: jangan dobel absen masuk
-    sudah_ada = Absensi.objects.filter(
-        staff=request.user, laporan=laporan, tanggal=hari_ini
-    ).exists()
-    if sudah_ada:
-        messages.warning(request, "Kamu sudah absen masuk hari ini.")
-        return redirect('staff_absensi_riwayat')
-
-    if request.method == 'POST':
-        form = AbsenMasukForm(request.POST, request.FILES)
-        if form.is_valid():
-            absensi = form.save(commit=False)
-            absensi.qr_absensi  = qr_obj
-            absensi.staff       = request.user
-            absensi.laporan     = laporan
-            absensi.tanggal     = hari_ini
-            absensi.waktu_masuk = timezone.now()
-            absensi.status      = Absensi.StatusAbsen.HADIR
-            absensi.save()
-            messages.success(request, "Absen masuk berhasil! Selamat bekerja 💪")
-            return redirect('staff_absensi_riwayat')
-    else:
-        form = AbsenMasukForm()
-
-    return render(request, 'staff/absensi/absen_masuk.html', {
-        'form'   : form,
-        'qr_obj' : qr_obj,
-        'laporan': laporan,
-    })
-
-
-# ------------------------------------------------------------------ #
-# Absen Pulang
-# ------------------------------------------------------------------ #
-
-
-@staff_required
-def absen_pulang(request, token):
-    qr_obj = get_object_or_404(QRAbsensi, token=token)
-
-    if not qr_obj.is_valid():
-        return render(request, 'staff/absensi/qr_invalid.html', {
-            'alasan': 'QR sudah tidak aktif atau expired.'
-        })
-
-    laporan  = qr_obj.laporan
-    hari_ini = timezone.localdate()
-
-    absensi = get_object_or_404(
-        Absensi,
-        staff   = request.user,
-        laporan = laporan,
-        tanggal = hari_ini,
+        defaults={'qr_masuk': None, 'qr_pulang': None},
     )
-
-    # Guard: jangan dobel absen pulang
-    if absensi.sudah_pulang:
-        messages.warning(request, "Kamu sudah absen pulang hari ini.")
-        return redirect('staff_absensi_riwayat')
-
-    if request.method == 'POST':
-        form = AbsenPulangForm(request.POST, request.FILES, instance=absensi)
-        if form.is_valid():
-            ab = form.save(commit=False)
-            ab.waktu_pulang = timezone.now()
-            ab.save()
-            messages.success(request, f"Absen pulang berhasil! Durasi kerja: {absensi.durasi_kerja()}")
-            return redirect('staff_absensi_riwayat')
+    
+    # Update QR field based on type
+    if qr_obj.tipe == QRTypeChoices.MASUK:
+        absensi.qr_masuk = qr_obj
     else:
-        form = AbsenPulangForm(instance=absensi)
+        absensi.qr_pulang = qr_obj
+    absensi.save(update_fields=['qr_masuk', 'qr_pulang'])
 
-    return render(request, 'staff/absensi/absen_pulang.html', {
-        'form'   : form,
-        'absensi': absensi,
-        'laporan': laporan,
-    })
+    # ── QR MASUK ──────────────────────────────
+    if qr_obj.tipe == QRTypeChoices.MASUK:
+        if absensi.sudah_masuk:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Kamu sudah absen masuk hari ini.',
+                    'tipe': 'masuk',
+                    'already_absen': True,
+                    'waktu': absensi.waktu_masuk.strftime('%H:%M')
+                })
+            return render(request, 'staff/absensi/sudah_absen.html', {
+                'absensi': absensi,
+                'tipe'   : 'masuk',
+                'pesan'  : 'Kamu sudah absen masuk hari ini.',
+            })
+
+        absensi.waktu_masuk = timezone.now()
+        absensi.status      = AbsensiStatusChoices.MASUK
+        absensi.save(update_fields=['waktu_masuk', 'status'])
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Absen masuk berhasil!',
+                'tipe': 'masuk',
+                'waktu': absensi.waktu_masuk.strftime('%H:%M'),
+                'supervisor': qr_obj.supervisor.nama_lengkap or qr_obj.supervisor.username,
+                'redirect_url': '/staff/absensi/riwayat/'
+            })
+        return render(request, 'staff/absensi/sukses.html', {
+            'judul'  : 'Absen Masuk Berhasil',
+            'tipe'   : 'masuk',
+            'absensi': absensi,
+            'waktu'  : absensi.waktu_masuk,
+        })
+
+    # ── QR PULANG ─────────────────────────────
+    elif qr_obj.tipe == QRTypeChoices.PULANG:
+        if not absensi.sudah_masuk:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Kamu belum absen masuk hari ini. Scan QR masuk terlebih dahulu.',
+                    'tipe': 'pulang',
+                    'need_masuk': True,
+                    'qr_obj': qr_obj
+                })
+            return render(request, 'staff/absensi/qr_invalid.html', {
+                'alasan' : 'Kamu belum absen masuk hari ini. Scan QR masuk terlebih dahulu.',
+                'tipe'   : 'pulang',
+                'qr_obj' : qr_obj,
+            })
+
+        if absensi.sudah_pulang:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Kamu sudah absen pulang hari ini.',
+                    'tipe': 'pulang',
+                    'already_absen': True,
+                    'waktu': absensi.waktu_pulang.strftime('%H:%M')
+                })
+            return render(request, 'staff/absensi/sudah_absen.html', {
+                'absensi': absensi,
+                'tipe'   : 'pulang',
+                'pesan'  : 'Kamu sudah absen pulang hari ini.',
+            })
+
+        absensi.waktu_pulang = timezone.now()
+        absensi.status       = AbsensiStatusChoices.PULANG
+        absensi.save(update_fields=['waktu_pulang', 'status'])
+
+        durasi = absensi.durasi_kerja()
+        durasi_str = f"{durasi.seconds // 3600}j { (durasi.seconds % 3600) // 60 }m" if durasi else ""
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'message': 'Absen pulang berhasil!',
+                'tipe': 'pulang',
+                'waktu': absensi.waktu_pulang.strftime('%H:%M'),
+                'durasi': durasi_str,
+                'supervisor': qr_obj.supervisor.nama_lengkap or qr_obj.supervisor.username,
+                'redirect_url': '/staff/absensi/riwayat/'
+            })
+        return render(request, 'staff/absensi/sukses.html', {
+            'judul'  : 'Absen Pulang Berhasil',
+            'tipe'   : 'pulang',
+            'absensi': absensi,
+            'waktu'  : absensi.waktu_pulang,
+            'durasi' : durasi,
+        })
 
 
-# ------------------------------------------------------------------ #
+# ─────────────────────────────────────────────
 # Riwayat absensi milik staff sendiri
-# ------------------------------------------------------------------ #
-
+# ─────────────────────────────────────────────
 
 @staff_required
 def absensi_riwayat(request):
-    absensi_qs = Absensi.objects.filter(
-        staff=request.user
-    ).select_related('laporan', 'laporan__perusahaan').order_by('-tanggal')
+    absensi_qs = (
+        Absensi.objects
+        .filter(staff=request.user)
+        .select_related('qr_masuk', 'qr_masuk__supervisor', 'qr_pulang', 'qr_pulang__supervisor')
+        .order_by('-tanggal')
+    )
+
+    # Statistik ringkas
+    total        = absensi_qs.count()
+    total_masuk  = absensi_qs.filter(waktu_masuk__isnull=False).count()
+    total_pulang = absensi_qs.filter(waktu_pulang__isnull=False).count()
 
     return render(request, 'staff/absensi/riwayat.html', {
-        'absensi_qs': absensi_qs,
+        'absensi_qs'  : absensi_qs,
+        'total'       : total,
+        'total_masuk' : total_masuk,
+        'total_pulang': total_pulang,
+    })
+
+
+# ─────────────────────────────────────────────
+# API untuk status hari ini
+# ─────────────────────────────────────────────
+
+@staff_required
+def api_today_status(request):
+    """API endpoint untuk status absensi hari ini"""
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+    
+    hari_ini = timezone.localdate()
+    
+    # Status hari ini
+    try:
+        absensi_hari_ini = Absensi.objects.get(
+            staff=request.user,
+            tanggal=hari_ini
+        )
+        status_display = absensi_hari_ini.get_status_display()
+        last_checkin = absensi_hari_ini.waktu_masuk.strftime('%H:%M') if absensi_hari_ini.waktu_masuk else None
+    except Absensi.DoesNotExist:
+        status_display = 'Belum Absen'
+        last_checkin = None
+    
+    # Total absen bulan ini
+    from django.utils import timezone
+    month_start = hari_ini.replace(day=1)
+    this_month_count = Absensi.objects.filter(
+        staff=request.user,
+        tanggal__gte=month_start,
+        tanggal__lte=hari_ini
+    ).count()
+    
+    return JsonResponse({
+        'status_display': status_display,
+        'last_checkin': last_checkin,
+        'this_month_count': this_month_count
     })

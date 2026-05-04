@@ -1,0 +1,283 @@
+{% extends 'supervisor/base_supervisor.html' %}
+{% block title %}Detail Absensi{% endblock %}
+
+{% block content %}
+<div class="page-content">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h5 class="mb-1" style="font-weight:600;color:var(--clr-text-primary)">Detail Absensi</h5>
+      <p style="color:var(--clr-text-muted);font-size:13px;margin:0">{{ absensi.staff.nama_lengkap|default:absensi.staff.username }} — {{ absensi.tanggal|date:"d F Y" }}</p>
+    </div>
+    <div>
+      <a href="{% url 'supervisor_absensi_rekap' %}" class="btn" style="background:rgba(255,255,255,0.05);color:var(--clr-text-secondary);border:1px solid var(--clr-border)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+        Kembali ke Rekap
+      </a>
+    </div>
+  </div>
+
+  <!-- Staff Info Card -->
+  <div class="card" style="background:rgba(255,255,255,0.02);border:1px solid var(--clr-border);margin-bottom:20px">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width:56px;height:56px;background:linear-gradient(135deg, var(--clr-accent), #8b5cf6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:600;color:white">
+              {{ absensi.staff.nama_lengkap|default:absensi.staff.username|slice:":2"|upper }}
+            </div>
+            <div>
+              <h6 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:4px">{{ absensi.staff.nama_lengkap|default:absensi.staff.username }}</h6>
+              <div style="color:var(--clr-text-muted);font-size:13px">{{ absensi.staff.username }}</div>
+              <div style="color:var(--clr-text-muted);font-size:12px;margin-top:2px">{{ absensi.staff.email }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <div style="color:var(--clr-text-muted);font-size:12px">Status</div>
+          <div style="margin-top:4px">
+            {% if absensi.status == 'masuk' %}
+              <span class="badge-aktif">Sudah Masuk</span>
+            {% elif absensi.status == 'pulang' %}
+              <span class="badge-selesai">Sudah Pulang</span>
+            {% else %}
+              <span class="badge-draft">Belum Absen</span>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Info -->
+  <div class="card" style="background:rgba(255,255,255,0.02);border:1px solid var(--clr-border);margin-bottom:20px">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width:48px;height:48px;background:var(--clr-accent-light);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <rect x="7" y="7" width="3" height="3"/>
+                <rect x="14" y="7" width="3" height="3"/>
+                <rect x="7" y="14" width="3" height="3"/>
+                <rect x="14" y="14" width="3" height="3"/>
+              </svg>
+            </div>
+            <div>
+              <h6 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:4px">QR {{ absensi.qr_absensi.get_tipe_display|title }}</h6>
+              <div style="color:var(--clr-text-muted);font-size:13px">Supervisor: {{ absensi.qr_absensi.supervisor.nama_lengkap|default:absensi.qr_absensi.supervisor.username }}</div>
+              <div style="color:var(--clr-text-muted);font-size:12px;margin-top:2px">Token: {{ absensi.qr_absensi.token|slice:":8" }}...</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <div style="color:var(--clr-text-muted);font-size:12px">Tanggal</div>
+          <div style="color:var(--clr-text-primary);font-weight:500">{{ absensi.tanggal|date:"d F Y" }}</div>
+          <div style="color:var(--clr-text-muted);font-size:12px;margin-top:2px">{{ absensi.tanggal|date:"l" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Absensi Details -->
+  <div class="row">
+    <!-- Check-in Details -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100" style="background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2)">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--clr-success)" stroke-width="2" class="me-2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12,6 12,12 16,14"/>
+            </svg>
+            <h6 style="color:var(--clr-success);font-weight:600;margin:0">Check-in</h6>
+          </div>
+          
+          {% if absensi.waktu_masuk %}
+            <div class="mb-3">
+              <div style="color:var(--clr-text-muted);font-size:12px">Waktu</div>
+              <div style="color:var(--clr-text-primary);font-size:16px;font-weight:500">{{ absensi.waktu_masuk|date:"H:i:s" }}</div>
+            </div>
+            
+            {% if absensi.lat_masuk and absensi.lon_masuk %}
+            <div class="mb-3">
+              <div style="color:var(--clr-text-muted);font-size:12px">Lokasi</div>
+              <div style="color:var(--clr-text-primary);font-size:13px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1" style="vertical-align:text-bottom">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                {{ absensi.lat_masuk }}, {{ absensi.lon_masuk }}
+              </div>
+              <a href="https://maps.google.com/?q={{ absensi.lat_masuk }},{{ absensi.lon_masuk }}" target="_blank" style="color:var(--clr-accent);font-size:12px;text-decoration:none">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1" style="vertical-align:text-bottom">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15,3 21,3 21,9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Lihat di Maps
+              </a>
+            </div>
+            {% endif %}
+          {% else %}
+            <div class="text-center py-3">
+              <div style="width:48px;height:48px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--clr-text-muted)" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12,6 12,12 16,14"/>
+                </svg>
+              </div>
+              <div style="color:var(--clr-text-muted);font-size:13px">Belum check-in</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Check-out Details -->
+    <div class="col-md-6 mb-4">
+      <div class="card h-100" style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2)">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--clr-accent)" stroke-width="2" class="me-2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12,6 12,12 16,14"/>
+            </svg>
+            <h6 style="color:var(--clr-accent);font-weight:600;margin:0">Check-out</h6>
+          </div>
+          
+          {% if absensi.waktu_pulang %}
+            <div class="mb-3">
+              <div style="color:var(--clr-text-muted);font-size:12px">Waktu</div>
+              <div style="color:var(--clr-text-primary);font-size:16px;font-weight:500">{{ absensi.waktu_pulang|date:"H:i:s" }}</div>
+            </div>
+            
+            {% if absensi.lat_pulang and absensi.lon_pulang %}
+            <div class="mb-3">
+              <div style="color:var(--clr-text-muted);font-size:12px">Lokasi</div>
+              <div style="color:var(--clr-text-primary);font-size:13px">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1" style="vertical-align:text-bottom">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                  <circle cx="12" cy="10" r="3"/>
+                </svg>
+                {{ absensi.lat_pulang }}, {{ absensi.lon_pulang }}
+              </div>
+              <a href="https://maps.google.com/?q={{ absensi.lat_pulang }},{{ absensi.lon_pulang }}" target="_blank" style="color:var(--clr-accent);font-size:12px;text-decoration:none">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1" style="vertical-align:text-bottom">
+                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                  <polyline points="15,3 21,3 21,9"/>
+                  <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Lihat di Maps
+              </a>
+            </div>
+            {% endif %}
+          {% else %}
+            <div class="text-center py-3">
+              <div style="width:48px;height:48px;background:rgba(255,255,255,0.1);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--clr-text-muted)" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <polyline points="12,6 12,12 16,14"/>
+                </svg>
+              </div>
+              <div style="color:var(--clr-text-muted);font-size:13px">Belum check-out</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Work Duration & Notes -->
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="card h-100" style="background:rgba(255,255,255,0.02);border:1px solid var(--clr-border)">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12,6 12,12 16,14"/>
+            </svg>
+            <h6 style="color:var(--clr-text-primary);font-weight:600;margin:0">Durasi Kerja</h6>
+          </div>
+          
+          {% if durasi %}
+            <div class="text-center py-2">
+              <div style="color:var(--clr-text-primary);font-size:24px;font-weight:600">
+                {% with hours=durasi.seconds|div:"3600" minutes=durasi.seconds|mod:"3600"|div:"60" %}
+                  {{ hours }}j {{ minutes }}m
+                {% endwith %}
+              </div>
+              <div style="color:var(--clr-text-muted);font-size:12px;margin-top:4px">
+                {{ durasi|date:"H:i:s" }}
+              </div>
+            </div>
+          {% else %}
+            <div class="text-center py-3">
+              <div style="color:var(--clr-text-muted);font-size:13px">-</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+      <div class="card h-100" style="background:rgba(255,255,255,0.02);border:1px solid var(--clr-border)">
+        <div class="card-body">
+          <div class="d-flex align-items-center mb-3">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <line x1="12" y1="18" x2="12" y2="12"/>
+              <line x1="12" y1="6" x2="12.01" y2="6"/>
+            </svg>
+            <h6 style="color:var(--clr-text-primary);font-weight:600;margin:0">Catatan</h6>
+          </div>
+          
+          {% if absensi.catatan %}
+            <div style="color:var(--clr-text-secondary);font-size:13px;line-height:1.5">
+              {{ absensi.catatan|linebreaks }}
+            </div>
+          {% else %}
+            <div class="text-center py-3">
+              <div style="color:var(--clr-text-muted);font-size:13px">Tidak ada catatan</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- System Info -->
+  <div class="card" style="background:rgba(255,255,255,0.02);border:1px solid var(--clr-border)">
+    <div class="card-body">
+      <h6 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:16px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-2" style="vertical-align:text-bottom">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 1v6m0 6v6m4.22-13.22l4.24 4.24M1.54 9.96l4.24 4.24M20.46 14.04l-4.24-4.24M1.54 14.04l4.24-4.24"/>
+        </svg>
+        Informasi Sistem
+      </h6>
+      <div class="row">
+        <div class="col-md-4">
+          <div style="color:var(--clr-text-muted);font-size:12px">Dibuat pada</div>
+          <div style="color:var(--clr-text-primary);font-size:13px">{{ absensi.dibuat_pada|date:"d M Y, H:i:s" }}</div>
+        </div>
+        <div class="col-md-4">
+          <div style="color:var(--clr-text-muted);font-size:12px">Diubah pada</div>
+          <div style="color:var(--clr-text-primary);font-size:13px">{{ absensi.diubah_pada|date:"d M Y, H:i:s" }}</div>
+        </div>
+        <div class="col-md-4">
+          <div style="color:var(--clr-text-muted);font-size:12px">ID Record</div>
+          <div style="color:var(--clr-text-primary);font-size:13px">#{{ absensi.pk }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+{% endblock %}

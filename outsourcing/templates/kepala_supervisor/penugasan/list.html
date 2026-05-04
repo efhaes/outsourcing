@@ -33,10 +33,10 @@
                 {% for p in penugasan_list %}
                 <tr>
                     <td class="cell-muted">{{ forloop.counter }}</td>
-                    <td><span class="cell-name">{{ p.supervisor.nama_lengkap }}</span></td>
+                    <td><span class="cell-name">{{ p.supervisor.nama_lengkap|default:p.supervisor.username }}</span></td>
                     <td class="cell-muted">{{ p.perusahaan.nama_perusahaan }}</td>
                     <td class="cell-muted">{{ p.jenis_jasa.nama_jasa }}</td>
-                    <td class="cell-muted">{{ p.kepala_supervisor.nama_lengkap }}</td>
+                    <td class="cell-muted">{{ p.kepala_supervisor.nama_lengkap|default:p.kepala_supervisor.username }}</td>
                     <td>
                         {% if p.is_active %}<span class="status-badge badge-aktif">Aktif</span>
                         {% else %}<span class="status-badge badge-nonaktif">Nonaktif</span>{% endif %}
@@ -63,14 +63,14 @@
     {% for p in penugasan_list %}
     <div class="m-card">
         <div class="m-card-top">
-            <div class="m-card-name">{{ p.supervisor.nama_lengkap }}</div>
+            <div class="m-card-name">{{ p.supervisor.nama_lengkap|default:p.supervisor.username }}</div>
             {% if p.is_active %}<span class="status-badge badge-aktif">Aktif</span>
             {% else %}<span class="status-badge badge-nonaktif">Nonaktif</span>{% endif %}
         </div>
         <div class="m-card-meta">
             <div class="m-card-meta-item">Perusahaan<span>{{ p.perusahaan.nama_perusahaan }}</span></div>
             <div class="m-card-meta-item">Jenis Jasa<span>{{ p.jenis_jasa.nama_jasa }}</span></div>
-            <div class="m-card-meta-item">Kepala Supervisor<span>{{ p.kepala_supervisor.nama_lengkap }}</span></div>
+            <div class="m-card-meta-item">Kepala Supervisor<span>{{ p.kepala_supervisor.nama_lengkap|default:p.kepala_supervisor.username }}</span></div>
         </div>
         <div class="m-card-footer">
             <div class="m-card-actions">
@@ -99,13 +99,13 @@
                 <div class="modal-icon-wrap" style="background:#fff8e1;color:#f59e0b;"><i class="bi bi-person-slash"></i></div>
                 <div style="font-size:15px;font-weight:600;color:var(--clr-text);margin-bottom:6px;">Nonaktifkan Penugasan</div>
                 <div style="font-size:13px;color:var(--clr-text-muted);line-height:1.6;">
-                    Yakin menonaktifkan <strong>{{ p.supervisor.nama_lengkap }}</strong><br>dari <strong>{{ p.perusahaan.nama_perusahaan }}</strong>?
+                    Yakin menonaktifkan <strong>{{ p.supervisor.nama_lengkap|default:p.supervisor.username }}</strong><br>dari <strong>{{ p.perusahaan.nama_perusahaan }}</strong>?
                 </div>
                 {% else %}
                 <div class="modal-icon-wrap" style="background:#e8f5e9;color:#22c55e;"><i class="bi bi-person-check"></i></div>
                 <div style="font-size:15px;font-weight:600;color:var(--clr-text);margin-bottom:6px;">Aktifkan Penugasan</div>
                 <div style="font-size:13px;color:var(--clr-text-muted);line-height:1.6;">
-                    Yakin mengaktifkan <strong>{{ p.supervisor.nama_lengkap }}</strong><br>ke <strong>{{ p.perusahaan.nama_perusahaan }}</strong>?
+                    Yakin mengaktifkan <strong>{{ p.supervisor.nama_lengkap|default:p.supervisor.username }}</strong><br>ke <strong>{{ p.perusahaan.nama_perusahaan }}</strong>?
                 </div>
                 {% endif %}
             </div>

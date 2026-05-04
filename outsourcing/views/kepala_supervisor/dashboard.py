@@ -81,7 +81,10 @@ def dashboard_view(request):
             tanggal_laporan__year=tahun,
             tanggal_laporan__month=bulan,
         ).count()
-        spv_labels.append(p.supervisor.nama_lengkap.split()[0])  # first name only
+        # Handle empty or whitespace nama_lengkap
+        nama_parts = p.supervisor.nama_lengkap.strip().split()
+        first_name = nama_parts[0] if nama_parts else p.supervisor.username
+        spv_labels.append(first_name)
         spv_counts.append(count)
 
     chart_spv_labels = json.dumps(spv_labels)

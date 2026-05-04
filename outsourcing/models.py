@@ -713,95 +713,66 @@ class ItemKegiatan(models.Model):
             models.Index(fields=['laporan', 'status'], name='idx_item_laporan_status'),
         ]
 
+class AbsensiStatusChoices(models.TextChoices):
+    BELUM_ABSEN = 'belum_absen', 'Belum Absen'
+    MASUK       = 'masuk', 'Masuk'
+    PULANG      = 'pulang', 'Pulang'
+    TERLAMBAT   = 'terlambat', 'Terlambat'
+    
+
+class QRTypeChoices(models.TextChoices):
+    MASUK  = 'masuk',  'Masuk'
+    PULANG = 'pulang', 'Pulang'
+
 
 class QRAbsensi(models.Model):
-    """
-    QR Code yang di-generate Supervisor per hari per laporan.
-    Token UUID unik, expired otomatis end of day atau durasi tertentu.
-    """
-    laporan       = models.ForeignKey(
-        LaporanKegiatan,
-        on_delete=models.CASCADE,
-        related_name='qr_absensi',
-    )
-    supervisor    = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='qr_dibuat',
-        limit_choices_to={'role': RoleChoices.SUPERVISOR},
-    )
-    token         = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
-    tanggal       = models.DateField(default=timezone.localdate)
-    berlaku_hingga = models.DateTimeField()  # set otomatis, misal +12 jam
-    is_active     = models.BooleanField(default=True)
-    dibuat_pada   = models.DateTimeField(auto_now_add=True)
+    supervisor     = models.ForeignKey(User, on_delete=models.CASCADE, related_name='qr_dibuat', limit_choices_to={'role': RoleChoices.SUPERVISOR})
+    token          = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    tanggal        = models.DateField(default=timezone.localdate)
+    tipe           = models.CharField(max_length=10, choices=QRTypeChoices.choices)
+    berlaku_hingga = models.DateTimeField()
+    jam_berlaku_mulai = models.DateTimeField(null=True, blank=True)  # earliest valid scan time for QR pulang
+    is_active      = models.BooleanField(default=True)
+    dibuat_pada    = models.DateTimeField(auto_now_add=True)
 
     def is_valid(self):
-        return self.is_active and timezone.now() <= self.berlaku_hingga
+        now = timezone.now()
+        if not self.is_active:
+            return False, 'QR tidak aktif.'
+        if now > self.berlaku_hingga:
+            return False, 'QR sudah expired.'
+        # Remove time restriction - QR can be scanned anytime within validity period
+        return True, None
 
     def __str__(self):
-        return f"QR {self.laporan} — {self.tanggal}"
+        return f"QR {self.tipe} — {self.supervisor.nama_lengkap|default:self.supervisor.username} — {self.tanggal}"
 
     class Meta:
-        verbose_name = 'QR Absensi'
-        unique_together = ['laporan', 'tanggal']  # 1 QR per laporan per hari
+        verbose_name   = 'QR Absensi'
+        unique_together = ['supervisor', 'tanggal', 'tipe']  # 1 QR masuk + 1 QR pulang per supervisor per hari
+        ordering            = ['-tanggal', 'tipe']
 
 
 class Absensi(models.Model):
-    """
-    Record absensi staff. Satu record = satu hari kerja.
-    Dibuat saat scan QR (absen masuk), diupdate saat absen pulang.
-    """
-
-    # JenisAbsen dihapus karena tidak ada field yang menggunakannya.
-    # Flow masuk/pulang dibedakan dari waktu_masuk & waktu_pulang yang null/tidak.
-
-    class StatusAbsen(models.TextChoices):
-        HADIR = 'hadir', 'Hadir'
-        ABSEN = 'absen', 'Tidak Hadir'
-
-    qr_absensi = models.ForeignKey(
-        QRAbsensi,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='absensi_records',
-    )
-    staff = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='absensi_saya',
-        limit_choices_to={'role': RoleChoices.STAFF},
-    )
-    laporan = models.ForeignKey(
-        LaporanKegiatan,
-        on_delete=models.CASCADE,
-        related_name='absensi',
-    )
+    qr_masuk = models.ForeignKey(QRAbsensi,on_delete=models.SET_NULL,null=True,blank=True,related_name='absensi_masuk')
+    qr_pulang = models.ForeignKey(QRAbsensi,on_delete=models.SET_NULL,null=True,blank=True,related_name='absensi_pulang')
+    staff = models.ForeignKey(User, on_delete=models.CASCADE)
     tanggal = models.DateField()
 
     # Absen Masuk
     waktu_masuk = models.DateTimeField(null=True, blank=True)
-    foto_masuk  = models.ImageField(upload_to='absensi/masuk/', null=True, blank=True)
     lat_masuk   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     lon_masuk   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
     # Absen Pulang
     waktu_pulang = models.DateTimeField(null=True, blank=True)
-    foto_pulang  = models.ImageField(upload_to='absensi/pulang/', null=True, blank=True)
     lat_pulang   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     lon_pulang   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
-    status    = models.CharField(
-        max_length=10,
-        choices=StatusAbsen.choices,
-        default=StatusAbsen.HADIR,
-    )
-    catatan     = models.TextField(blank=True)
+    status    = models.CharField(max_length=20, choices=AbsensiStatusChoices.choices, default=AbsensiStatusChoices.BELUM_ABSEN)
+    catatan   = models.TextField(blank=True)
     dibuat_pada = models.DateTimeField(auto_now_add=True)
     diubah_pada = models.DateTimeField(auto_now=True)
-
-    # ------------------------------------------------------------------ #
 
     @property
     def sudah_masuk(self):
@@ -816,41 +787,22 @@ class Absensi(models.Model):
             return self.waktu_pulang - self.waktu_masuk
         return None
 
-    # ------------------------------------------------------------------ #
-
     def clean(self):
         if self.waktu_masuk and self.waktu_pulang:
             if self.waktu_pulang <= self.waktu_masuk:
                 raise ValidationError("Waktu pulang harus setelah waktu masuk.")
 
-    def save(self, *args, **kwargs):
-        # Hanya kompress kalau foto baru diupload (bukan file lama dari disk).
-        # InMemoryUploadedFile = baru dari request; FieldFile = sudah tersimpan.
-        if self.foto_masuk and hasattr(self.foto_masuk, 'file') \
-                and hasattr(self.foto_masuk.file, 'read'):
-            # Cek apakah ini upload baru, bukan file yang sudah ada di storage
-            from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
-            if isinstance(self.foto_masuk.file, (InMemoryUploadedFile, TemporaryUploadedFile)):
-                self.foto_masuk = compress_image(self.foto_masuk)
-
-        if self.foto_pulang and hasattr(self.foto_pulang, 'file') \
-                and hasattr(self.foto_pulang.file, 'read'):
-            from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
-            if isinstance(self.foto_pulang.file, (InMemoryUploadedFile, TemporaryUploadedFile)):
-                self.foto_pulang = compress_image(self.foto_pulang)
-
-        super().save(*args, **kwargs)
-
-    # ------------------------------------------------------------------ #
+    # save() dihapus total — tidak ada foto, tidak perlu override save()
 
     def __str__(self):
-        return f"{self.staff} — {self.tanggal} ({self.get_status_display()})"
-
+        nama = self.supervisor.nama_lengkap or self.supervisor.username
+        return f"QR {self.tipe} — {nama} — {self.tanggal}"
+    
     class Meta:
         verbose_name        = 'Absensi'
         verbose_name_plural = 'Absensi'
         ordering            = ['-tanggal']
-        unique_together     = ['staff', 'laporan', 'tanggal']
+        unique_together     = ['staff', 'tanggal']  # Satu absensi per staff per hari
         indexes             = [
             models.Index(fields=['tanggal', 'status'], name='idx_absensi_tanggal_status'),
             models.Index(fields=['staff', 'tanggal'],  name='idx_absensi_staff_tgl'),
