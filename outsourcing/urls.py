@@ -27,11 +27,12 @@ from outsourcing.views.supervisor import (
     staff_list as supervisor_staff_list, staff_create, staff_edit, staff_toggle_aktif, staff_delete,
     subarea_list, subarea_create, subarea_edit, subarea_delete,
     task_list, task_create, task_edit, task_delete,
-    customer_create,
+    customer_create,qr_list,qr_generate,qr_nonaktifkan,absensi_rekap,absensi_detail,
 )
 from outsourcing.views.staff import (
     dashboard_view as staff_dashboard,
     item_list, item_update, item_update_jam,item_create_insidental,
+    qr_scan_landing,absen_masuk,absen_pulang,absensi_riwayat,
 )
 from outsourcing.views.customer import (
     dashboard_view as customer_dashboard,
@@ -115,6 +116,11 @@ urlpatterns = [
     path('supervisor/task/<int:pk>/edit/', task_edit, name='supervisor_task_edit'),
     path('supervisor/task/<int:pk>/delete/', task_delete, name='supervisor_task_delete'),
     path('supervisor/customer/tambah/', customer_create, name='supervisor_customer_create'),
+    path('supervisor/qr/', qr_list, name='supervisor_qr_list'),
+    path('supervisor/laporan/<int:laporan_pk>/qr/generate/', qr_generate, name='supervisor_qr_generate'),
+    path('supervisor/qr/<int:pk>/nonaktifkan/', qr_nonaktifkan, name='supervisor_qr_nonaktifkan'),
+    path('supervisor/laporan/<int:laporan_pk>/absensi/', absensi_rekap, name='supervisor_absensi_rekap'),
+    path('supervisor/absensi/<int:pk>/', absensi_detail, name='supervisor_absensi_detail'),
 
     # Staff
     path('staff/', staff_dashboard, name='staff_dashboard'),
@@ -122,6 +128,10 @@ urlpatterns = [
     path("staff/item/insidental/create/", item_create_insidental, name="staff_item_create_insidental"),
     path('staff/item/<int:pk>/update/', item_update, name='staff_item_update'),
     path('staff/item/update-jam/', item_update_jam, name='staff_item_update_jam'),
+    path('absensi/scan/<uuid:token>/', qr_scan_landing, name='staff_qr_scan_landing'),
+    path('absensi/scan/<uuid:token>/masuk/', absen_masuk, name='staff_absen_masuk'),
+    path('absensi/scan/<uuid:token>/pulang/', absen_pulang, name='staff_absen_pulang'),
+    path('staff/absensi/', absensi_riwayat, name='staff_absensi_riwayat'),
 
     # Customer
     path('customer/', customer_dashboard, name='customer_dashboard'),
