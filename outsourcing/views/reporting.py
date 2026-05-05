@@ -250,20 +250,23 @@ def _fetch_resources(uri, rel):
 
 def _generate_pdf(request, context):
     try:
-        html_string = render_to_string('laporan_bulanan_pdf.html', context)
-        buffer      = io.BytesIO()
-        pisa_status = pisa.CreatePDF(
-            src=html_string,
-            dest=buffer,
-            encoding='utf-8',
-            link_callback=_fetch_resources,
-        )
-        if pisa_status.err:
-            return HttpResponse(f"Gagal generate PDF: {pisa_status.err}", status=500)
-        buffer.seek(0)
-        response = HttpResponse(buffer, content_type='application/pdf')
+        from weasyprint import HTML, CSS
+        from django.templatetags.static import static
+
+        html_string = render_to_string('laporan_bulanan_pdf.html', context, request=request)
+        
+        # base_url penting agar gambar (foto, logo) bisa diload
+        base_url = request.build_absolute_uri('/')
+        
+        pdf_bytes = HTML(
+            string=html_string,
+            base_url=base_url,
+        ).write_pdf()
+
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{context["nama_file"]}.pdf"'
         return response
+
     except Exception as e:
         return HttpResponse(f"Error PDF: {e}", status=500)
 
