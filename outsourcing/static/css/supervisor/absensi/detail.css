@@ -1,0 +1,175 @@
+
+  /* ── Table Override ── */
+  .table > thead > tr > th { background: rgba(255,255,255,0.03) !important; }
+  .table > tbody > tr > td { background: transparent !important; color: var(--clr-text-secondary) !important; }
+  .table-hover > tbody > tr:hover > td { background: rgba(255,255,255,0.03) !important; }
+  .card-body { background: transparent !important; }
+
+  /* ── Stats mobile ── */
+  @media (max-width: 768px) {
+    .stats-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .stats-row .col-md-3 { padding: 0; }
+
+    /* Sembunyikan table, tampilkan card */
+    .rekap-table-view { display: none; }
+    .rekap-card-list  { display: flex; flex-direction: column; gap: 12px; padding: 12px; }
+  }
+
+  @media (min-width: 769px) {
+    .rekap-card-list { display: none; }
+  }
+  @media (max-width: 768px) {
+
+  /* ── Header ── */
+  .page-content > .d-flex:first-child {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  .page-content > .d-flex:first-child .d-flex {
+    width: 100%;
+    flex-direction: column;
+    gap: 8px !important;
+  }
+
+  .page-content > .d-flex:first-child form {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: 1fr auto auto;
+    gap: 8px !important;
+    align-items: center;
+  }
+
+  .page-content > .d-flex:first-child form input[type="date"] {
+    width: 100% !important;
+    font-size: 13px;
+  }
+
+  .page-content > .d-flex:first-child > div:last-child > a.btn {
+    width: 100%;
+    justify-content: center;
+    display: flex;
+    align-items: center;
+  }
+
+  /* ── Stats ── */
+  .stats-row {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+    margin-bottom: 16px !important;
+  }
+
+  .stats-row > [class*="col-"] {
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .stats-row .card-body {
+    padding: 12px 8px !important;
+  }
+
+  .stats-row .card-body > div:first-child {
+    font-size: 22px !important;
+  }
+
+  /* ── Absensi Card ── */
+  .rekap-card-list {
+    padding: 0 !important;
+    gap: 10px !important;
+  }
+
+  .absen-card {
+    padding: 12px 14px;
+  }
+
+  .absen-card-header {
+    margin-bottom: 10px;
+  }
+
+  .absen-card-meta {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .absen-card-meta-item .label {
+    font-size: 10px;
+    color: var(--clr-text-muted);
+    margin-bottom: 2px;
+  }
+
+  .absen-card-meta-item .value {
+    font-size: 13px;
+  }
+
+  /* ── Page padding ── */
+  .page-content {
+    padding: 16px 14px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .stats-row .card-body > div:first-child {
+    font-size: 18px !important;
+  }
+
+  .absen-card-staff > div > div:first-child {
+    font-size: 13px !important;
+  }
+}
+
+  /* ── Absensi Card ── */
+  .absen-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+  }
+
+  .absen-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .absen-card-staff {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .absen-card-avatar {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--clr-accent), #8b5cf6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: white;
+    flex-shrink: 0;
+  }
+
+  .absen-card-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 13px;
+  }
+
+  .absen-card-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .absen-card-meta-item .label {
+    font-size: 11px;
+    color: var(--clr-text-muted);
+  }
+
+  .absen-card-meta-item .value {
+    color: var(--clr-text-primary);
+    font-weight: 500;
+  }

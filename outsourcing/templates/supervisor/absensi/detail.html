@@ -68,9 +68,14 @@
               </svg>
             </div>
             <div>
-              <h6 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:4px">QR {{ absensi.qr_absensi.get_tipe_display|title }}</h6>
-              <div style="color:var(--clr-text-muted);font-size:13px">Supervisor: {{ absensi.qr_absensi.supervisor.nama_lengkap|default:absensi.qr_absensi.supervisor.username }}</div>
-              <div style="color:var(--clr-text-muted);font-size:12px;margin-top:2px">Token: {{ absensi.qr_absensi.token|slice:":8" }}...</div>
+              {% if absensi.qr_absensi %}
+                <h6 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:4px">QR {{ absensi.qr_absensi.get_tipe_display|title }}</h6>
+                <div style="color:var(--clr-text-muted);font-size:13px">Supervisor: {{ absensi.qr_absensi.supervisor.nama_lengkap|default:absensi.qr_absensi.supervisor.username }}</div>
+                <div style="color:var(--clr-text-muted);font-size:12px;margin-top:2px">Token: {{ absensi.qr_absensi.token|slice:":8" }}...</div>
+              {% else %}
+                <h6 style="color:var(--clr-text-primary);font-weight:600;margin-bottom:4px">QR Absensi</h6>
+                <div style="color:var(--clr-text-muted);font-size:13px">Tidak ada QR terkait</div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -205,22 +210,17 @@
             <h6 style="color:var(--clr-text-primary);font-weight:600;margin:0">Durasi Kerja</h6>
           </div>
           
-          {% if durasi %}
-            <div class="text-center py-2">
-              <div style="color:var(--clr-text-primary);font-size:24px;font-weight:600">
-                {% with hours=durasi.seconds|div:"3600" minutes=durasi.seconds|mod:"3600"|div:"60" %}
-                  {{ hours }}j {{ minutes }}m
-                {% endwith %}
-              </div>
-              <div style="color:var(--clr-text-muted);font-size:12px;margin-top:4px">
-                {{ durasi|date:"H:i:s" }}
-              </div>
+         {% if durasi %}
+          <div class="text-center py-2">
+            <div style="color:var(--clr-text-primary);font-size:24px;font-weight:600">
+              {{ durasi }}
             </div>
-          {% else %}
-            <div class="text-center py-3">
-              <div style="color:var(--clr-text-muted);font-size:13px">-</div>
-            </div>
-          {% endif %}
+          </div>
+        {% else %}
+          <div class="text-center py-3">
+            <div style="color:var(--clr-text-muted);font-size:13px">-</div>
+          </div>
+        {% endif %}
         </div>
       </div>
     </div>

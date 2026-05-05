@@ -1,5 +1,50 @@
 {% extends 'supervisor/base_supervisor.html' %}
 {% block title %}Daftar QR Absensi{% endblock %}
+{% block extra_css %}
+<style>
+  .table > thead > tr > th { background: rgba(255,255,255,0.03) !important; }
+  .table > tbody > tr > td { background: transparent !important; color: var(--clr-text-secondary) !important; }
+  .table-hover > tbody > tr:hover > td { background: rgba(255,255,255,0.03) !important; }
+  .card-body { background: transparent !important; }
+
+  /* ── Mobile Card View ── */
+  .qr-card-list { display: none; }
+
+  @media (max-width: 768px) {
+    .qr-table-view { display: none; }
+    .qr-card-list  { display: flex; flex-direction: column; gap: 12px; padding: 12px; }
+
+    .qr-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--clr-border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+    }
+
+    .qr-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .qr-card-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--clr-text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .qr-card-meta span { display: flex; align-items: center; gap: 6px; }
+    .qr-card-meta .label { color: var(--clr-text-muted); font-size: 11px; min-width: 90px; }
+
+    .qr-card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .qr-card-actions .btn { font-size: 12px; padding: 5px 12px; flex: 1; justify-content: center; display: flex; align-items: center; gap: 4px; }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="page-content">
@@ -23,15 +68,16 @@
     </div>
   </div>
 
-  <!-- Table Card -->
-  <div class="card">
+  {% if qr_list %}
+
+  <!-- ── Desktop: Table ── -->
+  <div class="card qr-table-view">
     <div class="card-body p-0">
-      {% if qr_list %}
       <div class="table-responsive">
         <table class="table table-hover mb-0">
           <thead>
             <tr>
-              <th style="padding:14px 20px">#</th>
+              <th style="padding:14px 20px">No</th>
               <th style="padding:14px 20px">Tipe</th>
               <th style="padding:14px 20px">Tanggal</th>
               <th style="padding:14px 20px">Berlaku Hingga</th>
@@ -50,12 +96,8 @@
                   <span class="badge-selesai" style="font-size:12px">Pulang</span>
                 {% endif %}
               </td>
-              <td style="padding:14px 20px">
-                <span style="font-size:13px">{{ qr.tanggal|date:"d M Y" }}</span>
-              </td>
-              <td style="padding:14px 20px">
-                <span style="font-size:13px">{{ qr.berlaku_hingga|date:"d M Y, H:i" }}</span>
-              </td>
+              <td style="padding:14px 20px"><span style="font-size:13px">{{ qr.tanggal|date:"d M Y" }}</span></td>
+              <td style="padding:14px 20px"><span style="font-size:13px">{{ qr.berlaku_hingga|date:"d M Y, H:i" }}</span></td>
               <td style="padding:14px 20px">
                 {% if qr.is_valid %}
                   <span class="badge-aktif">Aktif</span>
@@ -67,16 +109,14 @@
               </td>
               <td style="padding:14px 20px">
                 <div class="d-flex gap-2">
-                  <a href="{% url 'supervisor_qr_generate' %}"
-                     class="btn btn-sm"
+                  <a href="{% url 'supervisor_qr_generate' %}" class="btn btn-sm"
                      style="background:var(--clr-accent-light);color:#a5b4fc;border:1px solid var(--clr-accent-mid);font-size:12px;padding:5px 12px">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                     Lihat QR
                   </a>
                   {% if qr.is_active %}
                   <button class="btn btn-sm btn-nonaktif"
-                          data-qr-id="{{ qr.pk }}"
-                          data-tipe="{{ qr.tipe }}"
+                          data-qr-id="{{ qr.pk }}" data-tipe="{{ qr.tipe }}"
                           style="background:var(--clr-danger-light);color:var(--clr-danger);border:1px solid rgba(239,68,68,0.25);font-size:12px;padding:5px 12px">
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
                     Nonaktifkan
@@ -89,7 +129,66 @@
           </tbody>
         </table>
       </div>
-      {% else %}
+    </div>
+  </div>
+
+  <!-- ── Mobile: Card List ── -->
+  <div class="qr-card-list">
+    {% for qr in qr_list %}
+    <div class="qr-card">
+      <div class="qr-card-header">
+        <div>
+          {% if qr.tipe == 'masuk' %}
+            <span class="badge-aktif" style="font-size:12px">Masuk</span>
+          {% else %}
+            <span class="badge-selesai" style="font-size:12px">Pulang</span>
+          {% endif %}
+        </div>
+        <div>
+          {% if qr.is_valid %}
+            <span class="badge-aktif">Aktif</span>
+          {% elif not qr.is_active %}
+            <span class="badge-draft">Dinonaktifkan</span>
+          {% else %}
+            <span class="badge-dikirim">Expired</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="qr-card-meta">
+        <span>
+          <span class="label">Tanggal</span>
+          {{ qr.tanggal|date:"d M Y" }}
+        </span>
+        <span>
+          <span class="label">Berlaku Hingga</span>
+          {{ qr.berlaku_hingga|date:"d M Y, H:i" }}
+        </span>
+      </div>
+
+      <div class="qr-card-actions">
+        <a href="{% url 'supervisor_qr_generate' %}" class="btn btn-sm"
+           style="background:var(--clr-accent-light);color:#a5b4fc;border:1px solid var(--clr-accent-mid)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          Lihat QR
+        </a>
+        {% if qr.is_active %}
+        <button class="btn btn-sm btn-nonaktif"
+                data-qr-id="{{ qr.pk }}" data-tipe="{{ qr.tipe }}"
+                style="background:var(--clr-danger-light);color:var(--clr-danger);border:1px solid rgba(239,68,68,0.25)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+          Nonaktifkan
+        </button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- Empty State -->
+  <div class="card">
+    <div class="card-body">
       <div class="text-center py-5">
         <div style="width:56px;height:56px;background:var(--clr-accent-light);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#a5b4fc" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -99,9 +198,9 @@
           <a href="{% url 'supervisor_qr_generate' %}" style="color:var(--clr-accent);text-decoration:none">Generate QR sekarang</a>
         </p>
       </div>
-      {% endif %}
     </div>
   </div>
+  {% endif %}
 
 </div>
 
@@ -115,7 +214,7 @@
       </div>
       <div class="modal-body">
         <p style="color:var(--clr-text-secondary);font-size:14px;margin:0">
-          Yakin ingin menonaktifkan QR untuk laporan <strong id="modalLaporanName" style="color:var(--clr-text-primary)"></strong>?
+          Yakin ingin menonaktifkan QR <strong id="modalLaporanName" style="color:var(--clr-text-primary)"></strong>?
           <br><span style="font-size:12px;color:var(--clr-text-muted);margin-top:6px;display:block">Staff tidak bisa absen setelah QR dinonaktifkan.</span>
         </p>
       </div>
@@ -124,10 +223,9 @@
           style="background:rgba(255,255,255,0.05);color:var(--clr-text-secondary);border:1px solid var(--clr-border);font-size:13px">
           Batal
         </button>
-        <form id="formNonaktif" method="post" action="">
+        <form id="formNonaktif" method="post">
           {% csrf_token %}
-          <button type="submit" class="btn"
-            style="background:var(--clr-danger);color:#fff;border:none;font-size:13px">
+          <button type="submit" class="btn" style="background:var(--clr-danger);color:#fff;border:none;font-size:13px">
             Nonaktifkan
           </button>
         </form>
@@ -135,16 +233,55 @@
     </div>
   </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
 document.querySelectorAll('.btn-nonaktif').forEach(btn => {
   btn.addEventListener('click', function () {
-    const qrId   = this.dataset.qrId;
-    const laporan = this.dataset.laporan;
-    document.getElementById('modalLaporanName').textContent = laporan;
-    document.getElementById('formNonaktif').action = `/supervisor/qr/${qrId}/nonaktifkan/`;
+    const qrId = this.dataset.qrId;
+    const tipe = this.dataset.tipe;
+    document.getElementById('modalLaporanName').textContent = tipe === 'masuk' ? 'Masuk' : 'Pulang';
+    document.getElementById('formNonaktif').dataset.qrId = qrId;
     new bootstrap.Modal(document.getElementById('modalNonaktif')).show();
   });
 });
+
+document.getElementById('formNonaktif').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const qrId      = this.dataset.qrId;
+  const csrfToken = this.querySelector('[name=csrfmiddlewaretoken]').value;
+
+  fetch(`/supervisor/qr/${qrId}/nonaktifkan/`, {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken'     : csrfToken,
+    },
+  })
+  .then(res => res.json())
+  .then(data => {
+    bootstrap.Modal.getInstance(document.getElementById('modalNonaktif')).hide();
+    if (data.ok) {
+      // Hapus tombol nonaktifkan di table & card
+      document.querySelectorAll(`.btn-nonaktif[data-qr-id="${qrId}"]`).forEach(b => b.remove());
+      showAlert('success', data.message);
+    } else {
+      showAlert('danger', data.error);
+    }
+  })
+  .catch(() => showAlert('danger', 'Terjadi kesalahan. Coba lagi.'));
+});
+
+function showAlert(type, message) {
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = `
+    <div class="flash-message alert-${type}"
+         style="position:fixed;top:20px;right:20px;z-index:9999;min-width:300px">
+      ${message}
+    </div>`;
+  document.body.appendChild(wrapper);
+  setTimeout(() => wrapper.remove(), 4000);
+}
 </script>
 {% endblock %}

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Laporan Bulanan - {{ perusahaan.nama_perusahaan }}</title>
+<style>
+
+/* ═══════════════════════════════════════
+   PAGE SETUP — default PORTRAIT
+═══════════════════════════════════════ */
+@page {
+  size: A4 portrait;
+  margin: 15mm 15mm 15mm 15mm;
+}
+@page landscape {
+  size: A4 landscape;
+  margin: 10mm 8mm 10mm 8mm;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9pt;
+  color: #111;
+  background: white;
+}
+
+.page-break     { page-break-after: always; }
+.avoid-break    { page-break-inside: avoid; }
+.page-landscape { page: landscape; }
+.clearfix       { clear: both; }
+
+/* ═══════════════════════════════════════
+   COVER
+═══════════════════════════════════════ */
+.cover { text-align: center; padding-top: 10mm; }
+
+.cover-title {
+  font-size: 22pt;
+  font-weight: bold;
+  text-decoration: underline;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+.cover-company {
+  font-size: 14pt;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+.cover-img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border: 1px solid #bbb;
+  margin-bottom: 16px;
+  display: block;
+}
+.cover-img-placeholder {
+  width: 100%;
+  height: 200px;
+  background: #ddd;
+  border: 1px solid #aaa;
+  margin-bottom: 16px;
+  line-height: 200px;
+  font-size: 10pt;
+  color: #777;
+  text-align: center;
+}
+.cover-bottom {
+  font-size: 14pt;
+  font-weight: bold;
+  line-height: 2;
+  margin-top: 10px;
+}
+
+/* ═══════════════════════════════════════
+   DAFTAR ISI
+═══════════════════════════════════════ */
+.toc-title {
+  font-size: 13pt;
+  font-weight: bold;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #111;
+  padding-bottom: 5px;
+}
+.toc-item {
+  padding: 8px 0;
+  border-bottom: 1px dotted #aaa;
+  font-size: 10pt;
+}
+.toc-item strong { margin-right: 8px; }
+
+/* ═══════════════════════════════════════
+   DOC HEADER (tiap halaman)
+═══════════════════════════════════════ */
+.doc-header {
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.doc-header-left  { float: left; }
+.doc-header-right { float: right; font-size: 9pt; font-weight: bold; }
+.doc-company { font-weight: bold; font-size: 11pt; }
+.doc-sub     { font-size: 8pt; color: #555; }
+
+/* ═══════════════════════════════════════
+   SECTION HEADER
+═══════════════════════════════════════ */
+.sec-head {
+  border-left: 5px;
+  padding: 4px 10px;
+  background: #f0f0f0;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.sec-head h2 { font-size: 11pt; font-weight: bold; }
+.sec-head p  { font-size: 8pt; color: #555; margin-top: 2px; }
+
+/* ═══════════════════════════════════════
+   TABEL PORTRAIT (data karyawan dll)
+═══════════════════════════════════════ */
+table { border-collapse: collapse; width: 100%; }
+
+.tbl thead tr { background: #2c3e50; color: #fff; }
+.tbl thead th {
+  padding: 5px;
+  font-size: 8pt;
+  font-weight: bold;
+  text-align: center;
+  border: 1px solid #2c3e50;
+}
+.tbl tbody td {
+  padding: 4px 5px;
+  font-size: 8.5pt;
+  border: 1px solid #ccc;
+  vertical-align: middle;
+}
+.tbl tbody tr:nth-child(even) td { background: #f7f7f7; }
+
+/* ═══════════════════════════════════════
+   TABEL KALENDER (landscape, 31 kolom)
+═══════════════════════════════════════ */
+.kal {
+  font-size: 5.5pt;
+  table-layout: fixed;
+  width: 100%;
+}
+.kal thead th {
+  padding: 2px 1px;
+  font-size: 5.5pt;
+  text-align: center;
+  border: 1px solid #999;
+  background: #2c3e50;
+  color: #fff;
+  overflow: hidden;
+}
+.kal tbody td {
+  padding: 2px 1px;
+  font-size: 5.5pt;
+  text-align: center;
+  border: 1px solid #ccc;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.kal tbody tr:nth-child(even) td { background: #f7f7f7; }
+
+/* Lebar kolom kalender */
+.kc-no   { width: 16px; }
+.kc-nama { width: 88px; text-align: left !important; padding-left:2px !important; font-size:6pt; }
+.kc-nik  { width: 58px; text-align: left !important; padding-left:2px !important; }
+.kc-item { width: 90px; text-align: left !important; padding-left:2px !important; font-size:6pt; }
+.kc-std  { width: 72px; text-align: left !important; padding-left:2px !important; }
+.kc-task { width: 72px; text-align: left !important; padding-left:2px !important; }
+.kc-job  { width: 78px; text-align: left !important; padding-left:2px !important; }
+.kc-obj  { width: 85px; text-align: left !important; padding-left:2px !important; }
+.kc-frek { width: 18px; }
+.kc-day  { width: 13px; }
+.kc-sum  { width: 18px; font-weight: bold; }
+.kc-ket  { width: 55px; text-align: left !important; padding-left:2px !important; }
+
+/* Status absensi */
+.sP  { font-weight: bold; color: #111; }
+.sL  { font-weight: bold; color: #555; }
+.sA  { font-weight: bold; color: #c00; }
+.sI  { font-weight: bold; color: #333; }
+.sDC { font-weight: bold; color: #005bb5; font-size: 4.5pt; }
+.sLB { color: #888; }
+.sMark { font-weight: bold; }
+
+/* Info box di atas tabel jadwal */
+.jad-info {
+  border: 1px solid #aaa;
+  padding: 3px 7px;
+  font-size: 7pt;
+  background: #f5f5f5;
+  margin-bottom: 2px;
+  text-align: center;
+}
+
+/* Keterangan bawah tabel */
+.ket-box { margin-top: 5px; font-size: 7pt; color: #444; }
+.libur-box {
+  background: #4472c4;
+  color: #fff;
+  padding: 1px 7px;
+  font-size: 6.5pt;
+}
+
+/* ═══════════════════════════════════════
+   ORG CHART
+═══════════════════════════════════════ */
+.org-center { text-align: center; margin: 10px 0 8px 0; }
+.org-spv-box {
+  display: inline-block;
+  background: #2c3e50;
+  color: #fff;
+  padding: 5px 20px;
+  font-weight: bold;
+  font-size: 9pt;
+}
+.org-arrow { font-size: 16pt; color: #2c3e50; margin: 3px 0; display: block; }
+.org-staff-wrap { overflow: hidden; width: 100%; margin-top: 4px; }
+.org-staff-item {
+  float: left;
+  border: 1px solid #aaa;
+  padding: 3px 4px;
+  font-size: 7pt;
+  text-align: center;
+  width: 16.6%;
+}
+
+/* ═══════════════════════════════════════
+   FOTO PROFIL
+═══════════════════════════════════════ */
+.fp-grid { width: 100%; border-collapse: collapse; margin-top: 12px; }
+.fp-grid td {
+  border: 1px solid #bbb;
+  padding: 4px;
+  text-align: center;
+  width: 12.5%;
+  vertical-align: top;
+}
+.fp-img {
+  width: 55px; height: 65px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+  display: block;
+  margin: 0 auto 2px;
+}
+.fp-ph {
+  width: 55px; height: 65px;
+  background: #ddd;
+  border: 1px solid #bbb;
+  display: block;
+  margin: 0 auto 2px;
+  line-height: 65px;
+  text-align: center;
+  font-size: 18pt;
+  color: #aaa;
+}
+.fp-nama { font-size: 6pt; font-weight: bold; margin-top: 2px; }
+
+/* ═══════════════════════════════════════
+   FOTO PROGRES (FIXED)
+═══════════════════════════════════════ */
+
+.foto-area {
+  font-size: 9.5pt;
+  font-weight: bold;
+  text-transform: uppercase;
+  border-bottom: 1px solid #aaa;
+  padding-bottom: 3px;
+  margin: 10px 0 5px 0;
+  color: #333;
+}
+
+.foto-label { 
+  font-size: 8pt; 
+  color: #444; 
+  margin-bottom: 5px; 
+}
+
+.foto-row { 
+  width: 100%; 
+  border-collapse: collapse; 
+  margin-bottom: 15px; 
+  table-layout: fixed; /* Penting: menjaga lebar kolom tetap seimbang */
+}
+
+.foto-row td { 
+  border: none; 
+  width: 50%; 
+  padding: 8px; 
+  vertical-align: top; 
+}
+
+.foto-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.foto-img {
+  /* Mengikuti lebar kolom tabel */
+  width: 100%; 
+  
+  /* Tinggi tetap agar seragam, sesuaikan px nya sesuai selera */
+  height: 220px; 
+  
+  /* KUNCI: Foto akan dipotong otomatis agar proporsional (tidak gepeng) */
+  object-fit: cover; 
+  
+  /* Posisi potong di tengah */
+  object-position: center;
+  
+  border: 1px solid #bbb;
+  border-radius: 4px 4px 0 0; /* Opsional: sedikit lengkung di atas */
+  display: block;
+}
+
+.foto-cap {
+  font-size: 7.5pt; 
+  text-align: center;
+  padding: 5px; 
+  background: #f8f9fa;
+  color: #555;
+  border: 1px solid #bbb; 
+  border-top: none;
+  border-radius: 0 0 4px 4px; /* Opsional: sedikit lengkung di bawah */
+  line-height: 1.2;
+}
+
+/* Placeholder jika foto tidak ada */
+.foto-img-empty {
+  width: 100%;
+  height: 220px;
+  background-color: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #ccc;
+  color: #999;
+  font-style: italic;
+  font-size: 8pt;
+}
+/* ═══════════════════════════════════════
+   PENUTUP & TTD
+═══════════════════════════════════════ */
+.penutup-text {
+  font-size: 10pt;
+  line-height: 2;
+  text-align: justify;
+  margin-bottom: 30px;
+}
+.ttd-wrap {
+  display: table;
+  page-break-inside: avoid;
+  width: 100%;
+  margin-top: 20px;
+}
+.ttd-col {
+  display: table-cell;
+  width: 33%;
+  text-align: center;
+  padding: 0 8px;
+}
+.ttd-label { font-size: 9pt; margin-bottom: 25px; }
+.ttd-line  { border-top: 1px solid #333; padding-top: 4px; font-size: 9pt; font-weight: bold; }
+.ttd-role  { font-size: 8pt; color: #555; margin-top: 2px; }
+
+.doc-footer {
+  margin-top: 20px;
+  border-top: 1px solid #ddd;
+  padding-top: 4px;
+  font-size: 7pt;
+  color: #aaa;
+  text-align: center;
+}
+
+</style>
+</head>
+<body>
+
+
+<!-- ═══════════════════════════ COVER ═══════════════════════════ -->
+<div class="cover page-break">
+  <div class="cover-title">LAPORAN BULANAN</div>
+  <div class="cover-company">PT. UNITED PACIFIC SOLUTIONS (UNIPACS)</div>
+
+  {% if perusahaan.foto_perusahaan %}
+  <img src="{{ perusahaan.foto_perusahaan.url }}" 
+       alt="{{ perusahaan.nama_perusahaan }}" 
+       class="img-fluid rounded cover-img" 
+       style="width: 100%; max-height: 300px; object-fit: cover;">
+{% else %}
+  <div class="cover-img-placeholder d-flex align-items-center justify-content-center bg-light border rounded" 
+       style="width: 100%; height: 200px;">
+    <span class="text-muted">[ Foto {{ perusahaan.nama_perusahaan }} ]</span>
+  </div>
+{% endif %}
+
+  <div class="cover-bottom">
+    PEMELIHARAAN DAN PERAWATAN<br>
+    {{ jenis_jasa.nama_jasa|upper }}<br>
+    {{ perusahaan.nama_perusahaan|upper }}<br>
+    PERIODE : {{ nama_bulan|upper }} {{ tahun }}
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ DAFTAR ISI ═══════════════════════════ -->
+<div class="page-break">
+  <div class="doc-header">
+    <div class="doc-header-left">
+      <div class="doc-company">{{ perusahaan.nama_perusahaan }}</div>
+      <div class="doc-sub">{{ jenis_jasa.nama_jasa }} &mdash; {{ nama_bulan }} {{ tahun }}</div>
+    </div>
+  </div>
+
+  <div class="toc-title">DAFTAR ISI</div>
+  <div class="toc-item"><strong>I.</strong> Data Karyawan</div>
+  <div class="toc-item"><strong>II.</strong> Struktur Organisasi</div>
+  <div class="toc-item"><strong>III.</strong> Jadwal dan Ploting Kerja</div>
+  <div class="toc-item"><strong>IV.</strong> Absensi</div>
+  <div class="toc-item"><strong>V.</strong> Program dan Pelaksanaan Pekerjaan</div>
+  <div class="toc-item"><strong>VI.</strong> Foto Progres</div>
+  <div class="toc-item"><strong>VII.</strong> Penutup</div>
+</div>
+
+
+<!-- ═══════════════════════════ I. DATA KARYAWAN ═══════════════════════════ -->
+<div class="page-break">
+  <div class="doc-header">
+    <div class="doc-header-left">
+      <div class="doc-company">{{ perusahaan.nama_perusahaan }}</div>
+      <div class="doc-sub">{{ jenis_jasa.nama_jasa }} &mdash; {{ nama_bulan }} {{ tahun }}</div>
+    </div>
+    <div class="doc-header-right">I. DATA KARYAWAN</div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="sec-head avoid-break">
+    <p>Total {{ staff_list|length }} karyawan aktif &mdash; Periode {{ nama_bulan }} {{ tahun }}</p>
+  </div>
+
+  <table class="tbl avoid-break">
+    <thead>
+      <tr>
+        <th style="width:5%">NO</th>
+        <th style="width:35%;text-align:left;padding-left:6px;">NAMA</th>
+        <th style="width:18%">NIK</th>
+        <th style="width:27%;text-align:left;padding-left:6px;">AREA TUGAS</th>
+        <th style="width:15%">KETRANGAN</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rel in staff_list %}
+      <tr>
+        <td style="text-align:center;">{{ forloop.counter }}</td>
+        <td style="font-weight:bold;padding-left:6px;">{{ rel.staff.nama_lengkap|default:rel.staff.username|upper }}</td>
+        <td style="text-align:center;">{{ rel.staff.username }}</td>
+        <td style="padding-left:6px;">{{ rel.supervisor.nama_lengkap|default:"-" }}</td>
+        <td style="text-align:center;">-</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" style="text-align:center;padding:14px;color:#888;">Tidak ada data karyawan.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+<!-- ═══════════════════════════ II. STRUKTUR ORGANISASI ═══════════════════════════ -->
+<div class="page-break">
+  <div class="doc-header">
+    <div class="doc-header-left">
+      <div class="doc-company">{{ perusahaan.nama_perusahaan }}</div>
+      <div class="doc-sub">{{ jenis_jasa.nama_jasa }} &mdash; {{ nama_bulan }} {{ tahun }}</div>
+    </div>
+    <div class="doc-header-right">II. STRUKTUR ORGANISASI</div>
+    <div class="clearfix"></div>
+  </div>
+
+ 
+
+  <div style="text-align:center;font-weight:bold;font-size:11pt;margin-bottom:2px;">
+    STRUKTUR ORGANISASI PT UNIPACS
+  </div>
+  <div style="text-align:center;font-weight:bold;font-size:10pt;margin-bottom:12px;">
+    AREA {{ perusahaan.nama_perusahaan|upper }}
+  </div>
+
+  <div style="text-align:center;margin-bottom:15px;">
+    {% for laporan in laporan_list %}{% if forloop.first %}
+    <div style="display:inline-block;background:#2c3e50;color:#fff;padding:8px 20px;font-weight:bold;font-size:9pt;margin-bottom:8px;">
+      SPV {{ jenis_jasa.nama_jasa|upper }}<br>
+      <span style="font-weight:normal;font-size:8pt;">
+        {{ laporan.supervisor.nama_lengkap|default:laporan.supervisor.username }}
+      </span>
+    </div>
+    {% endif %}{% endfor %}
+  </div>
+
+  <div style="text-align:center;font-size:16pt;color:#2c3e50;margin:5px 0;">&#8595;</div>
+
+  {% if staff_list %}
+  <div style="overflow:hidden;width:100%;margin-top:10px;">
+    {% for rel in staff_list %}
+    <div style="float:left;width:50%;text-align:center;margin-bottom:15px;">
+      <div style="font-size:8pt;font-weight:bold;margin-bottom:3px;">{{ rel.staff.nama_lengkap|default:rel.staff.username }}</div>
+      {% if rel.staff.foto_profil %}
+        <img src="{{ rel.staff.foto_profil.url }}" alt="" style="width:60px;height:70px;object-fit:cover;border:1px solid #ccc;">
+      {% else %}
+        <div style="width:60px;height:70px;background:#ddd;border:1px solid #bbb;margin:0 auto;line-height:70px;text-align:center;font-size:18pt;color:#aaa;">&#128100;</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+    <div class="clearfix"></div>
+  </div>
+  {% endif %}
+
+  </div>
+
+
+<!-- ═══════════════════════════ III. JADWAL (LANDSCAPE) ═══════════════════════════ -->
+<div class="page-landscape page-break">
+  <div class="doc-header">
+    <div class="doc-header-left">
+      <div class="doc-company">{{ perusahaan.nama_perusahaan }}</div>
+      <div class="doc-sub">{{ jenis_jasa.nama_jasa }} &mdash; {{ nama_bulan }} {{ tahun }}</div>
+    </div>
+    <div class="doc-header-right">III. JADWAL &amp; PLOTING KERJA</div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="sec-head">
+    <p>Pelaksanaan Kerja Bulanan &mdash; {{ nama_bulan }} {{ tahun }}</p>
+  </div>
+
+  {% for area_name, items in jadwal_kalender.items %}
+  <div class="avoid-break">
+    <div class="jad-info">
+      <strong>PELAKSANAAN KERJA BULANAN &mdash; {{ jenis_jasa.nama_jasa|upper }}</strong><br>
+      {{ perusahaan.nama_perusahaan|upper }} &mdash; Periode : {{ nama_bulan }} {{ tahun }}
+    </div>
+    <p style="font-size:7pt;font-weight:bold;margin-bottom:2px;">LOKASI : {% for item in items %}{% if forloop.first %}{{ item.sub_area }}{% endif %}{% endfor %}</p>
+
+    <table class="kal">
+      <thead>
+        <tr>
+          <th class="kc-no">NO</th>
+          <th class="kc-item">ITEM JOB</th>
+          <th class="kc-std">STANDARD</th>
+          <th class="kc-task">TASK</th>
+          
+          {% for day in days_range %}<th class="kc-day">{{ day }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td class="kc-no" style="text-align:center;">{{ forloop.counter }}</td>
+          <td class="kc-item">{{ item.nama_item }}</td>
+          <td class="kc-std">{{ item.sub_area }}</td>
+          <td class="kc-task">{{ item.task }}</td>
+          
+          {% for day in days_range %}
+          <td class="kc-day">{% if day in item.tanggal_aktif %}<span class="sMark">A</span>{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="ket-box">
+      Keterangan :&nbsp;<strong>A</strong> : Aktivitas &nbsp;
+      <span class="libur-box">Libur idul fitri</span>
+    </div>
+  </div>
+  <br>
+  {% empty %}
+  <p style="text-align:center;padding:20px;color:#888;">Tidak ada item kegiatan bulan ini.</p>
+  {% endfor %}
+</div>
+
+
+<!-- ═══════════════════════════ IV. ABSENSI (LANDSCAPE) ═══════════════════════════ -->
+<div class="page-landscape page-break">
+  <div class="doc-header">
+    <div class="doc-header-left">
+      <div class="doc-company">{{ perusahaan.nama_perusahaan }}</div>
+      <div class="doc-sub">{{ jenis_jasa.nama_jasa }} &mdash; {{ nama_bulan }} {{ tahun }}</div>
+    </div>
+    <div class="doc-header-right">IV. ABSENSI</div>
+    <div class="clearfix"></div>
+  </div>
+
+  <p style="font-size:7.5pt;margin-bottom:6px;line-height:1.9;text-align:center;">
+    <strong>ATTENDDANLIST OF EMPLOYE</strong> / PT UNITED PASIFIC SOLUTION<br>
+    <strong>DIVISI</strong> : {{ jenis_jasa.nama_jasa }} &nbsp;&nbsp;
+    <strong>AREA</strong> : {{ perusahaan.nama_perusahaan }} &nbsp;&nbsp;
+    <strong>PERIODE</strong> : {{ nama_bulan|upper }} {{ tahun }}
+  </p>
+
+  <table class="kal">
+    <thead>
+      <tr>
+        <th class="kc-no">NO</th>
+        <th class="kc-nama">NAMA</th>
+        <th class="kc-nik">NIK</th>
+        {% for day in days_range %}<th class="kc-day">{{ day }}</th>{% endfor %}
+        <th class="kc-sum">E</th>
+        <th class="kc-sum">A</th>
+        <th class="kc-sum">I</th>
+        <th class="kc-sum">L</th>
+        <th class="kc-sum">DC</th>
+        <th class="kc-ket">KETERANGAN</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for staff_id, data in absensi_kalender.items %}
+      <tr>
+        <td class="kc-no" style="text-align:center;">{{ forloop.counter }}</td>
+        <td class="kc-nama" style="font-weight:bold;">{{ data.nama|upper }}</td>
+        <td class="kc-nik">{{ data.nik }}</td>
+        {% for s in data.hari_list %}
+        <td class="kc-day">
+          {% if s == 'P'  %}<span class="sP">P</span>
+          {% elif s == 'L'%}<span class="sL">L</span>
+          {% elif s == 'A'%}<span class="sA">A</span>
+          {% elif s == 'I'%}<span class="sI">I</span>
+          {% elif s == 'DC'%}<span class="sDC">DC</span>
+          {% elif s == 'LB'%}<span class="sLB">LB</span>
+          {% elif s      %}<span>{{ s }}</span>
+          {% endif %}
+        </td>
+        {% endfor %}
+        <td class="kc-sum">{{ data.jumlah_hadir|default:"0" }}</td>
+        <td class="kc-sum">{{ data.jumlah_alpa|default:"0" }}</td>
+        <td class="kc-sum">{{ data.jumlah_izin|default:"0" }}</td>
+        <td class="kc-sum">{{ data.jumlah_cuti|default:"0" }}</td>
+        <td class="kc-sum">{{ data.jumlah_dokter|default:"0" }}</td>
+        <td class="kc-ket"></td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="{{ days_in_month|add:9 }}" style="text-align:center;padding:12px;color:#888;">
+          Tidak ada data absensi bulan ini.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="ket-box" style="margin-top:6px;">
+    <strong>Keterangan :</strong>&nbsp;
+    <span class="sP">P</span>=Hadir &nbsp;
+    <span class="sL">L</span>=Cuti &nbsp;
+    <span class="sI">I</span>=Izin &nbsp;
+    <span class="sA">A</span>=Alpa &nbsp;
+    <span class="sDC">DC</span>=Surat Dokter &nbsp;
+    LB=Libur
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════ V. PROGRAM DAN PELAKSANAAN (LANDSCAPE) ═══════════════════════════ -->
+<div class="page-landscape page-break">
+  <div class="doc-header">
+    <div class="doc-header-left">
+      <div class="doc-company">{{ perusahaan.nama_perusahaan }}</div>
+      <div class="doc-sub">{{ jenis_jasa.nama_jasa }} &mdash; {{ nama_bulan }} {{ tahun }}</div>
+    </div>
+    <div class="doc-header-right">V. PROGRAM &amp; PELAKSANAAN</div>
+    <div class="clearfix"></div>
+  </div>
+
+  <div class="sec-head">
+    <p>Monthly Schedule &mdash; {{ perusahaan.nama_perusahaan }} &mdash; {{ nama_bulan }} {{ tahun }}</p>
+  </div>
+
+  {% for entry in laporan_dengan_jadwal %}
+  <div class="avoid-break">
+    <div class="jad-info">
+      <strong>MONTHLY SCHEDULE {{ jenis_jasa.nama_jasa|upper }}</strong><br>
+      {{ perusahaan.nama_perusahaan|upper }}
+    </div>
+    <p style="font-size:7pt;margin-bottom:2px;">
+      <strong>Lokasi : {% for item in entry.items %}{% if forloop.first %}{{ item.sub_area }}{% endif %}{% endfor %}</strong> &nbsp;&nbsp;
+      Supervisor : {{ entry.supervisor }} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      Bulan : {{ nama_bulan }} {{ tahun }}
+    </p>
+
+    {% if entry.laporan.catatan %}
+    <p style="font-size:6.5pt;color:#555;margin-bottom:3px;padding:2px 5px;border-left:3px solid #bbb;">
+      {{ entry.laporan.catatan }}
+    </p>
+    {% endif %}
+
+    <table class="kal">
+      <thead>
+        <tr>
+          <th class="kc-obj">OBJECT</th>
+          <th class="kc-std">STANDAR</th>
+          <th class="kc-job">JOB/pekerjaan</th>
+          <th class="kc-frek">Frek</th>
+          {% for day in days_range %}<th class="kc-day">{{ day }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in entry.items %}
+        <tr>
+          <td class="kc-obj" style="font-weight:bold;">{{ item.nama_item }}</td>
+          <td class="kc-std">{{ item.sub_area }}</td>
+          <td class="kc-job">{{ item.task }}</td>
+          <td class="kc-frek" style="text-align:center;">{{ item.frek }}</td>
+          {% for mark in item.hari_list %}
+          <td class="kc-day">{% if mark %}<span class="sMark">{{ mark }}</span>{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{{ days_in_month|add:4 }}" style="text-align:center;padding:8px;color:#888;">
+            Tidak ada item kegiatan.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="ket-box" style="margin-bottom:10px;">
+      Note : Beri tanda (&#10003;) jika pekerjaan sudah dilakukan &nbsp;&nbsp;
+      Checked by : ___________________ &nbsp;&nbsp;
+      <span class="libur-box">Libur idul fitri</span>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+<!-- ═══════════════════════════ VI. FOTO PROGRES ═══════════════════════════ -->
+<div class="page-break">
+  <div class="doc-header">
+    <div class="doc-header-left">
+      <div class="doc-company">{{ perusahaan.nama_perusahaan }}</div>
+      <div class="doc-sub">{{ jenis_jasa.nama_jasa }} &mdash; {{ nama_bulan }} {{ tahun }}</div>
+    </div>
+    <div class="doc-header-right">VI. FOTO PROGRES</div>
+    <div class="clearfix"></div>
+  </div>
+
+  {% regroup item_list by sub_area.nama_sub_area as foto_by_subarea %}
+  
+  {% for area_group in foto_by_subarea %}
+    <div class="foto-area">{{ area_group.grouper|default:"Tanpa Sub Area" }}</div>
+    
+    <table class="foto-row">
+      <tr>
+        {% for item in area_group.list %}
+          <td style="width: 50%; padding: 8px; vertical-align: top; border: none;">
+            <div class="foto-label" style="text-align: center; font-weight: bold;">
+              {{ item.nama_item }}{% if item.tanggal %} — {{ item.tanggal|date:"d M Y" }}{% endif %}
+            </div>
+
+            <table style="width: 100%; table-layout: fixed; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 3px; text-align: center; border: none;">
+                  <div style="font-size: 7pt; font-weight: bold; margin-bottom: 2px;">ON PROGRESS</div>
+                  {% if item.foto_on_progress %}
+                    <img src="{{ item.foto_on_progress.url }}" class="foto-img" style="height: 100px;">
+                  {% else %}
+                    <div class="foto-img-empty" style="height: 100px;">N/A</div>
+                  {% endif %}
+                </td>
+
+                <td style="padding: 3px; text-align: center; border: none;">
+                  <div style="font-size: 7pt; font-weight: bold; margin-bottom: 2px;">AFTER</div>
+                  {% if item.foto_after %}
+                    <img src="{{ item.foto_after.url }}" class="foto-img" style="height: 100px;">
+                  {% else %}
+                    <div class="foto-img-empty" style="height: 100px;">N/A</div>
+                  {% endif %}
+                </td>
+              </tr>
+            </table>
+          </td>
+
+          {# Logika pindah baris setiap 2 item #}
+          {% if forloop.counter|divisibleby:2 and not forloop.last %}
+            </tr><tr>
+          {% endif %}
+
+          {# Menutup baris jika item berjumlah ganjil #}
+          {% if forloop.last and not forloop.counter|divisibleby:2 %}
+            <td style="width: 50%;"></td>
+          {% endif %}
+        {% endfor %}
+      </tr>
+    </table>
+  {% empty %}
+    <p style="text-align:center; padding:30px; color:#888;">Tidak ada foto dokumentasi bulan ini.</p>
+  {% endfor %}
+</div>
+
+
+<!-- ═══════════════════════════ VII. PENUTUP ═══════════════════════════ -->
+<div style="position: relative; min-height: 260mm;">
+
+  <div class="doc-header">
+    <div class="doc-header-left">
+      <div class="doc-company">{{ perusahaan.nama_perusahaan }}</div>
+      <div class="doc-sub">{{ jenis_jasa.nama_jasa }} &mdash; {{ nama_bulan }} {{ tahun }}</div>
+    </div>
+    <div class="doc-header-right">VII. PENUTUP</div>
+    <div class="clearfix"></div>
+  </div>
+
+  <p class="penutup-text">
+    Demikian Laporan Bulanan periode bulan <strong>{{ nama_bulan }} {{ tahun }}</strong>
+    dibuat dan koordinasi antar pekerja penempatan
+    <strong>{{ perusahaan.nama_perusahaan }}</strong>.
+    Semua kegiatan telah dilaksanakan sesuai dengan jadwal dan standar yang telah ditetapkan.
+    Kami berkomitmen untuk terus meningkatkan kualitas layanan demi kepuasan seluruh pengguna fasilitas.
+  </p>
+
+  <p style="font-size:9pt;text-align:center;">
+    {{ perusahaan.alamat|default:"Karawang" }}, {{ nama_bulan }} {{ tahun }}
+  </p>
+
+  <!-- TTD FIX DI BAWAH -->
+  <table style="width:100%; margin-top:40px; text-align:center;">
+  <tr>
+    <td style="width:33%;">
+      Dibuat oleh,
+      <br><br><br><br>
+      <hr style="width:80%; border:0; border-top:1px solid #000;">
+      ( {% for laporan in laporan_list %}{% if forloop.first %}{{ laporan.supervisor.nama_lengkap|default:laporan.supervisor.username }}{% endif %}{% endfor %} )
+      <br>
+      <span style="font-size:8pt;">SPV {{ jenis_jasa.nama_jasa }}</span>
+    </td>
+
+    <td style="width:33%;">
+      Diketahui oleh,
+      <br><br><br><br>
+      <hr style="width:80%; border:0; border-top:1px solid #000;">
+      (.................................)
+      <br>
+      <span style="font-size:8pt;">Kepala Supervisor</span>
+    </td>
+
+    <td style="width:33%;">
+      Disetujui oleh,
+      <br><br><br><br>
+      <hr style="width:80%; border:0; border-top:1px solid #000;">
+      (.................................)
+      <br>
+      <span style="font-size:8pt;">{{ perusahaan.nama_perusahaan }}</span>
+    </td>
+  </tr>
+</table>
+  <!-- FOOTER -->
+  <div class="doc-footer" style="position:absolute; bottom:5mm; width:100%;">
+    Dokumen ini digenerate secara otomatis &mdash; {{ nama_bulan }} {{ tahun }}
+  </div>
+
+</div>
+
+
+</body>
+</html>

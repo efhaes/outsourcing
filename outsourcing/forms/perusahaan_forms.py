@@ -29,7 +29,7 @@ class PerusahaanForm(forms.ModelForm):
         label='Jenis Jasa',
     )
     customer = forms.ModelChoiceField(
-        queryset=User.objects.filter(role=RoleChoices.CUSTOMER,is_active=True),
+        queryset=User.objects.filter(role=RoleChoices.CUSTOMER, is_active=True),
         required=False,
         empty_label='— Pilih Customer —',
         label='Akun Customer',
@@ -37,20 +37,29 @@ class PerusahaanForm(forms.ModelForm):
     )
 
     class Meta:
-        model  = Perusahaan
-        fields = ['nama_perusahaan', 'alamat', 'telepon', 'email', 'jenis_jasa', 'customer', 'is_active']
+        model = Perusahaan
+        # 1. Tambahkan 'foto_perusahaan' di dalam list fields
+        fields = [
+            'nama_perusahaan', 'alamat', 'telepon', 'email', 
+            'jenis_jasa', 'customer', 'foto_perusahaan', 'is_active'
+        ]
+        
+        # 2. Tambahkan widget agar styling-nya konsisten (form-control)
         widgets = {
             'nama_perusahaan': forms.TextInput(attrs={'class': 'form-control'}),
-            'alamat'         : forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'telepon'        : forms.TextInput(attrs={'class': 'form-control'}),
-            'email'          : forms.EmailInput(attrs={'class': 'form-control'}),
+            'alamat': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'telepon': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'foto_perusahaan': forms.FileInput(attrs={'class': 'form-control'}), # Widget untuk file/image
         }
+        
         labels = {
             'nama_perusahaan': 'Nama Perusahaan',
-            'alamat'         : 'Alamat',
-            'telepon'        : 'Telepon',
-            'email'          : 'Email',
-            'is_active'       : 'Aktif',
+            'alamat': 'Alamat',
+            'telepon': 'Telepon',
+            'email': 'Email',
+            'foto_perusahaan': 'Foto Perusahaan',
+            'is_active': 'Aktif',
         }
 
 

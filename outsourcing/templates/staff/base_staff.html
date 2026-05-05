@@ -16,7 +16,7 @@
 </a>
 
 <div class="nav-section-label">Absensi</div>
-<a href="{% url 'staff_absensi_scan' %}" class="nav-link {% if 'absensi' in request.resolver_match.url_name %}active{% endif %}">
+<a href="{% url 'staff_absensi_scan' %}" class="nav-link {% if 'scan' in request.resolver_match.url_name %}active{% endif %}">
     <div class="nav-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
@@ -28,7 +28,8 @@
     </div>
     <span class="nav-label">Scan QR</span>
 </a>
-<a href="{% url 'staff_absensi_riwayat' %}" class="nav-link {% if 'absensi' in request.resolver_match.url_name %}active{% endif %}">
+
+<a href="{% url 'staff_absensi_riwayat' %}" class="nav-link {% if 'riwayat' in request.resolver_match.url_name %}active{% endif %}">
     <div class="nav-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>

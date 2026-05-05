@@ -608,10 +608,22 @@
         </div>
     </div>
 
-    <div class="detail-header-actions">
+        <div class="detail-header-actions">
         <a href="{% url 'supervisor_laporan_list' %}" class="action-btn btn-back">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
+
+        {% if laporan.status == 'selesai' or laporan.status == 'dikirim_customer' %}
+        <a href="{% url 'download_laporan_bulanan' laporan.perusahaan.id laporan.tanggal_laporan.year laporan.tanggal_laporan.month laporan.jenis_jasa.id 'pdf' %}" 
+        class="action-btn btn-pdf" target="_blank">
+            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+        </a>
+        <a href="{% url 'download_laporan_bulanan' laporan.perusahaan.id laporan.tanggal_laporan.year laporan.tanggal_laporan.month laporan.jenis_jasa.id 'word' %}" 
+        class="action-btn btn-word" target="_blank">
+            <i class="bi bi-file-earmark-word"></i> Download Word
+        </a>
+        {% endif %}
+
         {% if laporan.status == 'draft' %}
             <a href="{% url 'supervisor_laporan_edit' laporan.pk %}" class="action-btn btn-edit">
                 <i class="bi bi-pencil"></i> Edit
@@ -623,6 +635,7 @@
                 <i class="bi bi-trash"></i> Hapus
             </button>
         {% endif %}
+
         {% if laporan.status == 'selesai' %}
             <button class="action-btn btn-send" data-bs-toggle="modal" data-bs-target="#modalKirim">
                 <i class="bi bi-send"></i> Kirim ke Customer

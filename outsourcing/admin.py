@@ -53,7 +53,7 @@ class AreaKerjaInline(admin.TabularInline):
 
 @admin.register(Perusahaan)
 class PerusahaanAdmin(admin.ModelAdmin):
-    list_display  = ['nama_perusahaan', 'telepon', 'email', 'customer', 'is_active', 'dibuat_pada']
+    list_display  = ['nama_perusahaan', 'foto_perusahaan', 'telepon', 'email', 'customer', 'is_active', 'dibuat_pada']
     list_filter   = ['is_active', 'jenis_jasa']
     search_fields = ['nama_perusahaan', 'telepon', 'email']
     filter_horizontal = ['jenis_jasa']

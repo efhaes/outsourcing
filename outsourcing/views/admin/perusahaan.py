@@ -26,7 +26,8 @@ def perusahaan_list(request):
 def perusahaan_create(request):
     """Tambah perusahaan baru."""
     if request.method == 'POST':
-        form = PerusahaanForm(request.POST)
+        # TAMBAHKAN request.FILES di sini
+        form = PerusahaanForm(request.POST, request.FILES) 
         if form.is_valid():
             perusahaan = form.save()
             messages.success(request, f'Perusahaan "{perusahaan.nama_perusahaan}" berhasil ditambahkan.')
@@ -40,7 +41,6 @@ def perusahaan_create(request):
         'action'    : 'Tambah',
     }
     return render(request, 'admin/perusahaan/form.html', context)
-
 
 @admin_required
 def perusahaan_detail(request, pk):
@@ -67,11 +67,12 @@ def perusahaan_edit(request, pk):
     perusahaan = get_object_or_404(Perusahaan, pk=pk)
 
     if request.method == 'POST':
-        form = PerusahaanForm(request.POST, instance=perusahaan)
+        # TAMBAHKAN request.FILES di sini
+        form = PerusahaanForm(request.POST, request.FILES, instance=perusahaan)
         if form.is_valid():
             form.save()
             messages.success(request, f'Perusahaan "{perusahaan.nama_perusahaan}" berhasil diperbarui.')
-            return redirect('admin_perusahaan_list')  # konsisten dengan view lain
+            return redirect('admin_perusahaan_list')
     else:
         form = PerusahaanForm(instance=perusahaan)
 
@@ -82,7 +83,6 @@ def perusahaan_edit(request, pk):
         'action'    : 'Simpan Perubahan',
     }
     return render(request, 'admin/perusahaan/form.html', context)
-
 
 @admin_required
 def perusahaan_delete(request, pk):

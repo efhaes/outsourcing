@@ -154,6 +154,11 @@ class Perusahaan(models.Model):
         related_name='perusahaan_customer',
         limit_choices_to={'role': RoleChoices.CUSTOMER},
     )
+    foto_perusahaan  = models.ImageField(
+        upload_to='foto_perusahaan/',
+        blank=True,
+        null=True,
+    )
     is_active    = models.BooleanField(default=True)
     dibuat_pada = models.DateTimeField(auto_now_add=True)
     diubah_pada = models.DateTimeField(auto_now=True)
@@ -719,6 +724,13 @@ class AbsensiStatusChoices(models.TextChoices):
     PULANG      = 'pulang', 'Pulang'
     TERLAMBAT   = 'terlambat', 'Terlambat'
     
+class StatusHarianChoices(models.TextChoices):
+    HADIR   = 'P',  'Hadir'
+    CUTI    = 'L',  'Cuti'
+    IZIN    = 'I',  'Izin'
+    ALPA    = 'A',  'Alpa'
+    DOKTER  = 'DC', 'Surat Dokter'
+    LIBUR   = 'LB', 'Libur'
 
 class QRTypeChoices(models.TextChoices):
     MASUK  = 'masuk',  'Masuk'
@@ -745,8 +757,8 @@ class QRAbsensi(models.Model):
         return True, None
 
     def __str__(self):
-        return f"QR {self.tipe} — {self.supervisor.nama_lengkap|default:self.supervisor.username} — {self.tanggal}"
-
+        return f"QR {self.tipe} — {self.supervisor.nama_lengkap or self.supervisor.username} — {self.tanggal}"
+    
     class Meta:
         verbose_name   = 'QR Absensi'
         unique_together = ['supervisor', 'tanggal', 'tipe']  # 1 QR masuk + 1 QR pulang per supervisor per hari
@@ -754,10 +766,10 @@ class QRAbsensi(models.Model):
 
 
 class Absensi(models.Model):
-    qr_masuk = models.ForeignKey(QRAbsensi,on_delete=models.SET_NULL,null=True,blank=True,related_name='absensi_masuk')
-    qr_pulang = models.ForeignKey(QRAbsensi,on_delete=models.SET_NULL,null=True,blank=True,related_name='absensi_pulang')
-    staff = models.ForeignKey(User, on_delete=models.CASCADE)
-    tanggal = models.DateField()
+    qr_masuk  = models.ForeignKey(QRAbsensi, on_delete=models.SET_NULL, null=True, blank=True, related_name='absensi_masuk')
+    qr_pulang = models.ForeignKey(QRAbsensi, on_delete=models.SET_NULL, null=True, blank=True, related_name='absensi_pulang')
+    staff     = models.ForeignKey(User, on_delete=models.CASCADE)
+    tanggal   = models.DateField()
 
     # Absen Masuk
     waktu_masuk = models.DateTimeField(null=True, blank=True)
@@ -769,8 +781,14 @@ class Absensi(models.Model):
     lat_pulang   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     lon_pulang   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
-    status    = models.CharField(max_length=20, choices=AbsensiStatusChoices.choices, default=AbsensiStatusChoices.BELUM_ABSEN)
-    catatan   = models.TextField(blank=True)
+    status      = models.CharField(max_length=20, choices=AbsensiStatusChoices.choices, default=AbsensiStatusChoices.BELUM_ABSEN)
+    status_harian = models.CharField(  # ← TAMBAH INI
+        max_length=5,
+        choices=StatusHarianChoices.choices,
+        default=StatusHarianChoices.HADIR,
+        blank=True,
+    )
+    catatan     = models.TextField(blank=True)
     dibuat_pada = models.DateTimeField(auto_now_add=True)
     diubah_pada = models.DateTimeField(auto_now=True)
 
@@ -787,22 +805,31 @@ class Absensi(models.Model):
             return self.waktu_pulang - self.waktu_masuk
         return None
 
+    def durasi_str(self):
+        durasi = self.durasi_kerja()
+        if not durasi:
+            return '-'
+        total = int(durasi.total_seconds())
+        jam   = total // 3600
+        menit = (total % 3600) // 60
+        if jam:
+            return f"{jam}j {menit}m"
+        return f"{menit}m"
+
     def clean(self):
         if self.waktu_masuk and self.waktu_pulang:
             if self.waktu_pulang <= self.waktu_masuk:
                 raise ValidationError("Waktu pulang harus setelah waktu masuk.")
 
-    # save() dihapus total — tidak ada foto, tidak perlu override save()
-
     def __str__(self):
-        nama = self.supervisor.nama_lengkap or self.supervisor.username
-        return f"QR {self.tipe} — {nama} — {self.tanggal}"
-    
+        nama = self.staff.nama_lengkap or self.staff.username
+        return f"Absensi {nama} — {self.tanggal} ({self.status})"
+
     class Meta:
         verbose_name        = 'Absensi'
         verbose_name_plural = 'Absensi'
         ordering            = ['-tanggal']
-        unique_together     = ['staff', 'tanggal']  # Satu absensi per staff per hari
+        unique_together     = ['staff', 'tanggal']
         indexes             = [
             models.Index(fields=['tanggal', 'status'], name='idx_absensi_tanggal_status'),
             models.Index(fields=['staff', 'tanggal'],  name='idx_absensi_staff_tgl'),

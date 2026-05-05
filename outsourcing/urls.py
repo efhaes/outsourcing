@@ -38,7 +38,7 @@ from outsourcing.views.customer import (
     dashboard_view as customer_dashboard,
     laporan_list as customer_laporan_list, laporan_detail as customer_laporan_detail,
 )
-
+from outsourcing.views.reporting import generate_laporan_bulanan
 urlpatterns = [
     # Auth: login, logout, dashboard redirect
     path('', login_view, name='login'),
@@ -71,6 +71,8 @@ urlpatterns = [
     path('admin/subarea/<int:pk>/hapus/', subarea_delete, name='admin_subarea_delete'),
     path('admin/laporan/', admin_laporan_list, name='admin_laporan_list'),
     path('admin/laporan/<int:pk>/', admin_laporan_detail, name='admin_laporan_detail'),
+    path('admin/laporan/bulanan/<int:perusahaan_id>/<int:tahun>/<int:bulan>/<int:jenis_jasa_id>/download/<str:format>/', 
+         generate_laporan_bulanan, name='admin_download_laporan_bulanan'),
 
     # Kepala Supervisor
     path('kepala/', kepala_dashboard, name='kepala_dashboard'),
@@ -122,6 +124,8 @@ urlpatterns = [
     path('supervisor/qr/<int:pk>/nonaktifkan/', qr_nonaktifkan, name='supervisor_qr_nonaktifkan'),
     path('supervisor/absensi/rekap/', absensi_rekap, name='supervisor_absensi_rekap'),
     path('supervisor/absensi/<int:pk>/', absensi_detail, name='supervisor_absensi_detail'),
+    path('supervisor/laporan/bulanan/<int:perusahaan_id>/<int:tahun>/<int:bulan>/<int:jenis_jasa_id>/download/<str:format>/', 
+        generate_laporan_bulanan, name='download_laporan_bulanan'),
 
     # Staff
     path('staff/', staff_dashboard, name='staff_dashboard'),

@@ -43,7 +43,7 @@
             border-radius: 50%;
             filter: blur(120px);
             opacity: 0.35;
-            z-index: 0;
+            z-index: -1;  /* ← ganti dari 0 ke -1 */
             pointer-events: none;
         }
         .orb.one   { top: -120px;    left: -120px;  background: rgb(99, 102, 241); }
@@ -59,15 +59,14 @@
         .sidebar {
             width: var(--sidebar-w);
             flex-shrink: 0;
-            background: rgba(2, 6, 23, 0.85);
-            backdrop-filter: blur(8px);
+            background: #020617;  /* ← solid, bukan rgba transparan */
             border-right: 1px solid var(--clr-border);
             display: flex;
             flex-direction: column;
             height: 100vh;
             position: fixed;
             left: 0; top: 0;
-            z-index: 30;
+            z-index: 50;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -288,8 +287,8 @@
         .sidebar-overlay {
             position: fixed; inset: 0;
             background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(3px);
-            z-index: 49;
+            /* backdrop-filter: blur(3px); */ /* ← HAPUS INI */
+            z-index: 40; 
             opacity: 0; visibility: hidden;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
@@ -317,8 +316,14 @@
 
         @media (max-width: 768px) {
             :root { --sidebar-w: 280px; }
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); box-shadow: 2px 0 20px rgba(0,0,0,0.6); }
+            .sidebar {
+                transform: translateX(-100%);
+                background: #020617; /* ← solid saat jadi overlay */
+            }
+            .sidebar.open {
+                transform: translateX(0);
+                box-shadow: 2px 0 20px rgba(0,0,0,0.6);
+            }
             .menu-toggle-btn { display: flex; }
             .main-area { margin-left: 0; }
             .top-header { padding: 0 16px; }
@@ -327,6 +332,9 @@
 
         @media (max-width: 640px) {
             :root { --sidebar-w: 240px; --header-h: 56px; }
+            .sidebar {
+                background: #020617; /* ← sama */
+            }
             .sidebar-logo { padding: 0 14px; }
             .logo-mark { width: 140px; }
             .nav-link { font-size: 13px; padding: 7px 8px; }

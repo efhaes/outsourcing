@@ -1,8 +1,7 @@
 import qrcode
 import io
 import base64
-from datetime import timedelta, datetime
-
+from datetime import datetime, time, timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.http import JsonResponse
@@ -61,16 +60,17 @@ def qr_generate(request):
 
     # ── AJAX POST ──────────────────────────────
     if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        jam_masuk_str = request.POST.get('jam_masuk', '').strip()
+        jam_masuk_str  = request.POST.get('jam_masuk', '').strip()
         jam_pulang_str = request.POST.get('jam_pulang', '').strip()
 
         if not jam_masuk_str or not jam_pulang_str:
             return JsonResponse({'ok': False, 'error': 'Jam masuk dan jam pulang wajib diisi.'})
 
+        # [FIX #1] Konsisten pakai time(hour=h, minute=m) untuk keduanya
         try:
             h, m = map(int, jam_masuk_str.split(':'))
             jam_masuk_dt = timezone.make_aware(
-                datetime.combine(hari_ini, datetime.min.time().replace(hour=h, minute=m))
+                datetime.combine(hari_ini, time(hour=h, minute=m))
             )
         except (ValueError, AttributeError):
             return JsonResponse({'ok': False, 'error': 'Format jam masuk tidak valid. Gunakan HH:MM.'})
@@ -78,29 +78,39 @@ def qr_generate(request):
         try:
             h, m = map(int, jam_pulang_str.split(':'))
             jam_pulang_dt = timezone.make_aware(
-                datetime.combine(hari_ini, datetime.min.time().replace(hour=h, minute=m))
+                datetime.combine(hari_ini, time(hour=h, minute=m))  # FIX #1: was datetime.min.time().replace(...)
             )
         except (ValueError, AttributeError):
             return JsonResponse({'ok': False, 'error': 'Format jam pulang tidak valid. Gunakan HH:MM.'})
 
-        # Buat QR Masuk jika belum ada
-        if not qr_masuk:
+        # [FIX #4] Validasi jam pulang harus setelah jam masuk
+        if jam_pulang_dt <= jam_masuk_dt:
+            return JsonResponse({'ok': False, 'error': 'Jam pulang harus setelah jam masuk.'})
+
+        # [FIX #2] Buat atau update QR Masuk
+        if qr_masuk:
+            qr_masuk.jam_berlaku_mulai = jam_masuk_dt
+            qr_masuk.save(update_fields=['jam_berlaku_mulai'])
+        else:
             qr_masuk = QRAbsensi.objects.create(
                 supervisor        = request.user,
                 tanggal           = hari_ini,
                 tipe              = QRTypeChoices.MASUK,
                 berlaku_hingga    = timezone.now() + timedelta(hours=12),
-                jam_berlaku_mulai = jam_masuk_dt,  
+                jam_berlaku_mulai = jam_masuk_dt,
             )
 
-        # Buat QR Pulang jika belum ada
-        if not qr_pulang:
+        # [FIX #2] Buat atau update QR Pulang
+        if qr_pulang:
+            qr_pulang.jam_berlaku_mulai = jam_pulang_dt
+            qr_pulang.save(update_fields=['jam_berlaku_mulai'])
+        else:
             qr_pulang = QRAbsensi.objects.create(
                 supervisor        = request.user,
                 tanggal           = hari_ini,
                 tipe              = QRTypeChoices.PULANG,
                 berlaku_hingga    = timezone.now() + timedelta(hours=12),
-                jam_berlaku_mulai = jam_pulang_dt,  
+                jam_berlaku_mulai = jam_pulang_dt,
             )
 
         url_masuk  = request.build_absolute_uri(f'/absensi/scan/{qr_masuk.token}/')
@@ -112,7 +122,6 @@ def qr_generate(request):
             'qr_pulang_b64': _qr_to_base64(url_pulang),
             'url_masuk'    : url_masuk,
             'url_pulang'   : url_pulang,
-            
         })
 
     # ── GET ────────────────────────────────────
@@ -176,29 +185,27 @@ def qr_nonaktifkan(request, pk):
 @supervisor_required
 def absensi_rekap(request):
     """Rekap semua absensi staff di bawah supervisor ini, bisa filter per tanggal."""
-    
-    # Get all staff under this supervisor
+
     from outsourcing.models import StaffSupervisor
     staff_under_supervisor = StaffSupervisor.objects.filter(
         supervisor=request.user,
         is_active=True
     ).values_list('staff_id', flat=True)
-    
+
     tanggal_filter = request.GET.get('tanggal', '').strip()
     absensi_qs = (
         Absensi.objects
         .filter(staff_id__in=staff_under_supervisor)
-        .select_related('staff', 'qr_absensi')
+        .select_related('staff', 'qr_masuk', 'qr_pulang')
         .order_by('-tanggal', 'waktu_masuk')
     )
 
     if tanggal_filter:
         absensi_qs = absensi_qs.filter(tanggal=tanggal_filter)
 
-    # Statistik ringkas
-    total       = absensi_qs.count()
-    total_masuk = absensi_qs.filter(waktu_masuk__isnull=False).count()
-    total_pulang= absensi_qs.filter(waktu_pulang__isnull=False).count()
+    total        = absensi_qs.count()
+    total_masuk  = absensi_qs.filter(waktu_masuk__isnull=False).count()
+    total_pulang = absensi_qs.filter(waktu_pulang__isnull=False).count()
 
     return render(request, 'supervisor/absensi/rekap.html', {
         'absensi_qs'    : absensi_qs,
@@ -215,14 +222,12 @@ def absensi_rekap(request):
 
 @supervisor_required
 def absensi_detail(request, pk):
-    """Detail satu record absensi: GPS, durasi, waktu masuk/pulang."""
-    # Get staff under this supervisor
     from outsourcing.models import StaffSupervisor
     staff_under_supervisor = StaffSupervisor.objects.filter(
         supervisor=request.user,
         is_active=True
     ).values_list('staff_id', flat=True)
-    
+
     absensi = get_object_or_404(
         Absensi,
         pk=pk,
@@ -230,5 +235,5 @@ def absensi_detail(request, pk):
     )
     return render(request, 'supervisor/absensi/detail.html', {
         'absensi': absensi,
-        'durasi' : absensi.durasi_kerja(),
+        'durasi' : absensi.durasi_str(),  # ← ganti ke durasi_str
     })

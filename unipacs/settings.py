@@ -105,10 +105,10 @@ AUTH_PASSWORD_VALIDATORS = [
 # ============================================================
 # INTERNATIONALIZATION
 # ============================================================
-LANGUAGE_CODE = 'id'           # bahasa Indonesia
-TIME_ZONE     = 'Asia/Jakarta' # WIB
+LANGUAGE_CODE = 'id'
+TIME_ZONE     = 'Asia/Jakarta'
 USE_I18N      = True
-USE_TZ = False
+USE_TZ        = True  # ← ganti ini
  
 # ============================================================
 # AUTH & LOGIN
