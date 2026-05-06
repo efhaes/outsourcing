@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -53,32 +54,30 @@ body {
 ══════════════════════════════════════ */
 .cover {
   width: 100%;
-  /* FIX 1: HAPUS min-height — biarkan WeasyPrint
-     tentukan tinggi halaman sendiri */
+  min-height: 267mm; /* A4 height (297mm) - margins (30mm) */
 }
-.cover-stripe-top {
-  height: 10mm;
-  background: #1a3a5c;
-}
+
 .cover-body {
-  padding: 14mm 6mm 8mm 6mm;
+  padding: 8mm 6mm 8mm 6mm;
 }
 .cover-logo-row {
   display: table;
-  margin-bottom: 18mm;
+  margin-bottom: 5mm;
 }
 .cover-logo-box {
   display: table-cell;
-  width: 38px;
-  height: 38px;
-  background: #1a3a5c;
-  border-radius: 4px;
+  width: 120px;
+  height:100px;
   text-align: center;
   vertical-align: middle;
-  font-size: 14pt;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -1px;
+  padding: 0;
+}
+.cover-logo-box img {
+  width: auto;
+  height: auto;
+  max-width: 120px;
+  max-height: 120px;
+  object-fit: contain;
 }
 .cover-logo-label {
   display: table-cell;
@@ -109,14 +108,9 @@ body {
 .cover-subtitle {
   font-size: 11pt;
   color: #607080;
-  margin-bottom: 10mm;
+  margin-bottom: 5mm;
 }
-.cover-rule {
-  width: 14mm;
-  height: 3px;
-  background: #1a3a5c;
-  margin-bottom: 10mm;
-}
+
 
 /* Info grid — pakai table bukan flexbox */
 .cover-info-grid {
@@ -148,32 +142,27 @@ body {
 
 /* ── FIX 3: Foto cover — tinggi fixed, tidak overflow ── */
 .cover-photo-wrap {
-  margin-top: 10mm;
+  margin-top: 5mm;
   width: 100%;
-  height: 120mm;       /* maksimal tinggi untuk kertas A4 portrait */
+  height: 150mm;       /* maksimal tinggi untuk kertas A4 portrait */
   overflow: hidden;
 }
 .cover-photo-wrap img {
   width: 100%;
-  height: 120mm;
+  height: 150mm;
   object-fit: cover;
   object-position: center;
   display: block;
 }
 .cover-photo-placeholder {
   width: 100%;
-  height: 120mm;
+  height: 150mm;
   background: #dde8f0;
   text-align: center;
-  line-height: 120mm;
+  line-height: 150mm;
   font-size: 9pt;
   color: #8099b0;
   font-style: italic;
-}
-.cover-stripe-bottom {
-  height: 5mm;
-  background: #c8a951;
-  margin-top: 8mm;
 }
 
 /* ══════════════════════════════════════
@@ -302,7 +291,7 @@ body {
   width: 100%;
   padding: 6px 0;
   border-bottom: 1px dotted #c8d4e0;
-  font-size: 9.5pt;
+  font-size: 12pt;
 }
 .toc-item:last-child { border-bottom: none; }
 .toc-item-left  { display: table-cell; }
@@ -656,21 +645,20 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
 <!-- ══════════════════════ COVER ══════════════════════ -->
 <div class="cover page-break">
 
-  <div class="cover-stripe-top"></div>
-
   <div class="cover-body">
 
     <div class="cover-logo-row">
-      <div class="cover-logo-box">UP</div>
+      <div class="cover-logo-box">
+        <img src="{% static 'image/logo.png' %}" alt="Logo">
+      </div>
       <div class="cover-logo-label">
         PT. United Pacific Solutions<br>UNIPACS
       </div>
-    </div>
+      </div>
 
     <div class="cover-eyebrow">Laporan Resmi &mdash; Pemeliharaan &amp; Perawatan</div>
     <div class="cover-title">Laporan Bulanan</div>
     <div class="cover-subtitle">{{ jenis_jasa.nama_jasa }}</div>
-    <div class="cover-rule"></div>
 
     <div class="cover-info-grid">
       <div class="cover-info-row">
@@ -712,7 +700,6 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
     {% endif %}
   </div>
 
-  <div class="cover-stripe-bottom"></div>
 
 </div>
 
@@ -813,7 +800,7 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
         <tr>
           <td class="td-center">{{ forloop.counter }}</td>
           <td class="td-bold" style="padding-left:8px;">{{ rel.staff.nama_lengkap|default:rel.staff.username|upper }}</td>
-          <td class="td-center">{{ rel.staff.username }}</td>
+          <td class="td-center">{{ rel.staff.nik }}</td>
           <td style="padding-left:8px;">{{ rel.supervisor.nama_lengkap|default:"-" }}</td>
           <td class="td-center"><span class="badge-aktif">Aktif</span></td>
         </tr>
@@ -922,14 +909,15 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
       </div>
     </div>
 
-    {% for area_name, items in jadwal_kalender.items %}
+    {% for sub_area_name, items in jadwal_kalender.items %}
     <div class="kal-wrap avoid-break">
       <div class="kal-info">
         PELAKSANAAN KERJA BULANAN &mdash; {{ jenis_jasa.nama_jasa|upper }}
         <span class="kal-info-sub">&nbsp;&nbsp;{{ perusahaan.nama_perusahaan|upper }} &mdash; Periode: {{ nama_bulan }} {{ tahun }}</span>
       </div>
       <div class="kal-lokasi">
-        Lokasi: {% for item in items %}{% if forloop.first %}{{ item.sub_area }}{% endif %}{% endfor %}
+        Lokasi: {{ sub_area_name }}
+        Staff: {% for item in items %}{% if forloop.first %}{{ item.staff_unik }}{% endif %}{% endfor %}
       </div>
       <table class="kal">
         <thead>

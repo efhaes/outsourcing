@@ -6,6 +6,7 @@ from outsourcing.models import (
     JenisJasa, Perusahaan, AreaKerja, SubArea,
     KepalaSupervisorJasa, SupervisorPerusahaan, StaffSupervisor,
     LaporanKegiatan, ItemKegiatan,
+    QRAbsensi, Absensi,
 )
 
 
@@ -195,4 +196,81 @@ class ItemKegiatanAdmin(admin.ModelAdmin):
             icons.append('📸 Progress')
         if obj.foto_after:
             icons.append('✅ After')
-        return format_html(' &nbsp; '.join(icons)) if icons else '—'
+
+        if not icons:
+            return '—'
+
+        return format_html("{}", ' &nbsp; '.join(icons))
+
+
+# ============================================================
+# QR ABSENSI
+# ============================================================
+
+@admin.register(QRAbsensi)
+class QRAbsensiAdmin(admin.ModelAdmin):
+    list_display  = ['supervisor', 'tipe', 'tanggal', 'berlaku_hingga', 'is_active', 'dibuat_pada']
+    list_filter   = ['tipe', 'is_active', 'tanggal']
+    search_fields = ['supervisor__nama_lengkap', 'supervisor__username']
+    autocomplete_fields = ['supervisor']
+    readonly_fields = ['token', 'dibuat_pada']
+    ordering = ['-tanggal', 'tipe']
+    date_hierarchy = 'tanggal'
+
+    fieldsets = (
+        ('Info QR', {
+            'fields': ('supervisor', 'tipe', 'tanggal', 'token')
+        }),
+        ('Validitas', {
+            'fields': ('berlaku_hingga', 'jam_berlaku_mulai', 'is_active')
+        }),
+        ('Timestamps', {
+            'fields': ('dibuat_pada',),
+            'classes': ('collapse',),
+        }),
+    )
+
+
+# ============================================================
+# ABSENSI
+# ============================================================
+
+@admin.register(Absensi)
+class AbsensiAdmin(admin.ModelAdmin):
+    list_display  = ['staff', 'tanggal', 'waktu_masuk', 'waktu_pulang', 'status', 'status_harian', 'durasi_kerja_str']
+    list_filter   = ['status', 'status_harian', 'tanggal']
+    search_fields = ['staff__nama_lengkap', 'staff__username']
+    autocomplete_fields = ['staff', 'qr_masuk', 'qr_pulang']
+    readonly_fields = ['dibuat_pada', 'diubah_pada', 'sudah_masuk', 'sudah_pulang', 'durasi_kerja_str']
+    ordering = ['-tanggal']
+    date_hierarchy = 'tanggal'
+
+    fieldsets = (
+        ('Info Staff', {
+            'fields': ('staff', 'tanggal')
+        }),
+        ('QR Code', {
+            'fields': ('qr_masuk', 'qr_pulang')
+        }),
+        ('Absen Masuk', {
+            'fields': ('waktu_masuk', 'lat_masuk', 'lon_masuk')
+        }),
+        ('Absen Pulang', {
+            'fields': ('waktu_pulang', 'lat_pulang', 'lon_pulang')
+        }),
+        ('Status', {
+            'fields': ('status', 'status_harian', 'catatan')
+        }),
+        ('Info Tambahan', {
+            'fields': ('sudah_masuk', 'sudah_pulang', 'durasi_kerja_str'),
+            'classes': ('collapse',),
+        }),
+        ('Timestamps', {
+            'fields': ('dibuat_pada', 'diubah_pada'),
+            'classes': ('collapse',),
+        }),
+    )
+
+    @admin.display(description='Durasi')
+    def durasi_kerja_str(self, obj):
+        return obj.durasi_str()

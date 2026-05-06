@@ -24,25 +24,39 @@ from outsourcing.models import (
 def build_jadwal_kalender(item_list, bulan, tahun):
     _, days_in_month = calendar.monthrange(int(tahun), int(bulan))
     jadwal = {}
+    staff_per_sub_area = {}  # Track unique staff per sub_area
 
     for item in item_list:
-        area_name = item.laporan.area.nama_area if item.laporan.area else 'Tanpa Area'
-        if area_name not in jadwal:
-            jadwal[area_name] = {}
+        sub_area_name = item.sub_area.nama_sub_area if item.sub_area else 'Tanpa Sub Area'
+        if sub_area_name not in jadwal:
+            jadwal[sub_area_name] = {}
+            staff_per_sub_area[sub_area_name] = set()
         key = item.pk
-        if key not in jadwal[area_name]:
-            jadwal[area_name][key] = {
+        if key not in jadwal[sub_area_name]:
+            # Get staff names
+            staff_names = ', '.join([staff.nama_lengkap or staff.username for staff in item.staff.all()]) if item.staff.exists() else '-'
+            jadwal[sub_area_name][key] = {
                 'nama_item'    : item.nama_item,
                 'task'         : item.task.nama_task if item.task else '-',
                 'sub_area'     : item.sub_area.nama_sub_area if item.sub_area else '-',
+                'staff'        : staff_names,
                 'tanggal_aktif': set(),
             }
+        # Collect unique staff for this sub_area
+        for staff in item.staff.all():
+            staff_name = staff.nama_lengkap or staff.username
+            staff_per_sub_area[sub_area_name].add(staff_name)
         if item.tanggal:
-            jadwal[area_name][key]['tanggal_aktif'].add(item.tanggal.day)
+            jadwal[sub_area_name][key]['tanggal_aktif'].add(item.tanggal.day)
 
     jadwal_final = {}
-    for area_name, items_dict in jadwal.items():
-        jadwal_final[area_name] = list(items_dict.values())
+    for sub_area_name, items_dict in jadwal.items():
+        items_list = list(items_dict.values())
+        # Add unique staff list to the first item for display in header
+        if items_list:
+            unique_staff = sorted(staff_per_sub_area[sub_area_name])
+            items_list[0]['staff_unik'] = ', '.join(unique_staff)
+        jadwal_final[sub_area_name] = items_list
 
     return jadwal_final, days_in_month
 
@@ -389,22 +403,23 @@ def _word_jadwal(doc, ctx):
     days_range      = ctx['days_range']
     jadwal_kalender = ctx['jadwal_kalender']
 
-    for area_name, items in jadwal_kalender.items():
-        p = doc.add_paragraph(area_name)
+    for sub_area_name, items in jadwal_kalender.items():
+        p = doc.add_paragraph(sub_area_name)
         if p.runs: p.runs[0].bold = True
 
-        cols  = 3 + len(days_range)
+        cols  = 4 + len(days_range)
         table = doc.add_table(rows=1, cols=cols)
         table.style = 'Table Grid'
-        _add_table_header(table, ['No', 'Item', 'Task'] + [str(d) for d in days_range])
+        _add_table_header(table, ['No', 'Item', 'Task', 'Staff'] + [str(d) for d in days_range])
 
         for i, item in enumerate(items, 1):
             row = table.add_row().cells
             row[0].text = str(i)
             row[1].text = item['nama_item']
             row[2].text = item['task']
+            row[3].text = item['staff']
             for j, day in enumerate(days_range):
-                row[3 + j].text = 'A' if day in item['tanggal_aktif'] else ''
+                row[4 + j].text = 'A' if day in item['tanggal_aktif'] else ''
         doc.add_paragraph()
     doc.add_page_break()
 

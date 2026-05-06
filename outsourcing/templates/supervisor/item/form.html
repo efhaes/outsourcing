@@ -1,6 +1,8 @@
 {% extends 'supervisor/base_supervisor.html' %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <style>
 /* ── Breadcrumb ── */
 .form-breadcrumb {
@@ -124,6 +126,16 @@
     color: var(--clr-text-primary) !important;
 }
 textarea.form-control { resize: vertical; min-height: 80px; }
+
+/* Date input specific styling */
+input[type="date"].form-control {
+    background: rgba(255,255,255,0.05) !important;
+    color: var(--clr-text-primary) !important;
+}
+input[type="date"].form-control::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
 
 /* ── Section Label ── */
 .form-section-label {
@@ -463,8 +475,21 @@ textarea.form-control { resize: vertical; min-height: 80px; }
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
 const staffTaskMapping = JSON.parse('{{ staff_task_mapping|escapejs }}');
+
+// Initialize flatpickr for date input
+document.addEventListener('DOMContentLoaded', function() {
+    const tanggalInput = document.getElementById('id_tanggal');
+    if (tanggalInput) {
+        flatpickr(tanggalInput, {
+            dateFormat: 'Y-m-d',
+            theme: 'dark',
+            allowInput: true,
+        });
+    }
+});
 
 function filterStaffByTask() {
     const taskSelect     = document.getElementById('id_task');

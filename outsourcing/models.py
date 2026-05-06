@@ -32,6 +32,11 @@ class RoleChoices(models.TextChoices):
     CUSTOMER            = 'customer',            'Customer'
 
 
+class GenderChoices(models.TextChoices):
+    LAKI_LAKI = 'l', 'Laki-laki'
+    PEREMPUAN = 'p', 'Perempuan'
+
+
 # ============================================================
 # USER (Custom)
 # ============================================================
@@ -43,22 +48,27 @@ telepon_validator = RegexValidator(
 
 
 class User(AbstractUser):
-    """
-    Custom User model yang extend AbstractUser.
-    Role menentukan akses & tampilan di sistem.
 
-    CATATAN PENTING:
-    - Gunakan `is_active` (bawaan Django) untuk menonaktifkan user.
-      Setting is_active=False akan BENAR-BENAR memblokir login.
-    - `is_active` dihapus karena tidak terhubung ke sistem auth Django
-      dan menyebabkan user yang "dinonaktifkan" tetap bisa login.
-    """
     role = models.CharField(
         max_length=30,
         choices=RoleChoices.choices,
         default=RoleChoices.STAFF,
     )
     nama_lengkap = models.CharField(max_length=150, blank=True)
+    
+    jenis_kelamin = models.CharField(
+        max_length=1,
+        choices=GenderChoices.choices,
+        blank=True,
+        null=True,
+    )
+    nik = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        unique=True,
+        help_text='NIK / ID Karyawan (contoh: 202403157)',
+    )
     telepon      = models.CharField(
         max_length=20,
         blank=True,
@@ -69,7 +79,7 @@ class User(AbstractUser):
         blank=True,
         null=True,
     )
- 
+
     dibuat_pada  = models.DateTimeField(auto_now_add=True)
     diubah_pada  = models.DateTimeField(auto_now=True)
 

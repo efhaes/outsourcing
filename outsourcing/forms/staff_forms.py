@@ -1,5 +1,6 @@
 from django import forms
 from django.utils import timezone
+from datetime import date
 from outsourcing.models import ItemKegiatan, LaporanKegiatan
 
 
@@ -85,18 +86,18 @@ class ItemKegiatanStaffForm(forms.ModelForm):
 class ItemKegiatanInsidentalForm(forms.ModelForm):
     """
     Form untuk staff membuat item kegiatan insidental (di luar jadwal).
- 
+
     Flow:
     1. Staff isi nama, keterangan, tanggal -> simpan
     2. Redirect ke update.html -> isi jam via modal + upload foto
- 
+
     Batasan:
     - Laporan hanya yang berstatus 'draft' milik supervisor staff ini.
     - task & sub_area sengaja tidak diekspos -- keduanya null untuk insidental.
     - jam & foto TIDAK ada di sini -- diisi di update.html setelah item dibuat.
     - is_insidental diset True secara programatik di view, bukan dari form.
     """
- 
+
     laporan = forms.ModelChoiceField(
         queryset=LaporanKegiatan.objects.none(),  # di-override di __init__
         label="Laporan",
@@ -104,6 +105,12 @@ class ItemKegiatanInsidentalForm(forms.ModelForm):
         widget=forms.HiddenInput(),               # disembunyikan dari staff
         required=True,
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set default tanggal ke hari ini jika belum ada value
+        if not self.instance.pk:
+            self.fields['tanggal'].initial = date.today()
  
     class Meta:
         model  = ItemKegiatan

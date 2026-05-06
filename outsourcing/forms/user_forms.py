@@ -1,5 +1,5 @@
 from django import forms
-from outsourcing.models import User, JenisJasa, Task, SupervisorPerusahaan, RoleChoices, Perusahaan
+from outsourcing.models import User, JenisJasa, Task, SupervisorPerusahaan, RoleChoices, Perusahaan, GenderChoices
 
 
 class PasswordMixin:
@@ -34,15 +34,19 @@ class CreateKepalaSupervisorForm(PasswordMixin, forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['username', 'nama_lengkap', 'telepon', 'foto_profil', 'is_active']
+        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
             'username'    : forms.TextInput(attrs={'class': 'form-control'}),
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'username'    : 'Username',
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
             'is_active'    : 'Aktif',
@@ -61,15 +65,19 @@ class CreateSupervisorForm(PasswordMixin, forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['username', 'nama_lengkap', 'telepon', 'foto_profil', 'is_active']
+        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
             'username'    : forms.TextInput(attrs={'class': 'form-control'}),
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'username'    : 'Username',
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
             'is_active'    : 'Aktif',
@@ -114,15 +122,19 @@ class CreateStaffForm(PasswordMixin, forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['username', 'nama_lengkap', 'telepon', 'foto_profil', 'is_active']
+        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
             'username'    : forms.TextInput(attrs={'class': 'form-control'}),
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'username'    : 'Username',
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
             'is_active'    : 'Aktif',
@@ -141,15 +153,19 @@ class CreateCustomerForm(PasswordMixin, forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['username', 'nama_lengkap', 'telepon', 'foto_profil', 'is_active']
+        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
             'username'    : forms.TextInput(attrs={'class': 'form-control'}),
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'username'    : 'Username',
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
             'is_active'    : 'Aktif',
@@ -190,15 +206,19 @@ class CreateCustomerSupervisorForm(PasswordMixin, forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['username', 'nama_lengkap', 'telepon', 'foto_profil']
+        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil']
         widgets = {
             'username'    : forms.TextInput(attrs={'class': 'form-control'}),
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'username'    : 'Username',
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
         }
@@ -218,13 +238,17 @@ class EditKepalaSupervisorForm(forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['nama_lengkap', 'telepon', 'foto_profil', 'is_active']
+        fields = ['nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
             'is_active'    : 'Aktif',
@@ -244,13 +268,17 @@ class EditSupervisorForm(forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['nama_lengkap', 'telepon', 'foto_profil', 'is_active']
+        fields = ['nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
             'is_active'    : 'Aktif',
@@ -304,13 +332,17 @@ class EditStaffForm(forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['nama_lengkap', 'telepon', 'foto_profil', 'is_active']
+        fields = ['nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
             'is_active'    : 'Aktif',
@@ -330,13 +362,17 @@ class EditCustomerForm(forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['nama_lengkap', 'telepon', 'foto_profil', 'is_active']
+        fields = ['nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
             'is_active'    : 'Aktif',
@@ -348,13 +384,17 @@ class EditProfilForm(forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['nama_lengkap', 'telepon', 'foto_profil']
+        fields = ['nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil']
         widgets = {
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
         }
@@ -396,13 +436,17 @@ class EditUserForm(forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['nama_lengkap', 'telepon', 'foto_profil', 'is_active']
+        fields = ['nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
+            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
             'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
             'nama_lengkap': 'Nama Lengkap',
+            'jenis_kelamin': 'Jenis Kelamin',
+            'nik'         : 'NIK / ID Karyawan',
             'telepon'     : 'Telepon',
             'foto_profil' : 'Foto Profil',
             'is_active'    : 'Aktif',
