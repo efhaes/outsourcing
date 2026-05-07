@@ -278,6 +278,33 @@
     border: 1px solid var(--clr-accent-mid);
 }
 
+/* ── Sub Area Section Header ── */
+.sub-area-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 2rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--clr-border);
+}
+
+.sub-area-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+    letter-spacing: 0.02em;
+}
+
+.sub-area-count-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    color: var(--clr-text-muted);
+    border: 1px solid var(--clr-border);
+}
+
 /* ── Item Cards Grid ── */
 .items-grid {
     display: grid;
@@ -742,8 +769,23 @@
     <span class="items-count-badge">{{ item_list|length }} item</span>
 </div>
 
+{% regroup item_list by sub_area as sub_area_groups %}
+
+{% for sub_area_group in sub_area_groups %}
+{% if sub_area_group.grouper %}
+<div class="sub-area-section-header">
+    <div class="sub-area-title">{{ sub_area_group.grouper.nama_sub_area }}</div>
+    <span class="sub-area-count-badge">{{ sub_area_group.list|length }} item</span>
+</div>
+{% else %}
+<div class="sub-area-section-header">
+    <div class="sub-area-title">Tanpa Sub Area</div>
+    <span class="sub-area-count-badge">{{ sub_area_group.list|length }} item</span>
+</div>
+{% endif %}
+
 <div class="items-grid">
-    {% for item in item_list %}
+    {% for item in sub_area_group.list %}
     <div class="item-card">
 
         <!-- Photos -->
@@ -878,18 +920,20 @@
         </div>
     </div>
     {% endif %}
-
-    {% empty %}
-    <div class="empty-items">
-        <i class="bi bi-clipboard-x"></i>
-        <p>Belum ada item kegiatan.<br>
-        {% if laporan.status == 'draft' %}
-            <a href="{% url 'supervisor_item_create' laporan.pk %}" style="color:#a5b4fc;">Tambah item sekarang →</a>
-        {% endif %}
-        </p>
-    </div>
     {% endfor %}
 </div>
+{% endfor %}
+
+{% if not item_list %}
+<div class="empty-items">
+    <i class="bi bi-clipboard-x"></i>
+    <p>Belum ada item kegiatan.<br>
+    {% if laporan.status == 'draft' %}
+        <a href="{% url 'supervisor_item_create' laporan.pk %}" style="color:#a5b4fc;">Tambah item sekarang →</a>
+    {% endif %}
+    </p>
+</div>
+{% endif %}
 
 <!-- Modal Hapus Laporan -->
 {% if laporan.status == 'draft' %}

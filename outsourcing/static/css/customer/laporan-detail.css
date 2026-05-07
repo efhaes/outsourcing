@@ -220,20 +220,6 @@
 }
 .btn-back:hover { background: rgba(255,255,255,0.05); color: var(--clr-text-secondary); transform: translateY(-1px); }
 
-.btn-pdf {
-    background: rgba(239,68,68,0.1);
-    border-color: rgba(239,68,68,0.25);
-    color: #f87171;
-}
-.btn-pdf:hover { background: rgba(239,68,68,0.18); color: #f87171; transform: translateY(-1px); }
-
-.btn-word {
-    background: rgba(59,130,246,0.1);
-    border-color: rgba(59,130,246,0.25);
-    color: #60a5fa;
-}
-.btn-word:hover { background: rgba(59,130,246,0.18); color: #60a5fa; transform: translateY(-1px); }
-
 /* ── Item Section Header ── */
 .items-section-header {
     display: flex;
@@ -480,25 +466,6 @@
 }
 .empty-items i { font-size: 2.5rem; opacity: 0.25; display: block; margin-bottom: 10px; }
 .empty-items p { font-size: 13.5px; margin: 0; }
-
-/* ── Modal Dark ── */
-.modal-content {
-    background: #0d1629 !important;
-    border: 1px solid var(--clr-border) !important;
-    border-radius: 16px !important;
-    color: var(--clr-text-primary) !important;
-}
-.modal-header {
-    border-bottom: 1px solid var(--clr-border) !important;
-    padding: 1rem 1.4rem;
-}
-.modal-footer {
-    border-top: 1px solid var(--clr-border) !important;
-    padding: 0.875rem 1.4rem;
-}
-.modal-title { font-size: 14px !important; font-weight: 700 !important; color: var(--clr-text-primary) !important; }
-.modal-body { color: var(--clr-text-secondary) !important; font-size: 13.5px !important; }
-.btn-close-white { filter: invert(1) !important; }
 
 /* Lightbox */
 .lightbox-overlay {

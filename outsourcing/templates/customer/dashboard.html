@@ -1,61 +1,782 @@
 {% extends 'customer/base_customer.html' %}
 
+{% block extra_css %}
+<style>
+/* ── Welcome Banner ── */
+.welcome-banner {
+    position: relative;
+    border-radius: 20px;
+    border: 1px solid rgba(99,102,241,0.25);
+    background: linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(139,92,246,0.08) 50%, transparent 100%);
+    padding: 1.75rem 2rem;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.welcome-banner::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 220px; height: 220px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.welcome-banner::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; right: 120px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.welcome-greeting {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #a5b4fc;
+    margin-bottom: 6px;
+}
+
+.welcome-name {
+    font-size: 1.65rem;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin-bottom: 8px;
+}
+
+.welcome-company {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    color: var(--clr-text-muted);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 4px 12px;
+}
+
+.welcome-company i { color: #a5b4fc; font-size: 12px; }
+
+.welcome-deco {
+    position: absolute;
+    right: 2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 4.5rem;
+    opacity: 0.07;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* ── Stats Row ── */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    border: 1px solid var(--clr-border);
+    border-radius: 16px;
+    padding: 1.2rem 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: transparent;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    border-radius: 0 0 16px 16px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.stat-card:hover { background: rgba(255,255,255,0.02); }
+.stat-card:hover::after { opacity: 1; }
+
+.stat-card.s-total::after  { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+.stat-card.s-bulan::after  { background: linear-gradient(90deg, #06b6d4, #3b82f6); }
+.stat-card.s-selesai::after { background: linear-gradient(90deg, #22c55e, #10b981); }
+
+.stat-icon {
+    width: 46px; height: 46px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--clr-text-muted);
+    margin-bottom: 3px;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--clr-text-primary);
+}
+
+.stat-sub {
+    font-size: 11px;
+    color: var(--clr-text-muted);
+    margin-top: 3px;
+}
+
+/* ── Two-col layout ── */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.dashboard-grid-info {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+/* ── Section Card ── */
+.section-card {
+    border: 1px solid var(--clr-border);
+    border-radius: 16px;
+    background: transparent;
+    overflow: hidden;
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.4rem;
+    border-bottom: 1px solid var(--clr-border);
+    background: rgba(255,255,255,0.02);
+}
+
+.section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-header-icon {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: var(--clr-accent-light);
+    border: 1px solid var(--clr-accent-mid);
+    display: flex; align-items: center; justify-content: center;
+    color: #a5b4fc;
+    font-size: 13px;
+    flex-shrink: 0;
+}
+
+.section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+    letter-spacing: 0.01em;
+}
+
+.section-badge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: var(--clr-accent-light);
+    color: #a5b4fc;
+    border: 1px solid var(--clr-accent-mid);
+}
+
+.section-body { padding: 1.25rem 1.4rem; }
+
+/* ── Laporan Table ── */
+.laporan-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.laporan-table thead th {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--clr-text-muted);
+    padding: 0 12px 10px;
+    border: none;
+    background: transparent;
+    white-space: nowrap;
+}
+
+.laporan-table tbody tr {
+    border-top: 1px solid var(--clr-border);
+    transition: background 0.15s;
+}
+
+.laporan-table tbody tr:hover { background: rgba(255,255,255,0.02); }
+
+.laporan-table tbody td {
+    padding: 12px;
+    font-size: 13px;
+    color: var(--clr-text-secondary);
+    border: none;
+    background: transparent;
+    vertical-align: middle;
+}
+
+/* Hide less-important columns on tablet/mobile via class */
+.col-tanggal, .col-jasa { }
+
+.laporan-name-link {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+    text-decoration: none;
+    transition: color 0.15s;
+    display: block;
+}
+.laporan-name-link:hover { color: #a5b4fc; }
+
+.laporan-name-sub {
+    font-size: 11px;
+    color: var(--clr-text-muted);
+    margin-top: 1px;
+}
+
+.jasa-pill {
+    display: inline-flex;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(99,102,241,0.1);
+    color: #a5b4fc;
+    border: 1px solid rgba(99,102,241,0.2);
+    white-space: nowrap;
+}
+
+/* Mobile card pill shown only on small screens */
+.laporan-mobile-meta {
+    display: none;
+    margin-top: 5px;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.btn-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 11px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    background: rgba(99,102,241,0.1);
+    border: 1px solid rgba(99,102,241,0.25);
+    color: #a5b4fc;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.btn-view:hover { background: rgba(99,102,241,0.2); color: #a5b4fc; transform: translateY(-1px); }
+
+.empty-table {
+    text-align: center;
+    padding: 2.5rem 1rem;
+    color: var(--clr-text-muted);
+}
+.empty-table i { font-size: 2rem; opacity: 0.2; display: block; margin-bottom: 8px; }
+.empty-table p { font-size: 13px; margin: 0; }
+
+/* View all link */
+.view-all-link {
+    font-size: 12px;
+    font-weight: 600;
+    color: #a5b4fc;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: gap 0.15s;
+}
+.view-all-link:hover { color: #c4b5fd; gap: 7px; }
+
+/* ── Activity Feed (sidebar) ── */
+.activity-list { padding: 0; }
+
+.activity-item {
+    display: flex;
+    gap: 12px;
+    padding: 0.9rem 1.4rem;
+    border-bottom: 1px solid var(--clr-border);
+    transition: background 0.15s;
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-item:hover { background: rgba(255,255,255,0.02); }
+
+.activity-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+.activity-content { flex: 1; min-width: 0; }
+
+.activity-text {
+    font-size: 12.5px;
+    color: var(--clr-text-secondary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.activity-text strong { color: var(--clr-text-primary); font-weight: 700; }
+
+.activity-time {
+    font-size: 11px;
+    color: var(--clr-text-muted);
+    margin-top: 3px;
+}
+
+/* ── Status Overview ── */
+.status-overview {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem 1.4rem;
+}
+
+.status-bar-row {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.status-bar-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-bar-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--clr-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-bar-label::before {
+    content: '';
+    width: 8px; height: 8px;
+    border-radius: 50%;
+}
+
+.sbl-terjadwal::before { background: #94a3b8; }
+.sbl-progress::before  { background: #fbbf24; }
+.sbl-selesai::before   { background: #4ade80; }
+
+.status-bar-count {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+}
+
+.status-bar-track {
+    height: 5px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.06);
+    overflow: hidden;
+}
+
+.status-bar-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.6s ease;
+}
+
+.sbf-terjadwal { background: linear-gradient(90deg, #64748b, #94a3b8); }
+.sbf-progress  { background: linear-gradient(90deg, #d97706, #fbbf24); }
+.sbf-selesai   { background: linear-gradient(90deg, #16a34a, #4ade80); }
+
+/* ── Info Company Card ── */
+.company-card {
+    border: 1px solid var(--clr-border);
+    border-radius: 16px;
+    background: transparent;
+    overflow: hidden;
+}
+
+.company-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+/* ── Responsive: Tablet (≤900px) ── */
+@media (max-width: 900px) {
+    /* Stack both dashboard grids to single column */
+    .dashboard-grid,
+    .dashboard-grid-info {
+        grid-template-columns: 1fr;
+    }
+
+    /* Stats: keep 3 cols on tablet */
+    .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+
+    /* Slightly smaller stat values */
+    .stat-value { font-size: 1.6rem; }
+
+    .welcome-deco { display: none; }
+
+    /* Table: hide Tanggal column on tablet */
+    .col-tanggal { display: none; }
+}
+
+/* ── Responsive: Mobile (≤600px) ── */
+@media (max-width: 600px) {
+    /* Banner */
+    .welcome-banner {
+        padding: 1.25rem 1.25rem;
+        border-radius: 16px;
+    }
+    .welcome-name { font-size: 1.25rem; }
+    .welcome-greeting { font-size: 10px; }
+    .welcome-company { font-size: 11.5px; }
+
+    /* Stats: 1 column stack */
+    .stats-row {
+        grid-template-columns: 1fr;
+        gap: 0.65rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .stat-card {
+        padding: 0.9rem 1rem;
+        gap: 0.85rem;
+    }
+
+    .stat-icon {
+        width: 40px; height: 40px;
+        font-size: 1.05rem;
+    }
+
+    .stat-value { font-size: 1.75rem; }
+
+    /* Company info: single column */
+    .company-info-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    /* Section headers */
+    .section-header {
+        padding: 0.85rem 1rem;
+    }
+
+    /* Table: hide Jasa & Tanggal on mobile, show inline in name cell */
+    .col-tanggal,
+    .col-jasa { display: none; }
+
+    .laporan-mobile-meta { display: flex; }
+
+    .laporan-table tbody td { padding: 10px 10px; }
+    .laporan-table thead th { padding: 0 10px 8px; }
+
+    /* Activity */
+    .activity-item { padding: 0.8rem 1rem; }
+
+    /* Status overview */
+    .status-overview { padding: 1rem; }
+
+    /* Section card body */
+    .section-body { padding: 1rem; }
+
+    /* Buttons */
+    .btn-view { padding: 4px 9px; font-size: 11px; }
+
+    /* Grids */
+    .dashboard-grid,
+    .dashboard-grid-info {
+        gap: 0.85rem;
+        margin-bottom: 0.85rem;
+    }
+}
+
+/* ── Extra small (≤400px) ── */
+@media (max-width: 400px) {
+    .welcome-name { font-size: 1.1rem; }
+    .stat-value { font-size: 1.55rem; }
+    .section-title { font-size: 12px; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row g-3 mb-4">
-    <div class="col-md-12">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Total Laporan Diterima</div>
-            <div class="fs-3 fw-bold text-primary">{{ stats.total_laporan|default:0 }}</div>
+
+<!-- ── WELCOME BANNER ── -->
+<div class="welcome-banner">
+    <div class="welcome-greeting"><i class="bi bi-stars" style="margin-right:5px;"></i>Dashboard Customer</div>
+    <div class="welcome-name">Selamat Datang, {{ request.user.nama_lengkap|default:request.user.username }}!</div>
+    <div class="welcome-company">
+        <i class="bi bi-building"></i>
+        {{ perusahaan.nama_perusahaan }}
+    </div>
+    <div class="welcome-deco"><i class="bi bi-clipboard-data"></i></div>
+</div>
+
+<!-- ── STATS ── -->
+<div class="stats-row">
+    <div class="stat-card s-total">
+        <div class="stat-icon" style="background:rgba(99,102,241,0.12);color:#a5b4fc;">
+            <i class="bi bi-file-earmark-text"></i>
+        </div>
+        <div>
+            <div class="stat-label">Total Laporan</div>
+            <div class="stat-value">{{ stats.total_laporan|default:0 }}</div>
+            <div class="stat-sub">Semua waktu</div>
+        </div>
+    </div>
+    <div class="stat-card s-bulan">
+        <div class="stat-icon" style="background:rgba(6,182,212,0.12);color:#67e8f9;">
+            <i class="bi bi-calendar-month"></i>
+        </div>
+        <div>
+            <div class="stat-label">Bulan Ini</div>
+            <div class="stat-value">{{ stats.laporan_bulan_ini|default:0 }}</div>
+            <div class="stat-sub">Laporan diterima</div>
+        </div>
+    </div>
+    <div class="stat-card s-selesai">
+        <div class="stat-icon" style="background:rgba(34,197,94,0.1);color:#4ade80;">
+            <i class="bi bi-patch-check"></i>
+        </div>
+        <div>
+            <div class="stat-label">Item Selesai</div>
+            <div class="stat-value">{{ stats.total_item_selesai|default:0 }}</div>
+            <div class="stat-sub">Dari semua laporan</div>
         </div>
     </div>
 </div>
 
-<div class="card p-3 mb-3">
-    <h6 class="fw-semibold mb-3">Selamat Datang, {{ request.user.nama_lengkap|default:request.user.username }}!</h6>
-    <p class="text-muted mb-0">
-        Perusahaan: <strong>{{ perusahaan.nama_perusahaan }}</strong>
-    </p>
+<!-- ── COMPANY INFO + STATUS OVERVIEW ── -->
+<div class="dashboard-grid-info">
+
+    <!-- Company Info -->
+    <div class="company-card">
+        <div class="section-header">
+            <div class="section-header-left">
+                <div class="section-header-icon"><i class="bi bi-building"></i></div>
+                <span class="section-title">Informasi Perusahaan</span>
+            </div>
+        </div>
+        <div style="padding:1.25rem 1.4rem;">
+            <div class="company-info-grid">
+                <div>
+                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--clr-text-muted);margin-bottom:4px;">Nama Perusahaan</div>
+                    <div style="font-size:14px;font-weight:700;color:var(--clr-text-primary);">{{ perusahaan.nama_perusahaan }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--clr-text-muted);margin-bottom:4px;">Email Akun</div>
+                    <div style="font-size:13px;font-weight:600;color:var(--clr-text-secondary);">{{ request.user.email|default:"—" }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--clr-text-muted);margin-bottom:4px;">Username</div>
+                    <div style="font-size:13px;font-weight:600;color:var(--clr-text-secondary);">{{ request.user.username }}</div>
+                </div>
+                <div>
+                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--clr-text-muted);margin-bottom:4px;">Status Akun</div>
+                    <div>
+                        <span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(34,197,94,0.12);color:#4ade80;border:1px solid rgba(34,197,94,0.2);">
+                            <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;"></span> Aktif
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Overview -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-header-left">
+                <div class="section-header-icon"><i class="bi bi-bar-chart"></i></div>
+                <span class="section-title">Status Item</span>
+            </div>
+        </div>
+        <div class="status-overview">
+            {% with total=stats.total_item|default:1 %}
+            <div class="status-bar-row">
+                <div class="status-bar-meta">
+                    <span class="status-bar-label sbl-terjadwal">Terjadwal</span>
+                    <span class="status-bar-count">{{ stats.total_item_terjadwal|default:0 }}</span>
+                </div>
+                <div class="status-bar-track">
+                    <div class="status-bar-fill sbf-terjadwal"
+                         style="width:{% widthratio stats.total_item_terjadwal|default:0 total 100 %}%"></div>
+                </div>
+            </div>
+            <div class="status-bar-row">
+                <div class="status-bar-meta">
+                    <span class="status-bar-label sbl-progress">On Progress</span>
+                    <span class="status-bar-count">{{ stats.total_item_progress|default:0 }}</span>
+                </div>
+                <div class="status-bar-track">
+                    <div class="status-bar-fill sbf-progress"
+                         style="width:{% widthratio stats.total_item_progress|default:0 total 100 %}%"></div>
+                </div>
+            </div>
+            <div class="status-bar-row">
+                <div class="status-bar-meta">
+                    <span class="status-bar-label sbl-selesai">Selesai</span>
+                    <span class="status-bar-count">{{ stats.total_item_selesai|default:0 }}</span>
+                </div>
+                <div class="status-bar-track">
+                    <div class="status-bar-fill sbf-selesai"
+                         style="width:{% widthratio stats.total_item_selesai|default:0 total 100 %}%"></div>
+                </div>
+            </div>
+            {% endwith %}
+
+            <div style="margin-top:0.5rem;padding-top:0.75rem;border-top:1px solid var(--clr-border);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-size:11px;color:var(--clr-text-muted);">Total item kegiatan</span>
+                <span style="font-size:16px;font-weight:700;color:var(--clr-text-primary);">{{ stats.total_item|default:0 }}</span>
+            </div>
+        </div>
+    </div>
+
 </div>
 
-<div class="card p-3">
-    <h6 class="fw-semibold mb-3">Laporan Terbaru</h6>
-    {% if laporan_terbaru %}
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>Nama Laporan</th>
-                    <th>Jenis Jasa</th>
-                    <th>Area</th>
-                    <th>Supervisor</th>
-                    <th>Tanggal</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for l in laporan_terbaru %}
-                <tr>
-                    <td>
-                        <a href="{% url 'customer_laporan_detail' l.pk %}" class="text-decoration-none fw-semibold">
-                            {{ l.nama_laporan }}
-                        </a>
-                    </td>
-                    <td>{{ l.jenis_jasa.nama_jasa }}</td>
-                    <td>{{ l.area.nama_area }}</td>
-                    <td>{{ l.supervisor.nama_lengkap }}</td>
-                    <td>{{ l.tanggal_laporan|date:"d/m/Y" }}</td>
-                    <td>
-                        <a href="{% url 'customer_laporan_detail' l.pk %}" class="btn btn-xs btn-outline-primary btn-sm">
-                            <i class="bi bi-eye"></i> Lihat
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<!-- ── LAPORAN TERBARU + AKTIVITAS ── -->
+<div class="dashboard-grid">
+
+    <!-- Laporan Terbaru -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-header-left">
+                <div class="section-header-icon"><i class="bi bi-clock-history"></i></div>
+                <span class="section-title">Laporan Terbaru</span>
+            </div>
+            <a href="{% url 'customer_laporan_list' %}" class="view-all-link">
+                Lihat semua <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        {% if laporan_terbaru %}
+        <div class="table-responsive">
+            <table class="laporan-table">
+                <thead>
+                    <tr>
+                        <th>Laporan</th>
+                        <th class="col-jasa">Jenis Jasa</th>
+                        <th class="col-tanggal">Tanggal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for l in laporan_terbaru %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'customer_laporan_detail' l.pk %}" class="laporan-name-link">{{ l.nama_laporan }}</a>
+                            <div class="laporan-name-sub">{{ l.area.nama_area }} · {{ l.supervisor.nama_lengkap }}</div>
+                            <!-- Mobile-only meta: shown when Jasa & Tanggal columns are hidden -->
+                            <div class="laporan-mobile-meta">
+                                <span class="jasa-pill">{{ l.jenis_jasa.nama_jasa }}</span>
+                                <span style="font-size:11px;color:var(--clr-text-muted);">
+                                    <i class="bi bi-calendar3" style="margin-right:2px;"></i>{{ l.tanggal_laporan|date:"d M Y" }}
+                                </span>
+                            </div>
+                        </td>
+                        <td class="col-jasa"><span class="jasa-pill">{{ l.jenis_jasa.nama_jasa }}</span></td>
+                        <td class="col-tanggal" style="font-size:12px;white-space:nowrap;color:var(--clr-text-muted);">
+                            {{ l.tanggal_laporan|date:"d M Y" }}
+                        </td>
+                        <td>
+                            <a href="{% url 'customer_laporan_detail' l.pk %}" class="btn-view">
+                                <i class="bi bi-eye"></i> Lihat
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-table">
+            <i class="bi bi-clipboard-x"></i>
+            <p>Belum ada laporan yang diterima.</p>
+        </div>
+        {% endif %}
     </div>
-    {% else %}
-    <p class="text-muted small mb-0">Belum ada laporan yang diterima.</p>
-    {% endif %}
+
+    <!-- Aktivitas Terkini -->
+    <div class="section-card">
+        <div class="section-header">
+            <div class="section-header-left">
+                <div class="section-header-icon"><i class="bi bi-activity"></i></div>
+                <span class="section-title">Aktivitas Terkini</span>
+            </div>
+            {% if laporan_terbaru %}
+            <span class="section-badge">{{ laporan_terbaru|length }}</span>
+            {% endif %}
+        </div>
+
+        <div class="activity-list">
+            {% for l in laporan_terbaru %}
+            <div class="activity-item">
+                <div class="activity-dot" style="background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,0.4);"></div>
+                <div class="activity-content">
+                    <div class="activity-text">
+                        Laporan <strong>{{ l.nama_laporan }}</strong> telah dikirimkan oleh supervisor
+                        <strong>{{ l.supervisor.nama_lengkap }}</strong>
+                    </div>
+                    <div class="activity-time">
+                        <i class="bi bi-calendar3" style="margin-right:3px;"></i>{{ l.tanggal_laporan|date:"d M Y" }}
+                        &nbsp;·&nbsp;
+                        <i class="bi bi-geo-alt" style="margin-right:3px;"></i>{{ l.area.nama_area }}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-table">
+                <i class="bi bi-inbox"></i>
+                <p>Belum ada aktivitas.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
 </div>
+
 {% endblock %}

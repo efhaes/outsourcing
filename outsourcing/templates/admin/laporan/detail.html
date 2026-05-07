@@ -4,6 +4,7 @@
 {% block extra_css %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="{% static 'css/admin/laporan-detail.css' %}">
 {% endblock %}
 
@@ -85,92 +86,132 @@
     </svg>
     Item Kegiatan
   </div>
+
+  {% regroup item_list by sub_area as sub_area_groups %}
+
+  {% for sub_area_group in sub_area_groups %}
+  {% if sub_area_group.grouper %}
+  <div class="sub-area-section-header">
+    <div class="sub-area-title">{{ sub_area_group.grouper.nama_sub_area }}</div>
+    <span class="sub-area-count-badge">{{ sub_area_group.list|length }} item</span>
+  </div>
+  {% else %}
+  <div class="sub-area-section-header">
+    <div class="sub-area-title">Tanpa Sub Area</div>
+    <span class="sub-area-count-badge">{{ sub_area_group.list|length }} item</span>
+  </div>
+  {% endif %}
+
   <div class="items-grid">
-    {% for item in item_list %}
-    <div class="item-card" style="--status-color: {% if item.status == 'selesai' %}var(--green){% elif item.status == 'on_progress' %}var(--orange){% else %}var(--slate){% endif %}">
+    {% for item in sub_area_group.list %}
+    <div class="item-card">
 
-      <div class="item-header">
-        <div class="item-name">{{ item.nama_item }}</div>
-        {% if item.is_insidental %}
-          <span class="insidental-badge">Insidental</span>
-        {% endif %}
-      </div>
-
-      <div class="item-details">
-        <div class="detail-item">
-          <div class="detail-label">Staff</div>
-          <div class="staff-list">
-            {% for staff in item.staff.all %}
-              <span class="staff-tag">{{ staff.nama_lengkap }}</span>
-            {% empty %}
-              <span class="detail-value">—</span>
-            {% endfor %}
-          </div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Sub Area</div>
-          <div class="detail-value">{{ item.sub_area.nama_sub_area|default:'—' }}</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Tanggal</div>
-          <div class="detail-value">{{ item.tanggal }}</div>
-        </div>
-        <div class="detail-item">
-          <div class="detail-label">Jam</div>
-          <div class="detail-value">{{ item.jam_mulai|default:'—' }} – {{ item.jam_selesai|default:'—' }}</div>
-        </div>
-      </div>
-
-      {% if item.foto_on_progress or item.foto_after %}
-      <div class="foto-section">
-        {% if item.foto_on_progress %}
-        <div class="foto-thumb-wrap">
-          <div class="foto-thumb" onclick="openLightbox('{{ item.foto_on_progress.url }}', 'Foto Progress')">
-            <img src="{{ item.foto_on_progress.url }}" alt="Foto Progress" loading="lazy">
-            <div class="foto-overlay">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-              </svg>
-              <span>Lihat</span>
+        <!-- Photos -->
+        {% if item.foto_on_progress or item.foto_after %}
+            <div class="item-photos">
+                {% if item.foto_on_progress and item.foto_after %}
+                    <!-- Both photos -->
+                    <div class="item-photo-slot">
+                        <img src="{{ item.foto_on_progress.url }}" alt="On Progress">
+                        <span class="item-photo-label label-progress">On Progress</span>
+                        <a href="{{ item.foto_on_progress.url }}" class="photo-expand-btn lightbox-trigger" data-src="{{ item.foto_on_progress.url }}">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </a>
+                    </div>
+                    <div class="item-photo-slot">
+                        <img src="{{ item.foto_after.url }}" alt="After">
+                        <span class="item-photo-label label-after">After</span>
+                        <a href="{{ item.foto_after.url }}" class="photo-expand-btn lightbox-trigger" data-src="{{ item.foto_after.url }}">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </a>
+                    </div>
+                {% elif item.foto_on_progress %}
+                    <div class="item-photo-slot single">
+                        <img src="{{ item.foto_on_progress.url }}" alt="On Progress">
+                        <span class="item-photo-label label-progress">On Progress</span>
+                        <a href="{{ item.foto_on_progress.url }}" class="photo-expand-btn lightbox-trigger" data-src="{{ item.foto_on_progress.url }}">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </a>
+                    </div>
+                {% elif item.foto_after %}
+                    <div class="item-photo-slot single">
+                        <img src="{{ item.foto_after.url }}" alt="After">
+                        <span class="item-photo-label label-after">After</span>
+                        <a href="{{ item.foto_after.url }}" class="photo-expand-btn lightbox-trigger" data-src="{{ item.foto_after.url }}">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </a>
+                    </div>
+                {% endif %}
             </div>
-          </div>
-          <span class="foto-label">Progress</span>
-        </div>
-        {% endif %}
-
-        {% if item.foto_after %}
-        <div class="foto-thumb-wrap">
-          <div class="foto-thumb" onclick="openLightbox('{{ item.foto_after.url }}', 'Foto After')">
-            <img src="{{ item.foto_after.url }}" alt="Foto After" loading="lazy">
-            <div class="foto-overlay">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-              </svg>
-              <span>Lihat</span>
+        {% else %}
+            <!-- No photos placeholder -->
+            <div class="item-photos">
+                <div class="item-photo-slot-empty single">
+                    <i class="bi bi-image"></i>
+                    <span>Belum ada foto</span>
+                </div>
             </div>
-          </div>
-          <span class="foto-label">After</span>
-        </div>
         {% endif %}
-      </div>
-      {% endif %}
 
-      <div class="item-footer">
-        <span class="status-badge {% if item.status == 'selesai' %}selesai{% elif item.status == 'on_progress' %}on_progress{% else %}terjadwal{% endif %}">
-          {% if item.status == 'selesai' %}Selesai{% elif item.status == 'on_progress' %}On Progress{% else %}Terjadwal{% endif %}
-        </span>
-      </div>
+        <!-- Body -->
+        <div class="item-card-body">
+            <div class="item-card-top">
+                <div class="item-name">
+                    {{ item.nama_item }}
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+                    {% if item.is_insidental %}
+                        <span class="item-insidental-badge"><i class="bi bi-lightning-charge-fill"></i> Insidental</span>
+                    {% endif %}
+                    {% if item.status == 'terjadwal' %}
+                        <span class="item-status ist-terjadwal">Terjadwal</span>
+                    {% elif item.status == 'on_progress' %}
+                        <span class="item-status ist-progress">On Progress</span>
+                    {% elif item.status == 'selesai' %}
+                        <span class="item-status ist-selesai">Selesai</span>
+                    {% endif %}
+                </div>
+            </div>
 
-    </div>
-    {% empty %}
-    <div class="empty-state" style="grid-column: 1 / -1">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-      </svg>
-      <p>Belum ada item kegiatan.</p>
+            <div class="item-meta">
+                 {% for staff_member in item.staff.all %}
+                    <span class="meta-pill">Petugas: {{ staff_member.nama_lengkap }}</span>
+                {% endfor %}
+                {% if item.task %}
+                    <span class="meta-pill"> Pekerjaan: {{ item.task.nama_task }}</span>
+                {% endif %}
+                {% if item.sub_area %}
+                    <span class="meta-pill">Lokasi: {{ item.sub_area.nama_sub_area }}</span>
+                {% endif %}
+                {% if item.tanggal %}
+                    <span class="meta-pill">Tanggal:{{ item.tanggal|date:"d/m/Y" }}</span>
+                {% endif %}
+                {% if item.jam_mulai %}
+                    <span class="meta-pill">Jam Pekerjaan: {{ item.jam_mulai }} – {{ item.jam_selesai|default:"?" }}</span>
+                {% endif %}
+               
+            </div>
+
+            {% if item.catatan_staff %}
+                <div class="item-catatan">
+                    <i class="bi bi-chat-left-text" style="margin-right:4px;"></i>{{ item.catatan_staff }}
+                </div>
+            {% endif %}
+        </div>
+
     </div>
     {% endfor %}
   </div>
+  {% endfor %}
+
+  {% if not item_list %}
+  <div class="empty-state" style="grid-column: 1 / -1">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+    </svg>
+    <p>Belum ada item kegiatan.</p>
+  </div>
+  {% endif %}
 </div>
 
 <!-- Lightbox -->

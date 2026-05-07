@@ -1,139 +1,284 @@
 {% extends 'customer/base_customer.html' %}
 
+{% load static %}
+{% block extra_css %}
+<link href="{% static 'css/customer/laporan-detail.css' %}" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">{{ page_title }}</h5>
-    <a href="{% url 'customer_laporan_list' %}" class="btn btn-outline-secondary btn-sm">
-        <i class="bi bi-arrow-left"></i> Kembali
-    </a>
+
+<!-- Lightbox -->
+<div class="lightbox-overlay" id="lightbox">
+    <div class="lightbox-close" id="lightboxClose"><i class="bi bi-x"></i></div>
+    <img src="" id="lightboxImg" alt="">
 </div>
 
-<div class="row g-3 mb-3">
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Total Item</div>
-            <div class="fs-3 fw-bold">{{ stats.total }}</div>
+<!-- ── HEADER ── -->
+<div class="detail-header">
+    <div class="detail-header-left">
+        <div class="detail-breadcrumb">
+            <a href="{% url 'customer_laporan_list' %}">Laporan Saya</a>
+            <i class="bi bi-chevron-right"></i>
+            <span>Detail Laporan</span>
+        </div>
+        <h1 class="detail-title">{{ laporan.nama_laporan }}</h1>
+        <div class="detail-subtitle">
+            {% if laporan.status == 'draft' %}
+                <span class="status-pill status-draft">Draft</span>
+            {% elif laporan.status == 'selesai' %}
+                <span class="status-pill status-selesai">Selesai</span>
+            {% elif laporan.status == 'dikirim_customer' %}
+                <span class="status-pill status-dikirim">Dikirim ke Customer</span>
+            {% endif %}
+            <span>{{ laporan.tanggal_laporan|date:"d M Y" }}</span>
+            <span>·</span>
+            <span>{{ laporan.perusahaan.nama_perusahaan }}</span>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Terjadwal</div>
-            <div class="fs-3 fw-bold text-secondary">{{ stats.terjadwal }}</div>
+
+    <div class="detail-header-actions">
+        <a href="{% url 'customer_laporan_list' %}" class="action-btn btn-back">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+    </div>
+</div>
+
+<!-- ── STATS ── -->
+<div class="stats-row">
+    <div class="stat-mini">
+        <div class="stat-mini-icon" style="background:rgba(99,102,241,0.12);color:#a5b4fc;">
+            <i class="bi bi-list-task"></i>
+        </div>
+        <div class="stat-mini-body">
+            <div class="stat-mini-label">Total Item</div>
+            <div class="stat-mini-value">{{ stats.total }}</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">On Progress</div>
-            <div class="fs-3 fw-bold text-warning">{{ stats.on_progress }}</div>
+    <div class="stat-mini">
+        <div class="stat-mini-icon" style="background:rgba(148,163,184,0.1);color:#94a3b8;">
+            <i class="bi bi-calendar3"></i>
+        </div>
+        <div class="stat-mini-body">
+            <div class="stat-mini-label">Terjadwal</div>
+            <div class="stat-mini-value">{{ stats.terjadwal }}</div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card p-3">
-            <div class="text-muted small mb-1">Selesai</div>
-            <div class="fs-3 fw-bold text-success">{{ stats.selesai }}</div>
+    <div class="stat-mini">
+        <div class="stat-mini-icon" style="background:rgba(251,191,36,0.1);color:#fbbf24;">
+            <i class="bi bi-lightning-charge"></i>
+        </div>
+        <div class="stat-mini-body">
+            <div class="stat-mini-label">On Progress</div>
+            <div class="stat-mini-value">{{ stats.on_progress }}</div>
+        </div>
+    </div>
+    <div class="stat-mini">
+        <div class="stat-mini-icon" style="background:rgba(34,197,94,0.1);color:#4ade80;">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-mini-body">
+            <div class="stat-mini-label">Selesai</div>
+            <div class="stat-mini-value">{{ stats.selesai }}</div>
         </div>
     </div>
 </div>
 
-<div class="card p-3 mb-3">
-    <div class="row g-3">
-        <div class="col-md-6">
-            <div class="small text-muted">Perusahaan</div>
-            <div class="fw-semibold">{{ perusahaan.nama_perusahaan }}</div>
+<!-- ── INFO LAPORAN ── -->
+<div class="info-card">
+    <div class="info-card-header">
+        <div class="info-card-header-icon">
+            <i class="bi bi-file-earmark-text"></i>
         </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Jenis Jasa</div>
-            <div class="fw-semibold">{{ laporan.jenis_jasa.nama_jasa }}</div>
-        </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Area Kerja</div>
-            <div class="fw-semibold">{{ laporan.area.nama_area }}</div>
-        </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Supervisor</div>
-            <div class="fw-semibold">{{ laporan.supervisor.nama_lengkap }}</div>
-        </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Tanggal Laporan</div>
-            <div class="fw-semibold">{{ laporan.tanggal_laporan|date:"d/m/Y" }}</div>
-        </div>
-        <div class="col-md-6">
-            <div class="small text-muted">Status</div>
-            <div class="fw-semibold">
-                <span class="badge bg-info">Dikirim ke Customer</span>
+        <h6>Informasi Laporan</h6>
+    </div>
+    <div class="info-card-body">
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-item-label">Perusahaan</div>
+                <div class="info-item-value">{{ laporan.perusahaan.nama_perusahaan }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label">Jenis Jasa</div>
+                <div class="info-item-value">{{ laporan.jenis_jasa.nama_jasa }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label">Area Kerja</div>
+                <div class="info-item-value">{{ laporan.area.nama_area }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label">Tanggal Laporan</div>
+                <div class="info-item-value">{{ laporan.tanggal_laporan|date:"d M Y" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label">Supervisor</div>
+                <div class="info-item-value">{{ laporan.supervisor.nama_lengkap }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-item-label">Status</div>
+                <div class="info-item-value">
+                    {% if laporan.status == 'draft' %}
+                        <span class="status-pill status-draft">Draft</span>
+                    {% elif laporan.status == 'selesai' %}
+                        <span class="status-pill status-selesai">Selesai</span>
+                    {% elif laporan.status == 'dikirim_customer' %}
+                        <span class="status-pill status-dikirim">Dikirim</span>
+                    {% endif %}
+                </div>
             </div>
         </div>
         {% if laporan.catatan %}
-        <div class="col-12">
-            <div class="small text-muted">Catatan Supervisor</div>
-            <div>{{ laporan.catatan }}</div>
+        <div class="catatan-box">
+            <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--clr-text-muted);display:block;margin-bottom:4px;">Catatan</span>
+            {{ laporan.catatan }}
         </div>
         {% endif %}
     </div>
 </div>
 
-<div class="card">
-    <div class="card-header bg-light">
-        <h6 class="mb-0">Item Kegiatan</h6>
-    </div>
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Item</th>
-                    <th>Staff</th>
-                    <th>Sub Area</th>
-                    <th>Tanggal</th>
-                    <th>Jam</th>
-                    <th>Status</th>
-                    <th>Foto</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in item_list %}
-                <tr>
-                    <td class="text-muted small">{{ forloop.counter }}</td>
-                    <td>
-                        <span class="fw-semibold">{{ item.nama_item }}</span>
-                        {% if item.is_insidental %}
-                            <span class="badge bg-warning text-dark ms-1">Insidental</span>
-                        {% endif %}
-                        {% if item.catatan_staff %}
-                            <div class="small text-muted">{{ item.catatan_staff }}</div>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.staff.nama_lengkap }}</td>
-                    <td>{{ item.sub_area.nama_sub_area|default:'—' }}</td>
-                    <td>{{ item.tanggal|date:"d/m/Y" }}</td>
-                    <td>{{ item.jam_mulai|default:"—" }} - {{ item.jam_selesai|default:"—" }}</td>
-                    <td>
-                        {% if item.status == 'terjadwal' %}
-                            <span class="badge bg-secondary">Terjadwal</span>
-                        {% elif item.status == 'on_progress' %}
-                            <span class="badge bg-warning">On Progress</span>
-                        {% elif item.status == 'selesai' %}
-                            <span class="badge bg-success">Selesai</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.foto_on_progress %}
-                            <a href="{{ item.foto_on_progress.url }}" target="_blank" class="btn btn-xs btn-outline-info btn-sm">
-                                <i class="bi bi-image"></i>
-                            </a>
-                        {% endif %}
-                        {% if item.foto_after %}
-                            <a href="{{ item.foto_after.url }}" target="_blank" class="btn btn-xs btn-outline-success btn-sm">
-                                <i class="bi bi-check-circle"></i>
-                            </a>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr><td colspan="8" class="text-center text-muted py-4">Belum ada item kegiatan.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<!-- ── ITEM KEGIATAN ── -->
+<div class="items-section-header">
+    <div class="items-section-title">Item Kegiatan</div>
+    <span class="items-count-badge">{{ item_list|length }} item</span>
 </div>
+
+{% regroup item_list by sub_area as sub_area_groups %}
+
+{% for sub_area_group in sub_area_groups %}
+{% if sub_area_group.grouper %}
+<div class="sub-area-section-header">
+    <div class="sub-area-title">{{ sub_area_group.grouper.nama_sub_area }}</div>
+    <span class="sub-area-count-badge">{{ sub_area_group.list|length }} item</span>
+</div>
+{% else %}
+<div class="sub-area-section-header">
+    <div class="sub-area-title">Tanpa Sub Area</div>
+    <span class="sub-area-count-badge">{{ sub_area_group.list|length }} item</span>
+</div>
+{% endif %}
+
+<div class="items-grid">
+    {% for item in sub_area_group.list %}
+    <div class="item-card">
+
+        <!-- Photos -->
+        {% if item.foto_on_progress or item.foto_after %}
+            <div class="item-photos">
+                {% if item.foto_on_progress and item.foto_after %}
+                    <div class="item-photo-slot">
+                        <img src="{{ item.foto_on_progress.url }}" alt="On Progress">
+                        <span class="item-photo-label label-progress">On Progress</span>
+                        <a href="{{ item.foto_on_progress.url }}" class="photo-expand-btn lightbox-trigger" data-src="{{ item.foto_on_progress.url }}">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </a>
+                    </div>
+                    <div class="item-photo-slot">
+                        <img src="{{ item.foto_after.url }}" alt="After">
+                        <span class="item-photo-label label-after">After</span>
+                        <a href="{{ item.foto_after.url }}" class="photo-expand-btn lightbox-trigger" data-src="{{ item.foto_after.url }}">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </a>
+                    </div>
+                {% elif item.foto_on_progress %}
+                    <div class="item-photo-slot single">
+                        <img src="{{ item.foto_on_progress.url }}" alt="On Progress">
+                        <span class="item-photo-label label-progress">On Progress</span>
+                        <a href="{{ item.foto_on_progress.url }}" class="photo-expand-btn lightbox-trigger" data-src="{{ item.foto_on_progress.url }}">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </a>
+                    </div>
+                {% elif item.foto_after %}
+                    <div class="item-photo-slot single">
+                        <img src="{{ item.foto_after.url }}" alt="After">
+                        <span class="item-photo-label label-after">After</span>
+                        <a href="{{ item.foto_after.url }}" class="photo-expand-btn lightbox-trigger" data-src="{{ item.foto_after.url }}">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="item-photos">
+                <div class="item-photo-slot-empty single">
+                    <i class="bi bi-image"></i>
+                    <span>Belum ada foto</span>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Body -->
+        <div class="item-card-body">
+            <div class="item-card-top">
+                <div class="item-name">{{ item.nama_item }}</div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+                    {% if item.is_insidental %}
+                        <span class="item-insidental-badge"><i class="bi bi-lightning-charge-fill"></i> Insidental</span>
+                    {% endif %}
+                    {% if item.status == 'terjadwal' %}
+                        <span class="item-status ist-terjadwal">Terjadwal</span>
+                    {% elif item.status == 'on_progress' %}
+                        <span class="item-status ist-progress">On Progress</span>
+                    {% elif item.status == 'selesai' %}
+                        <span class="item-status ist-selesai">Selesai</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="item-meta">
+                {% for staff_member in item.staff.all %}
+                    <span class="meta-pill">Petugas: {{ staff_member.nama_lengkap }}</span>
+                {% endfor %}
+                {% if item.task %}
+                    <span class="meta-pill">Pekerjaan: {{ item.task.nama_task }}</span>
+                {% endif %}
+                {% if item.sub_area %}
+                    <span class="meta-pill">Lokasi: {{ item.sub_area.nama_sub_area }}</span>
+                {% endif %}
+                {% if item.tanggal %}
+                    <span class="meta-pill">Tanggal: {{ item.tanggal|date:"d/m/Y" }}</span>
+                {% endif %}
+                {% if item.jam_mulai %}
+                    <span class="meta-pill">Jam Pekerjaan: {{ item.jam_mulai }} – {{ item.jam_selesai|default:"?" }}</span>
+                {% endif %}
+            </div>
+
+            {% if item.catatan_staff %}
+                <div class="item-catatan">
+                    <i class="bi bi-chat-left-text" style="margin-right:4px;"></i>{{ item.catatan_staff }}
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}
+
+{% if not item_list %}
+<div class="empty-items">
+    <i class="bi bi-clipboard-x"></i>
+    <p>Belum ada item kegiatan.</p>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Lightbox
+const lightbox      = document.getElementById('lightbox');
+const lightboxImg   = document.getElementById('lightboxImg');
+const lightboxClose = document.getElementById('lightboxClose');
+
+document.querySelectorAll('.lightbox-trigger').forEach(el => {
+    el.addEventListener('click', e => {
+        e.preventDefault();
+        lightboxImg.src = el.dataset.src;
+        lightbox.classList.add('open');
+    });
+});
+
+lightboxClose.addEventListener('click', () => lightbox.classList.remove('open'));
+lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.remove('open'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') lightbox.classList.remove('open'); });
+</script>
 {% endblock %}

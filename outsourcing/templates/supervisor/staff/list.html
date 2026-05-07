@@ -238,7 +238,7 @@
                     <th>#</th>
                     <th>Nama Staff</th>
                     <th>Username</th>
-                    <th>Telepon</th>
+                    <th>NIK</th>
                     <th>Status</th>
                     <th>Aksi</th>
                 </tr>
@@ -249,7 +249,7 @@
                     <td class="staff-meta">{{ forloop.counter }}</td>
                     <td><span class="staff-name">{{ stf.nama_lengkap }}</span></td>
                     <td class="staff-meta">{{ stf.username }}</td>
-                    <td class="staff-meta">{{ stf.telepon|default:'—' }}</td>
+                    <td class="staff-meta">{{ stf.nik }}</td>
                     <td>
                         {% if stf.is_active %}
                             <span class="badge-aktif">Aktif</span>
@@ -292,7 +292,7 @@
         <div class="staff-avatar">{{ stf.nama_lengkap|first|upper }}</div>
         <div class="staff-card-info">
             <div class="name">{{ stf.nama_lengkap }}</div>
-            <div class="meta">@{{ stf.username }} · {{ stf.telepon|default:'—' }}</div>
+            <div class="meta">@{{ stf.username }} · {{ stf.nik }}</div>
             <div style="margin-top:5px;">
                 {% if stf.is_active %}<span class="badge-aktif">Aktif</span>
                 {% else %}<span class="badge-nonaktif">Nonaktif</span>{% endif %}
