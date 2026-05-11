@@ -165,12 +165,10 @@ def qr_scan_landing(request, token):
                     'success': False,
                     'error'  : 'Keterangan overtime wajib diisi.',
                 })
-            absensi.is_overtime         = True
-            absensi.overtime_menit      = ot_menit
-            absensi.overtime_status     = OvertimeStatusChoices.BELUM_REVIEW
-            absensi.keterangan_overtime = keterangan_ot
-            absensi.status              = AbsensiStatusChoices.OVERTIME
-            update_fields += ['is_overtime', 'overtime_menit', 'overtime_status', 'keterangan_overtime']
+            absensi.is_overtime     = True
+            absensi.overtime_status = OvertimeStatusChoices.BELUM_REVIEW
+            absensi.status         = AbsensiStatusChoices.OVERTIME
+            update_fields += ['is_overtime', 'overtime_status']
 
         absensi.waktu_pulang = now
         if not is_ot:
@@ -190,7 +188,7 @@ def qr_scan_landing(request, token):
             'is_overtime'   : is_ot,
             'is_pulang_awal': is_pulang_awal,
             'waktu'         : localtime(absensi.waktu_pulang).strftime('%H:%M'),
-            'durasi'        : absensi.durasi_str(),
+            'durasi'        : absensi.durasi_str,
             'supervisor'    : qr_obj.supervisor.nama_lengkap or qr_obj.supervisor.username,
         })
 
