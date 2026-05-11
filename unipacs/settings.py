@@ -27,9 +27,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
-# Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,10 +34,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'widget_tweaks',
     'outsourcing',
+    'widget_tweaks', 
 ]
- 
+
 # ============================================================
 # MIDDLEWARE
 # ============================================================
@@ -62,7 +59,7 @@ ROOT_URLCONF = 'unipacs.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'outsourcing' / 'templates'],  # ← lokasi templates
+        'DIRS': [BASE_DIR / 'outsourcing' / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

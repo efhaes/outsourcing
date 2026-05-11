@@ -358,15 +358,13 @@ class SupervisorPerusahaan(models.Model):
     aktif   = AktifManager()
 
     def clean(self):
-        # Pastikan jenis jasa ada di perusahaan tersebut
+      
         if self.perusahaan_id and self.jenis_jasa_id:
             if not self.perusahaan.jenis_jasa.filter(pk=self.jenis_jasa_id).exists():
                 raise ValidationError(
                     f"Perusahaan '{self.perusahaan}' tidak menggunakan jasa '{self.jenis_jasa}'."
                 )
 
-        # Cegah duplikat penugasan aktif: supervisor yang sama,
-        # perusahaan yang sama, jenis jasa yang sama, dan is_active=True
         if self.is_active and self.supervisor_id and self.perusahaan_id and self.jenis_jasa_id:
             qs = SupervisorPerusahaan.objects.filter(
                 supervisor=self.supervisor_id,
@@ -728,11 +726,19 @@ class ItemKegiatan(models.Model):
             models.Index(fields=['laporan', 'status'], name='idx_item_laporan_status'),
         ]
 
+
+class OvertimeStatusChoices(models.TextChoices):
+    BELUM_REVIEW = 'belum_review', 'Belum Direview'
+    PAID         = 'paid',         'Dibayar'
+    UNPAID       = 'unpaid',       'Tidak Dibayar'
+
+
 class AbsensiStatusChoices(models.TextChoices):
     BELUM_ABSEN = 'belum_absen', 'Belum Absen'
     MASUK       = 'masuk', 'Masuk'
     PULANG      = 'pulang', 'Pulang'
     TERLAMBAT   = 'terlambat', 'Terlambat'
+    OVERTIME    = 'overtime', 'Overtime'
     
 class StatusHarianChoices(models.TextChoices):
     HADIR   = 'P',  'Hadir'
@@ -776,45 +782,83 @@ class QRAbsensi(models.Model):
 
 
 class Absensi(models.Model):
-    qr_masuk  = models.ForeignKey(QRAbsensi, on_delete=models.SET_NULL, null=True, blank=True, related_name='absensi_masuk')
-    qr_pulang = models.ForeignKey(QRAbsensi, on_delete=models.SET_NULL, null=True, blank=True, related_name='absensi_pulang')
-    staff     = models.ForeignKey(User, on_delete=models.CASCADE)
-    tanggal   = models.DateField()
-
-    # Absen Masuk
-    waktu_masuk = models.DateTimeField(null=True, blank=True)
-    lat_masuk   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-    lon_masuk   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-
-    # Absen Pulang
+    # ── Relasi ──────────────────────────────
+    qr_masuk  = models.ForeignKey(
+        QRAbsensi, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='absensi_masuk',
+    )
+    qr_pulang = models.ForeignKey(
+        QRAbsensi, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='absensi_pulang',
+    )
+    staff = models.ForeignKey(User, on_delete=models.CASCADE)
+ 
+    # ── Waktu & Lokasi ───────────────────────
+    tanggal      = models.DateField()
+    waktu_masuk  = models.DateTimeField(null=True, blank=True)
+    lat_masuk    = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    lon_masuk    = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     waktu_pulang = models.DateTimeField(null=True, blank=True)
     lat_pulang   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     lon_pulang   = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
-
-    status      = models.CharField(max_length=20, choices=AbsensiStatusChoices.choices, default=AbsensiStatusChoices.BELUM_ABSEN)
-    status_harian = models.CharField(  # ← TAMBAH INI
+ 
+    # ── Status ───────────────────────────────
+    status = models.CharField(
+        max_length=20,
+        choices=AbsensiStatusChoices.choices,
+        default=AbsensiStatusChoices.BELUM_ABSEN,
+    )
+    status_harian = models.CharField(
         max_length=5,
         choices=StatusHarianChoices.choices,
         default=StatusHarianChoices.HADIR,
         blank=True,
     )
+ 
+    # ── Overtime ─────────────────────────────
+    is_overtime          = models.BooleanField(default=False)
+    overtime_status      = models.CharField(
+        max_length=20,
+        choices=OvertimeStatusChoices.choices,
+        default=OvertimeStatusChoices.BELUM_REVIEW,
+        blank=True,
+    )
+    overtime_reviewed_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='overtime_reviews',
+    )
+    overtime_reviewed_at = models.DateTimeField(null=True, blank=True)
+ 
+    # ── Izin Pulang Awal ─────────────────────
+    izin_pulang_awal       = models.BooleanField(default=False)
+    keterangan_izin_pulang = models.TextField(blank=True)
+ 
+    # ── Catatan & Timestamp ──────────────────
     catatan     = models.TextField(blank=True)
     dibuat_pada = models.DateTimeField(auto_now_add=True)
     diubah_pada = models.DateTimeField(auto_now=True)
-
+ 
+    # ── Threshold Overtime ───────────────────
+    THRESHOLD_OT_MENIT = 60  # 1 jam setelah jam pulang resmi
+ 
+    # ── Properties ───────────────────────────
     @property
     def sudah_masuk(self):
         return self.waktu_masuk is not None
-
+ 
     @property
     def sudah_pulang(self):
         return self.waktu_pulang is not None
-
+ 
+    # ── Methods ───────────────────────────────
     def durasi_kerja(self):
         if self.waktu_masuk and self.waktu_pulang:
             return self.waktu_pulang - self.waktu_masuk
         return None
-
+ 
+    @property                  # ← FIX: @property supaya {{ absen.durasi_str }} bekerja di template
     def durasi_str(self):
         durasi = self.durasi_kerja()
         if not durasi:
@@ -825,16 +869,38 @@ class Absensi(models.Model):
         if jam:
             return f"{jam}j {menit}m"
         return f"{menit}m"
-
+ 
+    def hitung_overtime_menit(self):
+        """Hitung overtime berdasarkan jam pulang resmi dari QR supervisor."""
+        if not self.waktu_pulang or not self.qr_pulang:
+            return 0
+        jam_pulang_resmi = self.qr_pulang.jam_berlaku_mulai
+        if not jam_pulang_resmi:
+            return 0
+        selisih_menit = int((self.waktu_pulang - jam_pulang_resmi).total_seconds() / 60)
+        return selisih_menit if selisih_menit >= self.THRESHOLD_OT_MENIT else 0
+ 
+    def update_overtime(self):
+        """
+        Hitung ulang is_overtime.
+        Panggil setiap kali waktu_pulang di-set/diubah, lalu save() manual.
+        """
+        menit = self.hitung_overtime_menit()
+        self.is_overtime = menit > 0
+        if not self.is_overtime:
+            self.overtime_status      = OvertimeStatusChoices.BELUM_REVIEW
+            self.overtime_reviewed_by = None
+            self.overtime_reviewed_at = None
+ 
     def clean(self):
         if self.waktu_masuk and self.waktu_pulang:
             if self.waktu_pulang <= self.waktu_masuk:
                 raise ValidationError("Waktu pulang harus setelah waktu masuk.")
-
+ 
     def __str__(self):
         nama = self.staff.nama_lengkap or self.staff.username
         return f"Absensi {nama} — {self.tanggal} ({self.status})"
-
+ 
     class Meta:
         verbose_name        = 'Absensi'
         verbose_name_plural = 'Absensi'
@@ -844,3 +910,44 @@ class Absensi(models.Model):
             models.Index(fields=['tanggal', 'status'], name='idx_absensi_tanggal_status'),
             models.Index(fields=['staff', 'tanggal'],  name='idx_absensi_staff_tgl'),
         ]
+ 
+
+class HariLiburNasional(models.Model):
+    """
+    Cache hari libur nasional Indonesia dari API libur.deno.dev.
+    Data di-refresh otomatis saat generate PDF jika belum ada data
+    untuk tahun/bulan tersebut, atau jika cache sudah lebih dari 30 hari.
+    """
+    tanggal      = models.DateField(unique=True)
+    nama_libur   = models.CharField(max_length=200)
+    tahun        = models.IntegerField(db_index=True)
+    bulan        = models.IntegerField()
+    dibuat_pada  = models.DateTimeField(auto_now_add=True)
+    diubah_pada  = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.tanggal} — {self.nama_libur}"
+
+    class Meta:
+        verbose_name        = 'Hari Libur Nasional'
+        verbose_name_plural = 'Hari Libur Nasional'
+        ordering            = ['tanggal']
+        indexes             = [
+            models.Index(fields=['tahun', 'bulan'], name='idx_libur_tahun_bulan'),
+        ]
+
+
+class CacheMetaLibur(models.Model):
+    """
+    Menyimpan metadata kapan terakhir kali data libur di-fetch dari API
+    untuk setiap kombinasi tahun-bulan. Digunakan untuk menentukan
+    apakah perlu re-fetch atau cukup pakai cache.
+    """
+    tahun        = models.IntegerField()
+    bulan        = models.IntegerField()
+    last_fetched = models.DateTimeField(auto_now=True)
+    fetch_sukses = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ['tahun', 'bulan']
+        verbose_name    = 'Cache Meta Libur'

@@ -1,4 +1,5 @@
 {% load static %}
+{% load dict_extras %}
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -164,6 +165,24 @@ body {
   color: #8099b0;
   font-style: italic;
 }
+  /* ── Highlight header hari libur ─────────────────── */
+  th.hari-libur {
+    background-color: #c0392b !important;  /* merah lebih gelap untuk header */
+    color: #fff !important;
+  }
+
+  /* ── Highlight cell absensi hari libur ──────────── */
+  td.cell-libur {
+    background-color: #fde8e8 !important;
+    color: #c0392b !important;
+  }
+
+  /* LB (libur) label */
+  .sLB {
+    color: #c0392b;
+    font-weight: 700;
+    font-size: 4pt;
+  }
 
 /* ══════════════════════════════════════
    PAGE WRAPPER - Footer selalu di bawah
@@ -786,33 +805,33 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
     </div>
 
     <table class="tbl avoid-break">
-      <thead>
-        <tr>
-          <th style="width:5%">No</th>
-          <th class="tl" style="width:35%">Nama Lengkap</th>
-          <th style="width:18%">NIK</th>
-          <th class="tl" style="width:27%">Area Tugas</th>
-          <th style="width:15%">Status</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for rel in staff_list %}
-        <tr>
-          <td class="td-center">{{ forloop.counter }}</td>
-          <td class="td-bold" style="padding-left:8px;">{{ rel.staff.nama_lengkap|default:rel.staff.username|upper }}</td>
-          <td class="td-center">{{ rel.staff.nik }}</td>
-          <td style="padding-left:8px;">{{ rel.supervisor.nama_lengkap|default:"-" }}</td>
-          <td class="td-center"><span class="badge-aktif">Aktif</span></td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="5" style="text-align:center;padding:14px;color:#8099b0;">
-            Tidak ada data karyawan.
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  <thead>
+    <tr>
+      <th style="width:5%">No</th>
+      <th class="tl" style="width:35%">Nama Lengkap</th>
+      <th style="width:18%">NIK</th>
+      <th class="tl" style="width:27%">Sub Area</th>
+      <th style="width:15%">Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for rel in staff_list %}
+    <tr>
+      <td class="td-center">{{ forloop.counter }}</td>
+      <td class="td-bold" style="padding-left:8px;">{{ rel.staff.nama_lengkap|default:rel.staff.username|upper }}</td>
+      <td class="td-center">{{ rel.staff.nik }}</td>
+      <td style="padding-left:8px;">{{ staff_subarea_map|get_item:rel.staff.pk|default:"-" }}</td>  
+      <td class="td-center"><span class="badge-aktif">Aktif</span></td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="5" style="text-align:center;padding:14px;color:#8099b0;">
+        Tidak ada data karyawan.
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
   </div>
 
   <div class="doc-footer">
@@ -962,6 +981,8 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
 </div>
 
 
+
+
 <!-- ══════════════════════ IV. ABSENSI ══════════════════════ -->
 <div class="page-wrap page-break">
 
@@ -994,7 +1015,17 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
           <th class="kc-no">No</th>
           <th class="kc-nama">Nama</th>
           <th class="kc-nik">NIK</th>
-          {% for day in days_range %}<th class="kc-day">{{ day }}</th>{% endfor %}
+
+          {% for day in days_range %}
+            {# FIX: gunakan {% with %} dulu untuk ambil dict, #}
+            {# lalu akses .is_libur sebagai attribute — bukan chain langsung di filter #}
+            {% with day_info=info_hari|get_item:day %}
+              <th class="kc-day {% if day_info.is_libur %}hari-libur{% endif %}">
+                {{ day }}
+              </th>
+            {% endwith %}
+          {% endfor %}
+
           <th class="kc-sum" title="Hadir">E</th>
           <th class="kc-sum" title="Alpa">A</th>
           <th class="kc-sum" title="Izin">I</th>
@@ -1006,31 +1037,37 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
       <tbody>
         {% for staff_id, data in absensi_kalender.items %}
         <tr>
-          <td class="kc-no" style="text-align:center;">{{ forloop.counter }}</td>
+          <td class="kc-no"   style="text-align:center;">{{ forloop.counter }}</td>
           <td class="kc-nama" style="font-weight:700;">{{ data.nama|upper }}</td>
           <td class="kc-nik">{{ data.nik }}</td>
-          {% for s in data.hari_list %}
-          <td class="kc-day">
-            {% if s == 'P'  %}<span class="sP">P</span>
-            {% elif s == 'L'%}<span class="sL">L</span>
-            {% elif s == 'A'%}<span class="sA">A</span>
-            {% elif s == 'I'%}<span class="sI">I</span>
-            {% elif s == 'DC'%}<span class="sDC">DC</span>
-            {% elif s == 'LB'%}<span class="sLB">LB</span>
-            {% elif s      %}<span>{{ s }}</span>
-            {% endif %}
+
+          {% for h in data.hari_list %}
+          {# h adalah dict {'status': '...', 'is_libur': True/False} #}
+          <td class="kc-day {% if h.is_libur %}cell-libur{% endif %}">
+            {% with s=h.status %}
+              {% if s == 'P'  %}<span class="sP">P</span>
+              {% elif s == 'L'  %}<span class="sL">L</span>
+              {% elif s == 'A'  %}<span class="sA">A</span>
+              {% elif s == 'I'  %}<span class="sI">I</span>
+              {% elif s == 'DC' %}<span class="sDC">DC</span>
+              {% elif s == 'LB' %}<span class="sLB">LB</span>
+              {% elif s         %}<span>{{ s }}</span>
+              {% endif %}
+            {% endwith %}
           </td>
           {% endfor %}
-          <td class="kc-sum" style="color:#1a6b3a;">{{ data.jumlah_hadir|default:"0" }}</td>
-          <td class="kc-sum" style="color:#c0392b;">{{ data.jumlah_alpa|default:"0" }}</td>
-          <td class="kc-sum" style="color:#bf6b00;">{{ data.jumlah_izin|default:"0" }}</td>
-          <td class="kc-sum" style="color:#1a3a5c;">{{ data.jumlah_cuti|default:"0" }}</td>
+
+          <td class="kc-sum" style="color:#1a6b3a;">{{ data.jumlah_hadir|default:"0"  }}</td>
+          <td class="kc-sum" style="color:#c0392b;">{{ data.jumlah_alpa|default:"0"   }}</td>
+          <td class="kc-sum" style="color:#bf6b00;">{{ data.jumlah_izin|default:"0"   }}</td>
+          <td class="kc-sum" style="color:#1a3a5c;">{{ data.jumlah_cuti|default:"0"   }}</td>
           <td class="kc-sum" style="color:#005bb5;">{{ data.jumlah_dokter|default:"0" }}</td>
           <td class="kc-ket"></td>
         </tr>
         {% empty %}
         <tr>
-          <td colspan="{{ days_in_month|add:9 }}" style="text-align:center;padding:12px;color:#8099b0;">
+          <td colspan="{{ days_in_month|add:9 }}"
+              style="text-align:center;padding:12px;color:#8099b0;">
             Tidak ada data absensi bulan ini.
           </td>
         </tr>
@@ -1045,7 +1082,11 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
       <span class="sI">I</span>=Izin &nbsp;
       <span class="sA">A</span>=Alpa &nbsp;
       <span class="sDC">DC</span>=Surat Dokter &nbsp;
-      LB=Libur
+      <span class="sLB">LB</span>=Libur &nbsp;
+      <span style="display:inline-block;background:#fde8e8;color:#c0392b;
+                   padding:0 4px;border-radius:2px;font-size:6pt;font-weight:700;">
+        &#9632; Merah
+      </span>=Hari Minggu / Libur Nasional
     </div>
   </div>
 
@@ -1055,8 +1096,6 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
   </div>
 
 </div>
-
-
 <!-- ══════════════════════ V. PROGRAM & PELAKSANAAN ══════════════════════ -->
 <div class="page-wrap page-break">
 
@@ -1268,12 +1307,12 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
         </td>
         <td>
           <div class="ttd-label-text">Diketahui oleh,</div>
-          <div class="ttd-line">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
+          <div class="ttd-line"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
           <div class="ttd-role">Kepala Supervisor</div>
         </td>
         <td>
           <div class="ttd-label-text">Disetujui oleh,</div>
-          <div class="ttd-line">( &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
+          <div class="ttd-line"> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; )</div>
           <div class="ttd-role">{{ perusahaan.nama_perusahaan }}</div>
         </td>
       </tr>

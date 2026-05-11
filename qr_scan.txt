@@ -1,58 +1,27 @@
 {% extends 'staff/base_staff.html' %}
 {% block title %}Scan QR Absensi{% endblock %}
 
-{% block extra_css %}
+{% block extra_head %}
 <style>
 /* ── Scanner ─────────────────────────────── */
 #qr-reader {
   border: 2px solid var(--clr-accent);
   border-radius: var(--radius-lg);
-  overflow: visible; 
+  overflow: hidden;
+  background: #000;
+  min-height: 200px;
 }
-
-
 #qr-reader video { width: 100% !important; height: auto !important; }
 #qr-reader__scan_region { background: transparent !important; }
-
-
+#qr-reader__dashboard_section_csr { display: none !important; }
 #qr-reader__dashboard_section_swapLink { display: none !important; }
-
-/* Styling tombol bawaan library supaya sesuai tema */
-#qr-reader__dashboard button {
-  background: var(--clr-accent) !important;
-  color: #fff !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 8px 20px !important;
-  font-size: 13px !important;
-  cursor: pointer !important;
-  margin: 8px 0 !important;
-}
-#qr-reader__dashboard {
-  padding: 12px !important;
-  background: rgba(255,255,255,0.03) !important;
-  border-radius: 0 0 var(--radius-lg) var(--radius-lg) !important;
-}
-#qr-reader__status_span {
-  color: var(--clr-text-muted) !important;
-  font-size: 12px !important;
-}
-
-/* Wrapper untuk overlay — butuh position:relative */
-.scanner-wrapper {
-  position: relative;
-  margin-bottom: 20px;
-  border-radius: var(--radius-lg);
-}
 
 .scanner-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   pointer-events: none;
   border-radius: var(--radius-lg);
-  z-index: 2; 
 }
-
 .scanner-corners {
   position: absolute;
   top: 20px; left: 20px; right: 20px; bottom: 20px;
@@ -82,23 +51,21 @@
   animation: scan 2s linear infinite;
 }
 
-/* Sembunyikan scan-line dan corners saat kamera belum aktif */
-.scanner-overlay.inactive .scanner-corners,
-.scanner-overlay.inactive .scan-line {
-  display: none;
-}
-
 /* ── Modal — transparan + teks putih ──────── */
 .absen-modal .modal-content {
-  background: rgba(12, 17, 32, 0.55);
+  background: rgba(12, 17, 32, 0.55);        /* semi-transparan */
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: var(--radius-lg);
   color: #fff;
 }
-.absen-modal .modal-header { border-color: rgba(255, 255, 255, 0.10); }
-.absen-modal .modal-footer { border-color: rgba(255, 255, 255, 0.10); }
+.absen-modal .modal-header {
+  border-color: rgba(255, 255, 255, 0.10);
+}
+.absen-modal .modal-footer {
+  border-color: rgba(255, 255, 255, 0.10);
+}
 .absen-modal .modal-title  { color: #fff !important; }
 .absen-modal .modal-body   { color: #fff; }
 .absen-modal p,
@@ -153,7 +120,7 @@
   font-size: 13px;
   font-weight: 500;
 }
-.btn-absen-primary:hover    { opacity: 0.9; }
+.btn-absen-primary:hover   { opacity: 0.9; }
 .btn-absen-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-absen-secondary {
@@ -167,17 +134,8 @@
   color: #fff !important;
 }
 
-/* Notif HTTPS warning */
-.https-warning {
-  display: none;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  color: #fca5a5;
-  font-size: 13px;
-}
+/* Stats card text */
+#todayStatus, #lastCheckin, #thisMonth { color: #fff; }
 </style>
 {% endblock %}
 
@@ -206,22 +164,14 @@
       <div class="card" style="background:rgba(255,255,255,0.02);border:1px solid var(--clr-border)">
         <div class="card-body p-4">
 
-          <div class="https-warning" id="httpsWarning">
-            ⚠️ <strong>Kamera tidak bisa dibuka di HTTP.</strong>
-            Pastikan kamu mengakses halaman ini melalui <strong>HTTPS</strong> atau <strong>localhost</strong>.
-            Browser modern memblokir akses kamera di koneksi tidak aman.
-          </div>
-
           <!-- Status kamera -->
           <div id="cameraStatus" class="text-center mb-3" style="display:none">
             <span id="cameraStatusText" style="font-size:13px;color:var(--clr-text-muted)"></span>
           </div>
 
-          <!-- FIX: wrapper pakai position:relative agar overlay absolute bekerja -->
-          <div class="scanner-wrapper">
+          <div style="position:relative;margin-bottom:20px">
             <div id="qr-reader"></div>
-            <!-- FIX: overlay pakai class 'inactive' dulu, baru aktif setelah kamera buka -->
-            <div class="scanner-overlay inactive" id="scannerOverlay">
+            <div class="scanner-overlay">
               <div class="scanner-corners"><span></span></div>
               <div class="scan-line"></div>
             </div>
@@ -388,103 +338,106 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-
-  if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-    document.getElementById('httpsWarning').style.display = 'block';
-  }
-
   // ── State ─────────────────────────────────
-  let scanner      = null;
+  let html5QrCode  = null;
   let isProcessing = false;
   let currentToken = null;
-  let cameraStarted = false;
 
   // ── Bootstrap modals ──────────────────────
   const modalHasil      = new bootstrap.Modal(document.getElementById('modalHasil'));
   const modalIzinPulang = new bootstrap.Modal(document.getElementById('modalIzinPulang'));
   const modalOvertime   = new bootstrap.Modal(document.getElementById('modalOvertime'));
 
-  // ── Overlay helper — aktifkan setelah kamera nyala ────
-  function setOverlayActive(active) {
-    const overlay = document.getElementById('scannerOverlay');
-    if (active) {
-      overlay.classList.remove('inactive');
-    } else {
-      overlay.classList.add('inactive');
-    }
-  }
-
   // ── Camera status helper ───────────────────
   function setCameraStatus(msg, visible = true) {
     const el   = document.getElementById('cameraStatus');
     const text = document.getElementById('cameraStatusText');
-    text.textContent = msg;
-    el.style.display = visible ? 'block' : 'none';
+    text.textContent  = msg;
+    el.style.display  = visible ? 'block' : 'none';
   }
 
   // ── Scanner ───────────────────────────────
-  // FIX: Gunakan Html5QrcodeScanner bawaan dengan config yang benar
   function initScanner() {
-    if (scanner) return;
+    if (html5QrCode) return;
 
-    scanner = new Html5QrcodeScanner('qr-reader', {
-      fps: 10,
-      qrbox: { width: 250, height: 250 },
-      rememberLastUsedCamera: true,       // FIX: ingat kamera terakhir
-      showTorchButtonIfSupported: false,  // FIX: matikan torch agar UI bersih
-      aspectRatio: 1.0,
-      // FIX: JANGAN set supportedScanTypes agar tidak membatasi mode
-    });
+    // Cek HTTPS / localhost
+    const isSecure = location.protocol === 'https:' ||
+  location.hostname === 'localhost' ||
+  location.hostname === '127.0.0.1' ||
+  /^192\.168\./.test(location.hostname) ||
+  /^10\./.test(location.hostname) ||
+  /^172\.(1[6-9]|2\d|3[01])\./.test(location.hostname);
+    if (!isSecure) {
+      showScannerError(
+        '⚠️ Kamera membutuhkan koneksi HTTPS.<br>' +
+        'Gunakan input manual di bawah, atau minta admin aktifkan HTTPS.'
+      );
+      return;
+    }
 
-    scanner.render(
-      // onSuccess
+    // Cek API kamera tersedia
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showScannerError('Browser tidak mendukung akses kamera. Gunakan Chrome/Safari terbaru.');
+      return;
+    }
+
+    html5QrCode = new Html5Qrcode('qr-reader');
+    setCameraStatus('Meminta izin kamera…');
+
+    // Coba kamera belakang dulu, fallback ke kamera manapun
+    startCamera({ facingMode: { exact: 'environment' } })
+      .catch(() => {
+        setCameraStatus('Kamera belakang gagal, mencoba kamera lain…');
+        return startCamera({ facingMode: 'environment' });
+      })
+      .catch(() => {
+        setCameraStatus('Mencoba kamera depan…');
+        return startCamera({ facingMode: 'user' });
+      })
+      .catch(() => {
+        return startCamera(true); // deviceId: true → biarkan browser pilih
+      })
+      .then(() => {
+        setCameraStatus('', false); // sembunyikan status jika sukses
+      })
+      .catch(err => {
+        html5QrCode = null;
+        let msg = 'Kamera tidak bisa diakses.';
+        if (err && err.name === 'NotAllowedError') {
+          msg = '🚫 Izin kamera ditolak. Buka Pengaturan browser → izinkan kamera untuk situs ini.';
+        } else if (err && err.name === 'NotFoundError') {
+          msg = 'Kamera tidak ditemukan di perangkat ini.';
+        } else if (err && err.name === 'NotReadableError') {
+          msg = 'Kamera sedang digunakan aplikasi lain. Tutup aplikasi kamera lalu coba lagi.';
+        }
+        showScannerError(msg);
+      });
+  }
+
+  function startCamera(constraints) {
+    if (!html5QrCode) return Promise.reject(new Error('scanner not init'));
+    return html5QrCode.start(
+      constraints,
+      { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
       (decodedText) => {
         if (isProcessing) return;
         stopScanner();
-        setOverlayActive(false);
         handleToken(extractToken(decodedText));
       },
-      // onError (frame error — abaikan, ini normal)
-      () => {}
+      () => {} // frame error — abaikan
     );
-
-    // FIX: Pantau elemen video untuk mengaktifkan overlay saat kamera benar-benar nyala
-    watchForVideoElement();
-  }
-
-  // FIX: Poll sampai elemen video muncul, baru aktifkan overlay scan-line
-  function watchForVideoElement() {
-    const maxTries = 40; // 4 detik
-    let tries = 0;
-    const interval = setInterval(() => {
-      tries++;
-      const video = document.querySelector('#qr-reader video');
-      if (video) {
-        clearInterval(interval);
-        cameraStarted = true;
-        setOverlayActive(true);
-        setCameraStatus('Kamera aktif — arahkan ke QR code', true);
-        // Sembunyikan status setelah 3 detik
-        setTimeout(() => setCameraStatus('', false), 3000);
-      }
-      if (tries >= maxTries) {
-        clearInterval(interval);
-      }
-    }, 100);
   }
 
   function stopScanner() {
-    if (scanner) {
-      scanner.clear().catch(() => {});
-      scanner = null;
-      cameraStarted = false;
+    if (html5QrCode) {
+      html5QrCode.stop().catch(() => {});
+      html5QrCode = null;
     }
   }
 
   function restartScanner() {
     isProcessing = false;
     currentToken = null;
-    setOverlayActive(false);
     stopScanner();
     setTimeout(initScanner, 1200);
   }
@@ -497,6 +450,15 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch {
       return raw.trim();
     }
+  }
+
+  function showScannerError(msg) {
+    const el = document.getElementById('qr-reader');
+    el.innerHTML = `
+      <div style="padding:24px 16px;text-align:center;color:#fca5a5;font-size:13px;line-height:1.6">
+        ${msg}
+      </div>`;
+    setCameraStatus('', false);
   }
 
   // ── Manual input ──────────────────────────
@@ -571,7 +533,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     errorEl.style.display = 'none';
-    setLoadingBtn('izinSubmitBtn', 'izinSubmitText', 'izinSubmitSpinner', true, 'Menyimpan…');
+    setLoadingBtn('izinSubmitBtn', 'izinSubmitText', 'izinSubmitSpinner', true);
 
     postAbsen(currentToken, { keterangan_izin: keterangan })
       .then(data => {
@@ -584,7 +546,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showHasil('error', { error: 'Terjadi kesalahan koneksi.' });
       })
       .finally(() => {
-        setLoadingBtn('izinSubmitBtn', 'izinSubmitText', 'izinSubmitSpinner', false, 'Konfirmasi Pulang');
+        setLoadingBtn('izinSubmitBtn', 'izinSubmitText', 'izinSubmitSpinner', false);
         restartScanner();
       });
   });
@@ -612,7 +574,7 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
     errorEl.style.display = 'none';
-    setLoadingBtn('otSubmitBtn', 'otSubmitText', 'otSubmitSpinner', true, 'Menyimpan…');
+    setLoadingBtn('otSubmitBtn', 'otSubmitText', 'otSubmitSpinner', true);
 
     postAbsen(currentToken, { keterangan_overtime: keterangan })
       .then(data => {
@@ -625,7 +587,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showHasil('error', { error: 'Terjadi kesalahan koneksi.' });
       })
       .finally(() => {
-        setLoadingBtn('otSubmitBtn', 'otSubmitText', 'otSubmitSpinner', false, 'Konfirmasi Pulang');
+        setLoadingBtn('otSubmitBtn', 'otSubmitText', 'otSubmitSpinner', false);
         restartScanner();
       });
   });
@@ -702,12 +664,9 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // ── Helpers ───────────────────────────────
-  // FIX: loadingText parameter agar label bisa berbeda tiap tombol
-  function setLoadingBtn(btnId, textId, spinnerId, loading, loadingText) {
-    const btn  = document.getElementById(btnId);
-    const text = document.getElementById(textId);
-    btn.disabled     = loading;
-    text.textContent = loading ? (loadingText || 'Menyimpan…') : 'Konfirmasi Pulang';
+  function setLoadingBtn(btnId, textId, spinnerId, loading) {
+    document.getElementById(btnId).disabled     = loading;
+    document.getElementById(textId).textContent = loading ? 'Menyimpan…' : 'Konfirmasi Pulang';
     document.getElementById(spinnerId).classList.toggle('d-none', !loading);
   }
 
@@ -723,9 +682,9 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .then(r => r.json())
     .then(data => {
-      document.getElementById('todayStatus').textContent = data.status_display  || '-';
-      document.getElementById('lastCheckin').textContent = data.last_checkin     || '-';
-      document.getElementById('thisMonth').textContent   = data.this_month_count || '-';
+      document.getElementById('todayStatus').textContent = data.status_display    || '-';
+      document.getElementById('lastCheckin').textContent = data.last_checkin       || '-';
+      document.getElementById('thisMonth').textContent   = data.this_month_count   || '-';
     })
     .catch(() => {});
   }
@@ -733,18 +692,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // ── Init ──────────────────────────────────
   initScanner();
   loadTodayStatus();
-
-  // FIX: Pastikan kamera dimatikan saat navigasi keluar
   window.addEventListener('beforeunload', stopScanner);
-  // FIX: Tambahan untuk SPA / turbo navigation
-  document.addEventListener('turbo:before-visit', stopScanner);
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      stopScanner();
-    } else if (!scanner) {
-      setTimeout(initScanner, 500);
-    }
-  });
 });
 </script>
 {% endblock %}
