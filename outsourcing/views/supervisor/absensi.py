@@ -9,12 +9,13 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.timezone import localtime
 from django.views.decorators.http import require_POST
+from requests import request
 
 from outsourcing.decorators import supervisor_required
 from outsourcing.models import (
     QRAbsensi, QRTypeChoices,
     Absensi, OvertimeStatusChoices,
-    StaffSupervisor,
+    StaffSupervisor,IzinStaff, StatusIzinChoices,
 )
 from datetime import date
 from django.db.models import Q
@@ -29,9 +30,17 @@ def _qr_to_base64(url: str) -> str:
     return base64.b64encode(buf.getvalue()).decode()
 
 
-def _staff_ids(supervisor):
+def _staff_ids(user):
+
+    # Kepala Supervisor → semua staff
+    if user.role == 'kepala_supervisor':
+        return StaffSupervisor.objects.filter(
+            is_active=True
+        ).values_list('staff_id', flat=True)
+
+    # Supervisor biasa
     return StaffSupervisor.objects.filter(
-        supervisor=supervisor,
+        supervisor=user,
         is_active=True,
     ).values_list('staff_id', flat=True)
 
@@ -187,7 +196,7 @@ from django.db.models import Q
 def absensi_rekap(request):
     ids = _staff_ids(request.user)
 
-    bulan_filter   = request.GET.get('bulan', '').strip()   # format: "2025-05"
+    bulan_filter   = request.GET.get('bulan', '').strip()
     search_nama    = request.GET.get('q', '').strip()
     bulan_sekarang = date.today().strftime('%Y-%m')
 
@@ -199,20 +208,43 @@ def absensi_rekap(request):
     except ValueError:
         tahun_int, bulan_int = date.today().year, date.today().month
 
+    # ── Absensi ──────────────────────────────────────────────────
     absensi_qs = (
         Absensi.objects
         .filter(staff_id__in=ids)
         .select_related('staff', 'qr_masuk', 'qr_pulang')
         .order_by('-tanggal', 'waktu_masuk')
     )
-
     absensi_qs = absensi_qs.filter(
         tanggal__year=tahun_int,
         tanggal__month=bulan_int,
     )
 
+    # ── Izin — overlap dengan bulan yang dipilih ──────────────────
+    # Izin dianggap relevan jika tanggal_mulai atau tanggal_selesai
+    # masuk dalam bulan tersebut (bisa lintas bulan)
+    from calendar import monthrange
+    last_day = monthrange(tahun_int, bulan_int)[1]
+    bulan_start = date(tahun_int, bulan_int, 1)
+    bulan_end   = date(tahun_int, bulan_int, last_day)
+
+    izin_qs = (
+        IzinStaff.objects
+        .filter(staff_id__in=ids)
+        .select_related('staff', 'direview_oleh')
+        .filter(
+            tanggal_mulai__lte=bulan_end,
+            tanggal_selesai__gte=bulan_start,
+        )
+        .order_by('-tanggal_mulai')
+    )
+
     if search_nama:
         absensi_qs = absensi_qs.filter(
+            Q(staff__nama_lengkap__icontains=search_nama) |
+            Q(staff__username__icontains=search_nama)
+        )
+        izin_qs = izin_qs.filter(
             Q(staff__nama_lengkap__icontains=search_nama) |
             Q(staff__username__icontains=search_nama)
         )
@@ -228,6 +260,7 @@ def absensi_rekap(request):
 
     return render(request, 'supervisor/absensi/rekap.html', {
         'absensi_qs'    : absensi_qs,
+        'izin_qs'       : izin_qs,
         'bulan_filter'  : bulan_filter,
         'bulan_sekarang': bulan_sekarang,
         'bulan_tersedia': bulan_tersedia,
@@ -241,6 +274,11 @@ def absensi_rekap(request):
             is_overtime=True,
             overtime_status=OvertimeStatusChoices.BELUM_REVIEW,
         ).count(),
+        # stats izin
+        'total_izin'    : izin_qs.count(),
+        'izin_pending'  : izin_qs.filter(status=StatusIzinChoices.PENDING).count(),
+        'izin_approved' : izin_qs.filter(status=StatusIzinChoices.APPROVED).count(),
+        'izin_rejected' : izin_qs.filter(status=StatusIzinChoices.REJECTED).count(),
     })
 
 
@@ -395,3 +433,37 @@ def api_update_overtime_status(request, pk):
         'reviewed_by': absensi.overtime_reviewed_by.nama_lengkap
                        or absensi.overtime_reviewed_by.username,
     })
+
+
+
+@supervisor_required
+@require_POST
+def izin_review(request, pk):
+    ids    = _staff_ids(request.user)
+    izin   = get_object_or_404(IzinStaff, pk=pk, staff_id__in=ids)
+    action = request.POST.get('action')   # 'approved' | 'rejected'
+    catatan = request.POST.get('catatan', '').strip()
+    if action not in ('approved', 'rejected', 'pending'):  # tambah 'pending'
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': 'Action tidak valid.'}, status=400)
+        messages.error(request, 'Action tidak valid.')
+        return redirect(request.META.get('HTTP_REFERER', 'supervisor_absensi_rekap'))
+
+    izin.status = action
+    izin.catatan_supervisor = catatan
+    izin.direview_oleh = request.user if action != 'pending' else None
+    izin.direview_pada = timezone.now() if action != 'pending' else None
+    izin.save(update_fields=[
+        'status', 'catatan_supervisor',
+        'direview_oleh', 'direview_pada',
+    ])
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'new_status'       : izin.status,
+            'new_status_display': izin.get_status_display(),
+        })
+
+    label = 'disetujui' if action == 'approved' else 'ditolak'
+    messages.success(request, f'Izin {izin.staff.nama_lengkap} berhasil {label}.')
+    return redirect(request.META.get('HTTP_REFERER', 'supervisor_absensi_rekap'))

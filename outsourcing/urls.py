@@ -1,4 +1,5 @@
 from django.urls import path
+from outsourcing import views
 from outsourcing.views.auth import login_view, logout_view, dashboard_redirect
 from outsourcing.views.admin import (
     dashboard_view as admin_dashboard,
@@ -27,7 +28,7 @@ from outsourcing.views.supervisor import (
     staff_list as supervisor_staff_list, staff_create, staff_edit, staff_toggle_aktif, staff_delete,
     subarea_list, subarea_create, subarea_edit, subarea_delete,
     task_list, task_create, task_edit, task_delete,
-    customer_create,qr_list,qr_generate,qr_nonaktifkan,absensi_rekap,absensi_detail,izin_detail,izin_approve,izin_reject,izin_list
+    customer_create,qr_list,qr_generate,qr_nonaktifkan,absensi_rekap,absensi_detail,izin_review
 )
 from outsourcing.views.staff import (
     dashboard_view as staff_dashboard,
@@ -130,10 +131,7 @@ urlpatterns = [
     path('supervisor/laporan/bulanan/<int:perusahaan_id>/<int:tahun>/<int:bulan>/<int:jenis_jasa_id>/download/<str:format>/', 
         generate_laporan_bulanan, name='download_laporan_bulanan'),
     path('supervisor/absensi/<int:pk>/overtime-status/',api_update_overtime_status,name='supervisor_absensi_overtime_status',),
-    path('supervisor/izin/',                 izin_list,    name='supervisor_izin_list'),
-    path('supervisor/izin/<int:pk>/',        izin_detail,  name='supervisor_izin_detail'),
-    path('supervisor/izin/<int:pk>/approve/', izin_approve, name='supervisor_izin_approve'),
-    path('supervisor/izin/<int:pk>/reject/',  izin_reject,  name='supervisor_izin_reject'),
+    path('supervisor/absensi/izin/<int:pk>/review/', izin_review, name='supervisor_izin_review'),
 
 
     # Staff
