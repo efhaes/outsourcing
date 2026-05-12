@@ -727,6 +727,8 @@ class ItemKegiatan(models.Model):
         ]
 
 
+
+
 class OvertimeStatusChoices(models.TextChoices):
     BELUM_REVIEW = 'belum_review', 'Belum Direview'
     PAID         = 'paid',         'Dibayar'
@@ -911,6 +913,43 @@ class Absensi(models.Model):
             models.Index(fields=['staff', 'tanggal'],  name='idx_absensi_staff_tgl'),
         ]
  
+class TipeIzinChoices(models.TextChoices):
+    SAKIT           = 'sakit',    'Sakit'
+    CUTI            = 'cuti',     'Cuti'
+    URUSAN_KELUARGA = 'keluarga', 'Urusan Keluarga'
+    LAINNYA         = 'lainnya',  'Lainnya'
+
+class StatusIzinChoices(models.TextChoices):
+    PENDING  = 'pending',  'Menunggu Persetujuan'
+    APPROVED = 'approved', 'Disetujui'
+    REJECTED = 'rejected', 'Ditolak'
+
+class IzinStaff(models.Model):
+    staff           = models.ForeignKey(User, on_delete=models.CASCADE, related_name='izin')
+    tipe            = models.CharField(max_length=20, choices=TipeIzinChoices.choices)
+    tanggal_mulai   = models.DateField()
+    tanggal_selesai = models.DateField()
+    keterangan      = models.TextField(blank=True)
+    lampiran        = models.FileField(upload_to='izin/', null=True, blank=True)
+    status          = models.CharField(max_length=20, choices=StatusIzinChoices.choices, default=StatusIzinChoices.PENDING)
+    catatan_supervisor = models.TextField(blank=True)
+    direview_oleh   = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='izin_reviews')
+    direview_pada   = models.DateTimeField(null=True, blank=True)
+    dibuat_pada     = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = 'Izin Staff'
+        verbose_name_plural = 'Izin Staff'
+        ordering            = ['-dibuat_pada']
+
+    def __str__(self):
+        nama = self.staff.nama_lengkap or self.staff.username
+        return f"Izin {self.get_tipe_display()} — {nama} ({self.tanggal_mulai} s/d {self.tanggal_selesai})"
+
+    @property
+    def jumlah_hari(self):
+        return (self.tanggal_selesai - self.tanggal_mulai).days + 1
+
 
 class HariLiburNasional(models.Model):
     """

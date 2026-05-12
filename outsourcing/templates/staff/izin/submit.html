@@ -1,0 +1,171 @@
+{% extends 'staff/base_staff.html' %}
+{% block title %}Ajukan Izin{% endblock %}
+
+{% block content %}
+<div class="page-content" style="max-width:600px; margin:0 auto;">
+  <div class="mb-4">
+    <h5 class="mb-1" style="font-weight:600;color:var(--clr-text-primary)">Ajukan Izin</h5>
+    <p style="color:var(--clr-text-muted);font-size:13px;margin:0">Isi form di bawah untuk mengajukan izin</p>
+  </div>
+
+  {% if form.non_field_errors %}
+  <div style="margin-bottom:16px;padding:10px 14px;background:rgba(239,68,68,.08);
+              border:1px solid rgba(239,68,68,.2);border-radius:10px;
+              font-size:13px;color:#f87171;display:flex;align-items:center;gap:8px">
+    ⚠️
+    <div>{% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>
+  </div>
+  {% endif %}
+
+  <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid var(--clr-border);border-radius:16px">
+    <div class="card-body" style="padding:24px">
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Jenis Izin -->
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--clr-text-muted);margin-bottom:10px">
+            Jenis Izin <span style="color:#f87171">*</span>
+          </label>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px">
+           {% for val, label in form.tipe.field.choices %}
+                {% if val %}
+                <label style="cursor:pointer">
+                <input type="radio" name="tipe" value="{{ val }}"
+                        {% if form.tipe.value == val %}checked{% endif %}
+                        style="display:none" class="tipe-radio" />
+                <div class="tipe-card" data-tipe="{{ val }}"
+                    style="border:1px solid var(--clr-border);border-radius:12px;
+                            padding:10px 14px;display:flex;align-items:center;gap:10px;
+                            transition:all .15s">
+                    <span style="font-size:20px;width:30px;height:30px;display:flex;
+                                align-items:center;justify-content:center;
+                                background:rgba(255,255,255,0.05);border-radius:8px">
+                    {% if val == 'sakit' %}🤒
+                    {% elif val == 'cuti' %}🏖
+                    {% elif val == 'keluarga' %}👨‍👩‍👧
+                    {% else %}📝{% endif %}
+                    </span>
+                    <span style="font-size:13px;font-weight:500;color:var(--clr-text-primary)">{{ label }}</span>
+                </div>
+                </label>
+                {% endif %}
+                {% endfor %}
+          </div>
+          {% if form.tipe.errors %}
+          <div style="font-size:12px;color:#f87171;margin-top:6px">{{ form.tipe.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Tanggal -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--clr-text-muted);margin-bottom:6px">
+              Tanggal Mulai <span style="color:#f87171">*</span>
+            </label>
+            <input type="date" name="tanggal_mulai"
+                   value="{{ form.tanggal_mulai.value|default:'' }}"
+                   style="width:100%;box-sizing:border-box;padding:9px 12px;font-size:13px;
+                          color:var(--clr-text-primary);background:rgba(255,255,255,0.04);
+                          border:1px solid var(--clr-border);border-radius:10px;outline:none;
+                          color-scheme:dark" />
+            {% if form.tanggal_mulai.errors %}
+            <div style="font-size:12px;color:#f87171;margin-top:4px">{{ form.tanggal_mulai.errors.0 }}</div>
+            {% endif %}
+          </div>
+          <div>
+            <label style="display:block;font-size:13px;font-weight:500;color:var(--clr-text-muted);margin-bottom:6px">
+              Tanggal Selesai <span style="color:#f87171">*</span>
+            </label>
+            <input type="date" name="tanggal_selesai"
+                   value="{{ form.tanggal_selesai.value|default:'' }}"
+                   style="width:100%;box-sizing:border-box;padding:9px 12px;font-size:13px;
+                          color:var(--clr-text-primary);background:rgba(255,255,255,0.04);
+                          border:1px solid var(--clr-border);border-radius:10px;outline:none;
+                          color-scheme:dark" />
+            {% if form.tanggal_selesai.errors %}
+            <div style="font-size:12px;color:#f87171;margin-top:4px">{{ form.tanggal_selesai.errors.0 }}</div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Keterangan -->
+        <div style="margin-bottom:20px">
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--clr-text-muted);margin-bottom:6px">
+            Keterangan
+          </label>
+          <textarea name="keterangan" rows="3"
+                    placeholder="Jelaskan alasan izin kamu (opsional)..."
+                    style="width:100%;box-sizing:border-box;padding:10px 12px;font-size:13px;
+                           color:var(--clr-text-primary);background:rgba(255,255,255,0.04);
+                           border:1px solid var(--clr-border);border-radius:10px;
+                           outline:none;resize:vertical;font-family:inherit;line-height:1.6">{{ form.keterangan.value|default:'' }}</textarea>
+          {% if form.keterangan.errors %}
+          <div style="font-size:12px;color:#f87171;margin-top:4px">{{ form.keterangan.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Lampiran -->
+        <div style="margin-bottom:24px">
+          <label style="display:block;font-size:13px;font-weight:500;color:var(--clr-text-muted);margin-bottom:6px">
+            Lampiran <span id="lampiran-req" style="color:#f87171;display:none">*</span>
+          </label>
+          <label for="{{ form.lampiran.id_for_label }}"
+                 style="display:block;border:1px dashed var(--clr-border);border-radius:10px;
+                        padding:20px;text-align:center;cursor:pointer;transition:all .15s"
+                 id="upload-zone"
+                 onmouseover="this.style.borderColor='var(--clr-accent)'"
+                 onmouseout="this.style.borderColor='var(--clr-border)'">
+            <div style="font-size:22px;margin-bottom:6px">📎</div>
+            <div style="font-size:13px;color:var(--clr-text-muted)" id="upload-label">Klik untuk upload file</div>
+            <div style="font-size:11px;color:var(--clr-text-muted);margin-top:3px;opacity:.6">
+              PDF, JPG, PNG — maks. 5MB
+            </div>
+          </label>
+          <input type="file" name="lampiran" id="{{ form.lampiran.id_for_label }}"
+                 accept=".pdf,.jpg,.jpeg,.png" style="display:none"
+                 onchange="document.getElementById('upload-label').textContent = this.files[0]?.name || 'Klik untuk upload file'" />
+          <div id="sakit-note"
+               style="display:none;margin-top:8px;padding:8px 12px;
+                      background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2);
+                      border-radius:8px;font-size:12px;color:#facc15">
+            ⚠️ Surat dokter wajib dilampirkan untuk izin sakit.
+          </div>
+          {% if form.lampiran.errors %}
+          <div style="font-size:12px;color:#f87171;margin-top:4px">{{ form.lampiran.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div style="border-top:1px solid var(--clr-border);padding-top:20px;display:flex;gap:10px">
+          <button type="submit" class="btn"
+                  style="background:var(--clr-accent);color:#fff;border:none;font-size:13px;padding:9px 20px">
+            Kirim Pengajuan
+          </button>
+          <a href="{% url 'staff_absensi_riwayat' %}?tab=izin" class="btn"
+             style="background:rgba(255,255,255,0.06);color:var(--clr-text-primary);
+                    border:1px solid var(--clr-border);font-size:13px;padding:9px 16px">
+            Batal
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .tipe-card:hover { border-color: var(--clr-accent) !important; background: rgba(255,255,255,0.04); }
+  input[type=date]:focus, textarea:focus { border-color: var(--clr-accent) !important; box-shadow: 0 0 0 3px rgba(var(--clr-accent-rgb, 99,102,241),.12); }
+  .tipe-radio:checked + .tipe-card { border-color: var(--clr-accent) !important; background: rgba(255,255,255,0.06); }
+</style>
+
+<script>
+  document.querySelectorAll('.tipe-radio').forEach(r => {
+    r.addEventListener('change', function() {
+      const isSakit = this.value === 'sakit';
+      document.getElementById('sakit-note').style.display = isSakit ? 'block' : 'none';
+      document.getElementById('lampiran-req').style.display = isSakit ? 'inline' : 'none';
+    });
+  });
+</script>
+{% endblock %}

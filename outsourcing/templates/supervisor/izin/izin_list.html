@@ -1,0 +1,423 @@
+{% extends 'supervisor/base_supervisor.html' %}
+{% block title %}Pengajuan Izin{% endblock %}
+
+{% block extra_css %}
+<style>
+.izin-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--clr-border);
+  border-radius: 14px;
+  padding: 18px 20px;
+  transition: border-color .15s;
+}
+.izin-card:hover { border-color: rgba(255,255,255,.15); }
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.pill-pending  { background:rgba(234,179,8,.12);  color:#facc15; border:1px solid rgba(234,179,8,.25); }
+.pill-approved { background:rgba(34,197,94,.12);  color:#4ade80; border:1px solid rgba(34,197,94,.25); }
+.pill-rejected { background:rgba(239,68,68,.12);  color:#f87171; border:1px solid rgba(239,68,68,.25); }
+
+.filter-tab {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--clr-text-muted);
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: all .15s;
+}
+.filter-tab:hover { color: var(--clr-text-primary); background: rgba(255,255,255,.05); }
+.filter-tab.active {
+  background: rgba(99,102,241,.12);
+  color: #a5b4fc;
+  border-color: rgba(99,102,241,.25);
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: #1a1f35;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  padding: 28px;
+  width: 100%;
+  max-width: 420px;
+  animation: fadeUp .2s ease;
+}
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.modal-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--clr-text-primary);
+  margin-bottom: 16px;
+}
+.modal-textarea {
+  width: 100%;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--clr-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--clr-text-primary);
+  resize: vertical;
+  min-height: 90px;
+  outline: none;
+}
+.modal-textarea:focus {
+  border-color: var(--clr-accent);
+  box-shadow: 0 0 0 3px rgba(99,102,241,.15);
+}
+
+/* Toast */
+#toast {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  z-index: 9999;
+  min-width: 240px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .25s, transform .25s;
+  pointer-events: none;
+}
+#toast.show { opacity:1; transform:translateY(0); }
+#toast.success { background:rgba(34,197,94,.9);  border:1px solid rgba(34,197,94,.4); }
+#toast.error   { background:rgba(239,68,68,.9);  border:1px solid rgba(239,68,68,.4); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-content">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+      <h5 class="mb-1" style="font-weight:600;color:var(--clr-text-primary)">Pengajuan Izin</h5>
+      <p style="color:var(--clr-text-muted);font-size:13px;margin:0">Review izin staff di bawah supervision Anda</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-3 mb-4">
+    <div class="col-4">
+      <div class="card text-center py-3" style="background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2)">
+        <div style="color:#facc15;font-size:26px;font-weight:700">{{ total_pending }}</div>
+        <div style="color:var(--clr-text-muted);font-size:12px">Menunggu</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="card text-center py-3" style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2)">
+        <div style="color:#4ade80;font-size:26px;font-weight:700">{{ total_approved }}</div>
+        <div style="color:var(--clr-text-muted);font-size:12px">Disetujui</div>
+      </div>
+    </div>
+    <div class="col-4">
+      <div class="card text-center py-3" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)">
+        <div style="color:#f87171;font-size:26px;font-weight:700">{{ total_rejected }}</div>
+        <div style="color:var(--clr-text-muted);font-size:12px">Ditolak</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter tabs -->
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    <a href="?" class="filter-tab {% if not status_filter %}active{% endif %}">Semua</a>
+    <a href="?status=pending"  class="filter-tab {% if status_filter == 'pending'  %}active{% endif %}">⏳ Pending</a>
+    <a href="?status=approved" class="filter-tab {% if status_filter == 'approved' %}active{% endif %}">✓ Disetujui</a>
+    <a href="?status=rejected" class="filter-tab {% if status_filter == 'rejected' %}active{% endif %}">✕ Ditolak</a>
+  </div>
+
+  <!-- List -->
+  {% if izin_qs %}
+  <div style="display:flex;flex-direction:column;gap:10px">
+    {% for izin in izin_qs %}
+    <div class="izin-card" id="izin-{{ izin.pk }}">
+      <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+
+        <!-- Kiri: info -->
+        <div style="display:flex;gap:14px;align-items:flex-start">
+          <div style="font-size:26px;line-height:1;flex-shrink:0">
+            {% if izin.tipe == 'sakit' %}🤒
+            {% elif izin.tipe == 'cuti' %}🏖
+            {% elif izin.tipe == 'keluarga' %}👨‍👩‍👧
+            {% else %}📝{% endif %}
+          </div>
+          <div>
+            <!-- Nama staff -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <div style="width:26px;height:26px;background:linear-gradient(135deg,var(--clr-accent),#8b5cf6);
+                          border-radius:50%;display:flex;align-items:center;justify-content:center;
+                          font-size:10px;font-weight:700;color:#fff;flex-shrink:0">
+                {{ izin.staff.nama_lengkap|default:izin.staff.username|slice:":2"|upper }}
+              </div>
+              <span style="font-size:13px;font-weight:600;color:var(--clr-text-primary)">
+                {{ izin.staff.nama_lengkap|default:izin.staff.username }}
+              </span>
+            </div>
+
+            <div style="font-size:13px;font-weight:500;color:var(--clr-text-secondary)">
+              {{ izin.get_tipe_display }}
+              <span style="color:var(--clr-text-muted);font-weight:400">·</span>
+              <span style="color:var(--clr-text-muted);font-size:12px">
+                {% if izin.tanggal_mulai == izin.tanggal_selesai %}
+                  {{ izin.tanggal_mulai|date:"d M Y" }}
+                {% else %}
+                  {{ izin.tanggal_mulai|date:"d M Y" }} — {{ izin.tanggal_selesai|date:"d M Y" }}
+                  ({{ izin.jumlah_hari }} hari)
+                {% endif %}
+              </span>
+            </div>
+
+            {% if izin.keterangan %}
+            <div style="font-size:12px;color:var(--clr-text-muted);margin-top:5px;
+                        font-style:italic;max-width:460px">
+              "{{ izin.keterangan|truncatechars:120 }}"
+            </div>
+            {% endif %}
+
+            {% if izin.lampiran %}
+            <a href="{{ izin.lampiran.url }}" target="_blank"
+               style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;
+                      font-size:12px;color:#a5b4fc;text-decoration:none">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+              </svg>
+              Lihat Lampiran
+            </a>
+            {% endif %}
+
+            {% if izin.catatan_supervisor %}
+            <div style="margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.08);
+                        border:1px solid rgba(239,68,68,.2);border-radius:8px;
+                        font-size:12px;color:#f87171">
+              💬 {{ izin.catatan_supervisor }}
+            </div>
+            {% endif %}
+
+            <div style="font-size:11px;color:var(--clr-text-muted);margin-top:6px">
+              Diajukan {{ izin.dibuat_pada|date:"d M Y, H:i" }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Kanan: status + tombol -->
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+          <span class="status-pill pill-{{ izin.status }}" id="pill-{{ izin.pk }}">
+            {% if izin.status == 'pending' %}⏳ Menunggu
+            {% elif izin.status == 'approved' %}✓ Disetujui
+            {% else %}✕ Ditolak{% endif %}
+          </span>
+
+          {% if izin.status == 'pending' %}
+          <div style="display:flex;gap:6px">
+            <button onclick="approveIzin({{ izin.pk }})"
+                    class="btn btn-sm"
+                    style="background:rgba(34,197,94,.15);color:#4ade80;
+                           border:1px solid rgba(34,197,94,.3);font-size:12px;padding:5px 12px">
+              ✓ Setujui
+            </button>
+            <button onclick="openRejectModal({{ izin.pk }})"
+                    class="btn btn-sm"
+                    style="background:rgba(239,68,68,.12);color:#f87171;
+                           border:1px solid rgba(239,68,68,.25);font-size:12px;padding:5px 12px">
+              ✕ Tolak
+            </button>
+          </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="card">
+    <div class="card-body text-center py-5">
+      <div style="font-size:40px;margin-bottom:12px">📋</div>
+      <p style="color:var(--clr-text-muted);font-size:14px;margin:0">
+        {% if status_filter %}Tidak ada izin dengan status ini.
+        {% else %}Belum ada pengajuan izin.{% endif %}
+      </p>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- Modal Reject -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal-box">
+    <div class="modal-title">✕ Tolak Pengajuan Izin</div>
+    <p style="font-size:13px;color:var(--clr-text-muted);margin-bottom:12px">
+      Tuliskan alasan penolakan. Staff akan melihat catatan ini.
+    </p>
+    <textarea class="modal-textarea" id="rejectCatatan"
+              placeholder="Contoh: Tanggal tersebut sudah ada jadwal penting..."></textarea>
+    <div id="rejectError" style="font-size:12px;color:#f87171;margin-top:6px;display:none"></div>
+    <div class="d-flex gap-2 mt-3 justify-content-end">
+      <button onclick="closeRejectModal()" class="btn btn-sm"
+              style="background:rgba(255,255,255,.05);color:var(--clr-text-secondary);
+                     border:1px solid var(--clr-border);font-size:13px">
+        Batal
+      </button>
+      <button onclick="submitReject()" class="btn btn-sm"
+              style="background:rgba(239,68,68,.15);color:#f87171;
+                     border:1px solid rgba(239,68,68,.3);font-size:13px">
+        Tolak Izin
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let _rejectPk = null;
+
+function getCsrf() {
+  return document.cookie.split(';')
+    .find(c => c.trim().startsWith('csrftoken='))
+    ?.split('=')[1] || '';
+}
+
+// ── Approve ───────────────────────────────────
+function approveIzin(pk) {
+  fetch(`/supervisor/izin/${pk}/approve/`, {
+    method : 'POST',
+    headers: {
+      'X-Requested-With'  : 'XMLHttpRequest',
+      'X-CSRFToken'       : getCsrf(),
+    },
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      updatePill(pk, 'approved');
+      removeButtons(pk);
+      showToast(data.message, 'success');
+    } else {
+      showToast(data.error, 'error');
+    }
+  })
+  .catch(() => showToast('Terjadi kesalahan koneksi.', 'error'));
+}
+
+// ── Reject modal ──────────────────────────────
+function openRejectModal(pk) {
+  _rejectPk = pk;
+  document.getElementById('rejectCatatan').value = '';
+  document.getElementById('rejectError').style.display = 'none';
+  document.getElementById('rejectModal').classList.add('show');
+}
+
+function closeRejectModal() {
+  document.getElementById('rejectModal').classList.remove('show');
+  _rejectPk = null;
+}
+
+function submitReject() {
+  const catatan = document.getElementById('rejectCatatan').value.trim();
+  const errEl   = document.getElementById('rejectError');
+
+  if (!catatan) {
+    errEl.textContent    = 'Catatan penolakan wajib diisi.';
+    errEl.style.display  = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const fd = new FormData();
+  fd.append('catatan', catatan);
+
+  fetch(`/supervisor/izin/${_rejectPk}/reject/`, {
+    method : 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken'     : getCsrf(),
+    },
+    body: fd,
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      updatePill(_rejectPk, 'rejected');
+      removeButtons(_rejectPk);
+
+      // Tampilkan catatan supervisor
+      const card = document.getElementById(`izin-${_rejectPk}`);
+      const existing = card.querySelector('.catatan-supervisor-box');
+      if (!existing) {
+        const box = document.createElement('div');
+        box.className = 'catatan-supervisor-box';
+        box.style.cssText = 'margin-top:8px;padding:7px 12px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;font-size:12px;color:#f87171';
+        box.textContent = '💬 ' + data.catatan;
+        card.querySelector('[style*="flex-direction:column;gap"]')?.appendChild(box);
+      }
+
+      closeRejectModal();
+      showToast('Izin berhasil ditolak.', 'success');
+    } else {
+      errEl.textContent   = data.error;
+      errEl.style.display = 'block';
+    }
+  })
+  .catch(() => showToast('Terjadi kesalahan koneksi.', 'error'));
+}
+
+// ── Helpers ───────────────────────────────────
+function updatePill(pk, status) {
+  const pill = document.getElementById(`pill-${pk}`);
+  if (!pill) return;
+  pill.className = `status-pill pill-${status}`;
+  pill.textContent = status === 'approved' ? '✓ Disetujui' : '✕ Ditolak';
+}
+
+function removeButtons(pk) {
+  const card = document.getElementById(`izin-${pk}`);
+  card?.querySelectorAll('button').forEach(b => b.remove());
+}
+
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = `show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 3000);
+}
+
+// Tutup modal klik di luar
+document.getElementById('rejectModal').addEventListener('click', function(e) {
+  if (e.target === this) closeRejectModal();
+});
+</script>
+{% endblock %}

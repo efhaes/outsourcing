@@ -6,7 +6,7 @@ from django.utils.timezone import localtime
 from outsourcing.models import (
     QRAbsensi, QRTypeChoices,
     Absensi, AbsensiStatusChoices, OvertimeStatusChoices,
-    StaffSupervisor,
+    StaffSupervisor,IzinStaff,
 )
 from outsourcing.decorators import staff_required
 
@@ -168,7 +168,8 @@ def qr_scan_landing(request, token):
             absensi.is_overtime     = True
             absensi.overtime_status = OvertimeStatusChoices.BELUM_REVIEW
             absensi.status         = AbsensiStatusChoices.OVERTIME
-            update_fields += ['is_overtime', 'overtime_status']
+            absensi.catatan         = keterangan_ot
+            update_fields += ['is_overtime', 'overtime_status', 'catatan'] 
 
         absensi.waktu_pulang = now
         if not is_ot:
@@ -195,17 +196,50 @@ def qr_scan_landing(request, token):
 
 @staff_required
 def absensi_riwayat(request):
+    today = timezone.localdate()
+    bulan_filter = request.GET.get('bulan', '').strip()
+    if not bulan_filter:
+        bulan_filter = today.strftime('%Y-%m')
+
+    try:
+        tahun, bulan = map(int, bulan_filter.split('-'))
+    except (ValueError, AttributeError):
+        tahun, bulan = today.year, today.month
+        bulan_filter = today.strftime('%Y-%m')
+
     absensi_qs = (
         Absensi.objects
-        .filter(staff=request.user)
-        .select_related('qr_masuk', 'qr_masuk__supervisor', 'qr_pulang', 'qr_pulang__supervisor')
+        .filter(staff=request.user, tanggal__year=tahun, tanggal__month=bulan)
+        .select_related('qr_masuk', 'qr_masuk__supervisor', 'qr_pulang', 'qr_pulang__supervisor', 'overtime_reviewed_by')
         .order_by('-tanggal')
     )
+
+    bulan_tersedia = (
+        Absensi.objects
+        .filter(staff=request.user)
+        .dates('tanggal', 'month', order='DESC')
+    )
+
+    # Tambahan: semua izin milik staff ini
+    izin_qs = (
+        IzinStaff.objects
+        .filter(staff=request.user)
+        .order_by('-dibuat_pada')
+    )
+
+    active_tab = request.GET.get('tab', 'absensi')
+
     return render(request, 'staff/absensi/riwayat.html', {
-        'absensi_qs'  : absensi_qs,
-        'total'       : absensi_qs.count(),
-        'total_masuk' : absensi_qs.filter(waktu_masuk__isnull=False).count(),
-        'total_pulang': absensi_qs.filter(waktu_pulang__isnull=False).count(),
+        'absensi_qs'     : absensi_qs,
+        'total'          : absensi_qs.count(),
+        'total_masuk'    : absensi_qs.filter(waktu_masuk__isnull=False).count(),
+        'total_pulang'   : absensi_qs.filter(waktu_pulang__isnull=False).count(),
+        'total_overtime' : absensi_qs.filter(is_overtime=True).count(),
+        'bulan_filter'   : bulan_filter,
+        'bulan_tersedia' : bulan_tersedia,
+        'bulan_aktif'    : f"{tahun}-{bulan:02d}",
+        'izin_qs'        : izin_qs,
+        'active_tab'     : active_tab,
     })
 
 

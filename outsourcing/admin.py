@@ -273,4 +273,4 @@ class AbsensiAdmin(admin.ModelAdmin):
 
     @admin.display(description='Durasi')
     def durasi_kerja_str(self, obj):
-        return obj.durasi_str()
+         return obj.durasi_str

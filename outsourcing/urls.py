@@ -27,18 +27,21 @@ from outsourcing.views.supervisor import (
     staff_list as supervisor_staff_list, staff_create, staff_edit, staff_toggle_aktif, staff_delete,
     subarea_list, subarea_create, subarea_edit, subarea_delete,
     task_list, task_create, task_edit, task_delete,
-    customer_create,qr_list,qr_generate,qr_nonaktifkan,absensi_rekap,absensi_detail,
+    customer_create,qr_list,qr_generate,qr_nonaktifkan,absensi_rekap,absensi_detail,izin_detail,izin_approve,izin_reject,izin_list
 )
 from outsourcing.views.staff import (
     dashboard_view as staff_dashboard,
     item_list, item_update, item_update_jam,item_create_insidental,
-    qr_scan_landing, qr_scan_page, absensi_riwayat, api_today_status,
+    qr_scan_landing, qr_scan_page, absensi_riwayat, api_today_status,izin_submit,
+    izin_detail,
+    izin_batal,
 )
 from outsourcing.views.customer import (
     dashboard_view as customer_dashboard,
     laporan_list as customer_laporan_list, laporan_detail as customer_laporan_detail,
 )
 from outsourcing.views.reporting import generate_laporan_bulanan
+from outsourcing.views.supervisor.absensi import api_update_overtime_status
 urlpatterns = [
     # Auth: login, logout, dashboard redirect
     path('', login_view, name='login'),
@@ -126,6 +129,12 @@ urlpatterns = [
     path('supervisor/absensi/<int:pk>/', absensi_detail, name='supervisor_absensi_detail'),
     path('supervisor/laporan/bulanan/<int:perusahaan_id>/<int:tahun>/<int:bulan>/<int:jenis_jasa_id>/download/<str:format>/', 
         generate_laporan_bulanan, name='download_laporan_bulanan'),
+    path('supervisor/absensi/<int:pk>/overtime-status/',api_update_overtime_status,name='supervisor_absensi_overtime_status',),
+    path('supervisor/izin/',                 izin_list,    name='supervisor_izin_list'),
+    path('supervisor/izin/<int:pk>/',        izin_detail,  name='supervisor_izin_detail'),
+    path('supervisor/izin/<int:pk>/approve/', izin_approve, name='supervisor_izin_approve'),
+    path('supervisor/izin/<int:pk>/reject/',  izin_reject,  name='supervisor_izin_reject'),
+
 
     # Staff
     path('staff/', staff_dashboard, name='staff_dashboard'),
@@ -137,6 +146,8 @@ urlpatterns = [
     path('staff/absensi/scan/', qr_scan_page, name='staff_absensi_scan'),
     path('staff/absensi/riwayat/', absensi_riwayat, name='staff_absensi_riwayat'),
     path('staff/api/today-status/', api_today_status, name='staff_api_today_status'),
+    path('staff/izin/ajukan/',         izin_submit, name='staff_izin_submit'),
+    path('staff/izin/<int:pk>/batal/', izin_batal,  name='staff_izin_batal'),
 
     # Customer
     path('customer/', customer_dashboard, name='customer_dashboard'),

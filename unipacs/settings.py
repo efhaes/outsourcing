@@ -11,19 +11,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+SECRET_KEY = config('SECRET_KEY')
+DEBUG = config('DEBUG', default=False, cast=bool)
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='*').split(',')
 
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-c*e=8fm8zud$!s^1s27qd(@4+#25t+ejv^%b4ajt0b@g0t8(52'
-
-
-DEBUG = True
-
-ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -47,6 +42,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware'
 ]
  
 ROOT_URLCONF = 'unipacs.urls'
@@ -117,6 +113,7 @@ LOGIN_REDIRECT_URL = '/'
 STATIC_URL       = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'outsourcing' / 'static']
 STATIC_ROOT      = BASE_DIR / 'staticfiles'   # untuk collectstatic production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
  
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'

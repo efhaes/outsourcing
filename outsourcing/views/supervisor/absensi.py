@@ -16,8 +16,8 @@ from outsourcing.models import (
     Absensi, OvertimeStatusChoices,
     StaffSupervisor,
 )
-
-
+from datetime import date
+from django.db.models import Q
 # ─────────────────────────────────────────────
 # Helpers
 # ─────────────────────────────────────────────
@@ -59,6 +59,10 @@ def qr_list(request):
 @supervisor_required
 def qr_generate(request):
     hari_ini  = timezone.localdate()
+    akhir_hari = timezone.make_aware(
+        datetime.combine(hari_ini, time(23, 59, 59))
+    )
+
     qr_masuk  = QRAbsensi.objects.filter(
         supervisor=request.user, tanggal=hari_ini, tipe=QRTypeChoices.MASUK,
     ).first()
@@ -91,25 +95,27 @@ def qr_generate(request):
 
         if qr_masuk:
             qr_masuk.jam_berlaku_mulai = jam_masuk_dt
-            qr_masuk.save(update_fields=['jam_berlaku_mulai'])
+            qr_masuk.berlaku_hingga    = akhir_hari
+            qr_masuk.save(update_fields=['jam_berlaku_mulai', 'berlaku_hingga'])
         else:
             qr_masuk = QRAbsensi.objects.create(
                 supervisor=request.user,
                 tanggal=hari_ini,
                 tipe=QRTypeChoices.MASUK,
-                berlaku_hingga=timezone.now() + timedelta(hours=12),
+                berlaku_hingga=akhir_hari,
                 jam_berlaku_mulai=jam_masuk_dt,
             )
 
         if qr_pulang:
             qr_pulang.jam_berlaku_mulai = jam_pulang_dt
-            qr_pulang.save(update_fields=['jam_berlaku_mulai'])
+            qr_pulang.berlaku_hingga    = akhir_hari
+            qr_pulang.save(update_fields=['jam_berlaku_mulai', 'berlaku_hingga'])
         else:
             qr_pulang = QRAbsensi.objects.create(
                 supervisor=request.user,
                 tanggal=hari_ini,
                 tipe=QRTypeChoices.PULANG,
-                berlaku_hingga=timezone.now() + timedelta(hours=12),
+                berlaku_hingga=akhir_hari,
                 jam_berlaku_mulai=jam_pulang_dt,
             )
 
@@ -174,12 +180,25 @@ def qr_nonaktifkan(request, pk):
 # ─────────────────────────────────────────────
 # Rekap Absensi
 # ─────────────────────────────────────────────
+from datetime import date
+from django.db.models import Q
 
 @supervisor_required
 def absensi_rekap(request):
     ids = _staff_ids(request.user)
 
-    tanggal_filter = request.GET.get('tanggal', '').strip()
+    bulan_filter   = request.GET.get('bulan', '').strip()   # format: "2025-05"
+    search_nama    = request.GET.get('q', '').strip()
+    bulan_sekarang = date.today().strftime('%Y-%m')
+
+    if not bulan_filter:
+        bulan_filter = bulan_sekarang
+
+    try:
+        tahun_int, bulan_int = map(int, bulan_filter.split('-'))
+    except ValueError:
+        tahun_int, bulan_int = date.today().year, date.today().month
+
     absensi_qs = (
         Absensi.objects
         .filter(staff_id__in=ids)
@@ -187,20 +206,37 @@ def absensi_rekap(request):
         .order_by('-tanggal', 'waktu_masuk')
     )
 
-    if tanggal_filter:
-        absensi_qs = absensi_qs.filter(tanggal=tanggal_filter)
+    absensi_qs = absensi_qs.filter(
+        tanggal__year=tahun_int,
+        tanggal__month=bulan_int,
+    )
+
+    if search_nama:
+        absensi_qs = absensi_qs.filter(
+            Q(staff__nama_lengkap__icontains=search_nama) |
+            Q(staff__username__icontains=search_nama)
+        )
+
+    bulan_tersedia = (
+        Absensi.objects
+        .filter(staff_id__in=ids)
+        .dates('tanggal', 'month', order='DESC')
+    )
 
     total       = absensi_qs.count()
     total_masuk = absensi_qs.filter(waktu_masuk__isnull=False).count()
 
     return render(request, 'supervisor/absensi/rekap.html', {
         'absensi_qs'    : absensi_qs,
-        'tanggal_filter': tanggal_filter,
+        'bulan_filter'  : bulan_filter,
+        'bulan_sekarang': bulan_sekarang,
+        'bulan_tersedia': bulan_tersedia,
+        'search_nama'   : search_nama,
         'total'         : total,
         'total_masuk'   : total_masuk,
         'total_pulang'  : absensi_qs.filter(waktu_pulang__isnull=False).count(),
         'total_overtime': absensi_qs.filter(is_overtime=True).count(),
-        'belum_masuk'   : total - total_masuk,   # ← FIX: kirim langsung, bukan hitung di template
+        'belum_masuk'   : total - total_masuk,
         'belum_review'  : absensi_qs.filter(
             is_overtime=True,
             overtime_status=OvertimeStatusChoices.BELUM_REVIEW,
@@ -221,7 +257,7 @@ def absensi_detail(request, pk):
     )
     return render(request, 'supervisor/absensi/detail.html', {
         'absensi': absensi,
-        'durasi' : absensi.durasi_str,   # ← FIX: tanpa () karena sudah @property
+        'durasi' : absensi.durasi_str,
     })
 
 
@@ -280,12 +316,10 @@ def overtime_klasifikasi(request, absensi_id):
         'overtime_reviewed_at',
     ])
 
-    nama  = absensi.staff.nama_lengkap or absensi.staff.username
-    label = '💰 Dibayar' if keputusan == OvertimeStatusChoices.PAID else '🔵 Tidak Dibayar'
-    reviewer_nama = (
-        absensi.overtime_reviewed_by.nama_lengkap
-        or absensi.overtime_reviewed_by.username
-    )
+    nama      = absensi.staff.nama_lengkap or absensi.staff.username
+    label     = '💰 Dibayar' if keputusan == OvertimeStatusChoices.PAID else '🔵 Tidak Dibayar'
+    reviewer  = absensi.overtime_reviewed_by
+    reviewer_nama = reviewer.nama_lengkap or reviewer.username
 
     return JsonResponse({
         'ok'         : True,
@@ -295,4 +329,69 @@ def overtime_klasifikasi(request, absensi_id):
         'absensi_id' : absensi.id,
         'reviewed_at': localtime(absensi.overtime_reviewed_at).strftime('%d/%m/%Y %H:%M'),
         'reviewed_by': reviewer_nama,
+    })
+
+
+# ─────────────────────────────────────────────
+# Overtime — Update Status dari Rekap (AJAX POST)
+# Digunakan oleh dropdown pill di halaman rekap absensi
+# ─────────────────────────────────────────────
+
+@supervisor_required
+@require_POST
+def api_update_overtime_status(request, pk):
+    """
+    POST /supervisor/absensi/<pk>/overtime-status/
+    Body: { status: 'paid' | 'unpaid' | 'belum_review' }
+
+    Berbeda dengan overtime_klasifikasi:
+    - Bisa set ke 3 status (termasuk reset ke belum_review)
+    - Dipanggil dari dropdown pill di halaman rekap
+    - Tidak memerlukan is_overtime=True sebagai filter get_object_or_404
+      (sudah dicek manual agar pesan error lebih jelas)
+    """
+    if request.headers.get('X-Requested-With') != 'XMLHttpRequest':
+        return JsonResponse({'ok': False, 'error': 'Request tidak valid.'}, status=400)
+
+    # Ambil absensi — pastikan staff-nya di bawah supervisor ini
+    absensi = get_object_or_404(
+        Absensi,
+        pk=pk,
+        staff_id__in=_staff_ids(request.user),
+    )
+
+    if not absensi.is_overtime:
+        return JsonResponse({'success': False, 'error': 'Absensi ini tidak memiliki overtime.'}, status=400)
+
+    new_status = request.POST.get('status', '').strip()
+    valid = [c[0] for c in OvertimeStatusChoices.choices]  # ['belum_review', 'paid', 'unpaid']
+
+    if new_status not in valid:
+        return JsonResponse({
+            'success': False,
+            'error'  : f'Status tidak valid. Pilihan: {", ".join(valid)}',
+        }, status=400)
+
+    absensi.overtime_status      = new_status
+    absensi.overtime_reviewed_by = request.user
+    absensi.overtime_reviewed_at = timezone.now()
+    absensi.save(update_fields=[
+        'overtime_status',
+        'overtime_reviewed_by',
+        'overtime_reviewed_at',
+    ])
+
+    label_map = {
+        OvertimeStatusChoices.PAID        : '💰 Dibayar',
+        OvertimeStatusChoices.UNPAID      : '🔵 Tidak Dibayar',
+        OvertimeStatusChoices.BELUM_REVIEW: '⏱ Belum Review',
+    }
+
+    return JsonResponse({
+        'success'    : True,
+        'status'     : new_status,
+        'label'      : label_map.get(new_status, new_status),
+        'reviewed_at': localtime(absensi.overtime_reviewed_at).strftime('%d/%m/%Y %H:%M'),
+        'reviewed_by': absensi.overtime_reviewed_by.nama_lengkap
+                       or absensi.overtime_reviewed_by.username,
     })
