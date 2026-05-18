@@ -2,7 +2,7 @@ from .dashboard import dashboard_view
 from .akun import (
     supervisor_list, supervisor_create,
     supervisor_edit, supervisor_toggle_aktif,
-    staff_list
+    staff_list,pilih_supervisor,set_acting_supervisor,clear_acting_supervisor
 )
 from .penugasan import (
     penugasan_list, penugasan_create, penugasan_edit, penugasan_delete

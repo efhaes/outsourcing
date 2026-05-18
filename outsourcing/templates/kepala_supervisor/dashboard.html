@@ -2,561 +2,907 @@
 
 {% block extra_css %}
 <style>
-.dash-header {
+/* ── LAYOUT ───────────────────────────────────────────── */
+.ks-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-bottom: 2rem;
+}
+
+/* ── HEADER ───────────────────────────────────────────── */
+.ks-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
+    align-items: flex-start;
     flex-wrap: wrap;
     gap: 12px;
 }
-.dash-header h5 {
-    font-size: 1.1rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
+.ks-header-left h5 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 2px;
+    color: var(--clr-text-primary);
+    letter-spacing: -.01em;
+}
+.ks-header-left p {
+    font-size: 12px;
+    color: var(--clr-text-muted);
     margin: 0;
 }
 .filter-form {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
-    background: var(--clr-surface);
+    background: rgba(255,255,255,0.04);
     border: 1px solid var(--clr-border);
-    border-radius: 10px;
-    padding: 6px 10px;
+    border-radius: var(--radius-md);
+    padding: 5px 8px;
+    flex-wrap: wrap;
 }
 .filter-form select {
     border: none;
     background: transparent;
-    font-size: 13px;
-    color: var(--clr-text);
+    font-size: 12.5px;
+    color: var(--clr-text-primary);
     outline: none;
     cursor: pointer;
+    min-width: 80px;
+    font-family: var(--font-base);
+}
+.filter-form select option {
+    background: #0c1327;
+    color: var(--clr-text-primary);
 }
 .filter-form button {
     font-size: 12px;
-    padding: 4px 12px;
-    border-radius: 6px;
+    padding: 4px 14px;
+    border-radius: var(--radius-sm);
     border: none;
-    background: #0d6efd;
+    background: var(--clr-accent);
     color: #fff;
     cursor: pointer;
     font-weight: 600;
+    font-family: var(--font-base);
+    white-space: nowrap;
+    transition: background var(--transition);
 }
+.filter-form button:hover { background: #4f46e5; }
 
-/* Stat Grid */
+/* ── STAT CARDS ───────────────────────────────────────── */
 .stat-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    margin-bottom: 1.25rem;
+    gap: 10px;
 }
-@media (max-width: 768px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 400px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
 .stat-card {
-    background: var(--clr-surface);
+    background: rgba(255,255,255,0.04);
     border: 1px solid var(--clr-border);
-    border-radius: 14px;
-    padding: 1rem 1.1rem;
+    border-radius: var(--radius-lg);
+    padding: 14px;
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
     position: relative;
     overflow: hidden;
+    transition: border-color var(--transition), background var(--transition);
 }
-.stat-card::before {
+.stat-card:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: var(--clr-border-strong);
+}
+.stat-card::after {
     content: '';
     position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 3px;
-    border-radius: 14px 14px 0 0;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
 }
-.stat-card.blue::before  { background: #3b82f6; }
-.stat-card.green::before { background: #22c55e; }
-.stat-card.amber::before { background: #f59e0b; }
-.stat-card.teal::before  { background: #14b8a6; }
+.sc-accent::after  { background: var(--clr-accent); }
+.sc-success::after { background: var(--clr-success); }
+.sc-warning::after { background: var(--clr-warning); }
+.sc-danger::after  { background: var(--clr-danger); }
+.sc-teal::after    { background: #14b8a6; }
+.sc-purple::after  { background: #8b5cf6; }
+
 .stat-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 38px; height: 38px;
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
     font-size: 1rem;
+    flex-shrink: 0;
+    border: 1px solid var(--clr-border);
 }
-.stat-icon.blue  { background: #eff6ff; color: #3b82f6; }
-.stat-icon.green { background: #f0fdf4; color: #22c55e; }
-.stat-icon.amber { background: #fffbeb; color: #f59e0b; }
-.stat-icon.teal  { background: #f0fdfa; color: #14b8a6; }
+.si-accent  { background: var(--clr-accent-light);   color: #a5b4fc; }
+.si-success { background: var(--clr-success-light);  color: var(--clr-success); }
+.si-warning { background: var(--clr-warning-light);  color: var(--clr-warning); }
+.si-danger  { background: var(--clr-danger-light);   color: var(--clr-danger); }
+.si-teal    { background: rgba(20,184,166,.12);       color: #2dd4bf; }
+.si-purple  { background: rgba(139,92,246,.12);       color: #c4b5fd; }
+
 .stat-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .06em;
     text-transform: uppercase;
     color: var(--clr-text-muted);
+    margin-bottom: 2px;
 }
 .stat-value {
-    font-size: 1.9rem;
+    font-size: 1.7rem;
     font-weight: 700;
     line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--clr-text);
+    letter-spacing: -.025em;
+    color: var(--clr-text-primary);
 }
-
-/* Chart Cards */
-.chart-card {
-    background: var(--clr-surface);
-    border: 1px solid var(--clr-border);
-    border-radius: 14px;
-    padding: 1.25rem 1.5rem;
-    height: 100%;
-}
-.chart-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.25rem;
-}
-.chart-card-title {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--clr-text);
-    margin: 0;
-}
-.chart-card-sub {
-    font-size: 11.5px;
-    color: var(--clr-text-muted);
-    margin-top: 2px;
-}
-
-/* Bottom Tables */
-.section-card {
-    background: var(--clr-surface);
-    border: 1px solid var(--clr-border);
-    border-radius: 14px;
-    overflow: hidden;
-    height: 100%;
-}
-.section-card-header {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--clr-border);
-    background: var(--clr-bg);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-.section-card-title {
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--clr-text-muted);
-    margin: 0;
-}
-.section-card .table { margin: 0; font-size: 13px; }
-.section-card .table thead th {
+.stat-sub {
     font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    color: var(--clr-text-muted);
+    margin-top: 3px;
+}
+
+/* ── KS CARD ──────────────────────────────────────────── */
+.ks-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+.ks-card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--clr-border);
+    background: rgba(255,255,255,0.02);
+}
+.ks-card-title {
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .07em;
     text-transform: uppercase;
     color: var(--clr-text-muted);
-    background: var(--clr-bg);
-    border-bottom: 1px solid var(--clr-border);
-    padding: 9px 16px;
+    margin: 0;
 }
-.section-card .table tbody td {
-    padding: 10px 16px;
-    vertical-align: middle;
-    border-bottom: 1px solid var(--clr-border);
-    color: var(--clr-text);
+.ks-card-link {
+    font-size: 12px;
+    color: #a5b4fc;
+    text-decoration: none;
+    transition: color var(--transition);
 }
-.section-card .table tbody tr:last-child td { border-bottom: none; }
-.section-card .table tbody tr { transition: background 0.1s; }
-.section-card .table tbody tr:hover { background: var(--clr-bg); }
+.ks-card-link:hover { color: var(--clr-text-primary); }
+.ks-card-body { padding: 14px 16px; }
 
-/* Item hari ini */
-.item-feed { padding: 0; }
-.item-feed-row {
+/* ── COMPLETION BANNER ────────────────────────────────── */
+.completion-banner {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    transition: border-color var(--transition);
+}
+.completion-banner:hover { border-color: var(--clr-border-strong); }
+.cb-donut-wrap {
+    position: relative;
+    width: 72px; height: 72px;
+    flex-shrink: 0;
+}
+.cb-donut-wrap canvas { position: absolute; top: 0; left: 0; }
+.cb-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+.cb-pct {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+    line-height: 1;
+}
+.cb-info { flex: 1; min-width: 130px; }
+.cb-label { font-size: 13px; font-weight: 600; color: var(--clr-text-primary); margin-bottom: 4px; }
+.cb-sub { font-size: 12px; color: var(--clr-text-muted); }
+.cb-stats { display: flex; gap: 16px; flex-wrap: wrap; }
+.cb-stat { text-align: center; }
+.cb-stat-val { font-size: 1.5rem; font-weight: 700; color: var(--clr-text-primary); line-height: 1; }
+.cb-stat-label { font-size: 10.5px; color: var(--clr-text-muted); margin-top: 3px; }
+
+/* ── PROGRESS PER SPV ─────────────────────────────────── */
+.spv-row {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 16px;
+    padding: 11px 16px;
     border-bottom: 1px solid var(--clr-border);
-    transition: background 0.1s;
+    transition: background var(--transition);
 }
-.item-feed-row:last-child { border-bottom: none; }
-.item-feed-row:hover { background: var(--clr-bg); }
-.item-dot {
-    width: 10px;
-    height: 10px;
+.spv-row:last-child { border-bottom: none; }
+.spv-row:hover { background: rgba(255,255,255,0.03); }
+.spv-avatar {
+    width: 32px; height: 32px;
     border-radius: 50%;
+    background: var(--clr-accent-light);
+    color: #a5b4fc;
+    border: 1px solid var(--clr-accent-mid);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
     flex-shrink: 0;
 }
-.item-dot.terjadwal  { background: #94a3b8; }
-.item-dot.on_progress { background: #f59e0b; }
-.item-dot.selesai    { background: #22c55e; }
-.item-feed-name { font-weight: 500; font-size: 13px; color: var(--clr-text); flex: 1; }
-.item-feed-meta { font-size: 11.5px; color: var(--clr-text-muted); }
+.spv-info { flex: 1; min-width: 0; }
+.spv-name {
+    font-size: 13px; font-weight: 500;
+    color: var(--clr-text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.spv-meta { font-size: 11px; color: var(--clr-text-muted); margin-top: 1px; }
+.spv-bars { display: flex; flex-direction: column; gap: 4px; width: 140px; flex-shrink: 0; }
+.progress-wrap { display: flex; align-items: center; gap: 6px; }
+.progress-label { font-size: 10px; color: var(--clr-text-muted); width: 46px; text-align: right; flex-shrink: 0; }
+.progress-track {
+    flex: 1; height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.08);
+    overflow: hidden;
+}
+.progress-fill { height: 100%; border-radius: 2px; transition: width .5s ease; }
+.pf-accent  { background: var(--clr-accent); }
+.pf-success { background: var(--clr-success); }
+.pf-muted   { background: rgba(255,255,255,0.2); }
+.spv-pct {
+    font-size: 12px; font-weight: 600;
+    color: var(--clr-text-secondary);
+    width: 34px; text-align: right; flex-shrink: 0;
+}
 
-/* Status badge */
-.status-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; }
-.status-badge::before { content:''; width:5px; height:5px; border-radius:50%; display:inline-block; }
-.s-draft    { background:#f1f5f9; color:#64748b; }
-.s-draft::before    { background:#94a3b8; }
-.s-selesai  { background:#eff6ff; color:#1d4ed8; }
-.s-selesai::before  { background:#3b82f6; }
-.s-dikirim  { background:#ecfdf5; color:#065f46; }
-.s-dikirim::before  { background:#10b981; }
+/* ── NOTIFIKASI ───────────────────────────────────────── */
+.notif-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--clr-border);
+    transition: background var(--transition);
+}
+.notif-row:last-child { border-bottom: none; }
+.notif-row:hover { background: rgba(255,255,255,0.03); }
+.notif-icon {
+    width: 30px; height: 30px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--clr-border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0; margin-top: 1px;
+}
+.ni-danger  { background: var(--clr-danger-light);  color: var(--clr-danger); }
+.ni-warning { background: var(--clr-warning-light); color: var(--clr-warning); }
+.ni-accent  { background: var(--clr-accent-light);  color: #a5b4fc; }
+.ni-purple  { background: rgba(139,92,246,.12);      color: #c4b5fd; }
+.notif-text { flex: 1; font-size: 12.5px; color: var(--clr-text-secondary); line-height: 1.45; }
+.notif-text strong { color: var(--clr-text-primary); }
+.notif-meta { font-size: 11px; color: var(--clr-text-muted); margin-top: 3px; }
+.notif-meta a { color: #a5b4fc; text-decoration: none; }
+.notif-meta a:hover { text-decoration: underline; }
 
-.laporan-link { font-weight:500; font-size:13px; color:var(--clr-text); text-decoration:none; }
-.laporan-link:hover { color:#0d6efd; }
-.cell-muted { font-size:12.5px; color:var(--clr-text-muted); }
+/* ── TABLE ────────────────────────────────────────────── */
+.ks-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ks-table thead th {
+    font-size: 10.5px; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--clr-text-muted);
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--clr-border);
+    padding: 8px 14px; white-space: nowrap;
+}
+.ks-table tbody td {
+    padding: 9px 14px;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--clr-border);
+    color: var(--clr-text-secondary);
+}
+.ks-table tbody tr:last-child td { border-bottom: none; }
+.ks-table tbody tr { transition: background var(--transition); }
+.ks-table tbody tr:hover td { background: rgba(255,255,255,0.03); }
+.td-name { font-weight: 500; color: var(--clr-text-primary); }
+.td-muted { font-size: 12px; color: var(--clr-text-muted); }
 
-/* Donut legend */
-.donut-legend { display:flex; flex-direction:column; gap:8px; justify-content:center; }
-.legend-item { display:flex; align-items:center; gap:8px; font-size:12.5px; }
-.legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-.legend-label { color:var(--clr-text-muted); flex:1; }
-.legend-val { font-weight:600; color:var(--clr-text); }
+/* ── BADGE ────────────────────────────────────────────── */
+.ks-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 9px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.ks-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; display: inline-block; }
+.kb-draft::before   { background: var(--clr-text-muted); }
+.kb-selesai::before { background: var(--clr-success); }
+.kb-dikirim::before { background: var(--clr-accent); }
+.kb-belum::before   { background: var(--clr-danger); }
+.kb-pending::before { background: var(--clr-warning); }
+.kb-draft   { background: rgba(255,255,255,0.07); color: var(--clr-text-secondary); }
+.kb-selesai { background: var(--clr-success-light); color: var(--clr-success); }
+.kb-dikirim { background: var(--clr-accent-light);  color: #a5b4fc; }
+.kb-belum   { background: var(--clr-danger-light);  color: var(--clr-danger); }
+.kb-pending { background: var(--clr-warning-light); color: var(--clr-warning); }
+
+/* ── ABSENSI GRID ─────────────────────────────────────── */
+.absen-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.absen-item {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 10px 6px; border-radius: var(--radius-md);
+    border: 1px solid var(--clr-border);
+    background: rgba(255,255,255,0.03);
+    gap: 4px; transition: border-color var(--transition);
+}
+.absen-item:hover { border-color: var(--clr-border-strong); }
+.absen-dot { width: 8px; height: 8px; border-radius: 50%; }
+.absen-count { font-size: 1.3rem; font-weight: 700; color: var(--clr-text-primary); line-height: 1; }
+.absen-label { font-size: 10.5px; color: var(--clr-text-muted); text-align: center; }
+
+/* ── LEGEND ───────────────────────────────────────────── */
+.legend-list { display: flex; flex-direction: column; gap: 7px; }
+.legend-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-name { flex: 1; color: var(--clr-text-muted); }
+.legend-val { font-weight: 600; color: var(--clr-text-primary); }
+
+/* ── LAPORAN & ITEM FEED ──────────────────────────────── */
+.lap-row, .item-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--clr-border);
+    transition: background var(--transition);
+}
+.item-row { padding: 8px 16px; }
+.lap-row:last-child, .item-row:last-child { border-bottom: none; }
+.lap-row:hover, .item-row:hover { background: rgba(255,255,255,0.03); }
+.lap-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.lap-info { flex: 1; min-width: 0; }
+.lap-name {
+    font-size: 13px; font-weight: 500; color: var(--clr-text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    text-decoration: none; display: block;
+}
+.lap-name:hover { color: #a5b4fc; }
+.lap-sub, .item-sub { font-size: 11px; color: var(--clr-text-muted); margin-top: 1px; }
+.lap-date, .item-time { font-size: 11px; color: var(--clr-text-muted); flex-shrink: 0; text-align: right; }
+.item-name {
+    font-size: 12.5px; font-weight: 500; color: var(--clr-text-secondary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* ── EMPTY STATE ──────────────────────────────────────── */
+.empty-state {
+    text-align: center; padding: 2.5rem 1rem;
+    color: var(--clr-text-muted); font-size: 13px;
+}
+.empty-state i { font-size: 2rem; opacity: .2; display: block; margin-bottom: 10px; }
+
+/* ── PER SPV ABSENSI ──────────────────────────────────── */
+.spv-absen-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 5px 0; font-size: 12px;
+    border-bottom: 1px solid var(--clr-border);
+}
+.spv-absen-row:last-child { border-bottom: none; }
+.spv-absen-name { color: var(--clr-text-secondary); font-weight: 500; }
+.spv-absen-count { color: var(--clr-text-muted); }
+
+/* ── RESPONSIVE ───────────────────────────────────────── */
+@media (max-width: 991px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .spv-bars  { width: 110px; }
+}
+@media (max-width: 767px) {
+    .spv-bars  { display: none; }
+    .spv-pct   { display: none; }
+    .ks-header { flex-direction: column; align-items: stretch; }
+    .filter-form { justify-content: space-between; }
+    .cb-stats  { justify-content: center; }
+    .completion-banner { gap: 14px; }
+}
+@media (max-width: 480px) {
+    .stat-grid  { grid-template-columns: repeat(2, 1fr); }
+    .stat-value { font-size: 1.45rem; }
+    .cb-pct     { font-size: 13px; }
+}
 </style>
 {% endblock %}
 
+
 {% block content %}
+<div class="ks-wrap">
 
-<!-- Header + Filter -->
-<div class="dash-header">
-    <h5>{{ page_title }}</h5>
-    <form method="get" class="filter-form">
-        <select name="bulan">
-            {% for val, label in bulan_choices %}
-            <option value="{{ val }}" {% if val == bulan %}selected{% endif %}>{{ label }}</option>
-            {% endfor %}
-        </select>
-        <select name="tahun">
-            {% for y in tahun_choices %}
-            <option value="{{ y }}" {% if y == tahun %}selected{% endif %}>{{ y }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit">Terapkan</button>
-    </form>
-</div>
+    <!-- ── HEADER ─────────────────────────────────────── -->
+    <div class="ks-header">
+        <div class="ks-header-left">
+            <h5>{{ page_title|default:"Dashboard Kepala Supervisor" }}</h5>
+            <p>
+                Monitoring bulan
+                {% for val, label in bulan_choices %}{% if val == bulan %}{{ label }}{% endif %}{% endfor %}
+                {{ tahun }}
+            </p>
+        </div>
+        <form method="get" class="filter-form">
+            <select name="bulan">
+                {% for val, label in bulan_choices %}
+                <option value="{{ val }}" {% if val == bulan %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="tahun">
+                {% for y in tahun_choices %}
+                <option value="{{ y }}" {% if y == tahun %}selected{% endif %}>{{ y }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit">Terapkan</button>
+        </form>
+    </div>
 
-<!-- Stat Cards -->
-<div class="stat-grid">
-    <div class="stat-card blue">
-        <div class="stat-icon blue"><i class="bi bi-people"></i></div>
-        <div>
-            <div class="stat-label">Supervisor</div>
-            <div class="stat-value">{{ stats.total_supervisor|default:0 }}</div>
-        </div>
-    </div>
-    <div class="stat-card green">
-        <div class="stat-icon green"><i class="bi bi-person-badge"></i></div>
-        <div>
-            <div class="stat-label">Total Staff</div>
-            <div class="stat-value">{{ stats.total_staff|default:0 }}</div>
-        </div>
-    </div>
-    <div class="stat-card amber">
-        <div class="stat-icon amber"><i class="bi bi-file-earmark-text"></i></div>
-        <div>
-            <div class="stat-label">Total Laporan</div>
-            <div class="stat-value">{{ stats.total_laporan|default:0 }}</div>
-        </div>
-    </div>
-    <div class="stat-card teal">
-        <div class="stat-icon teal"><i class="bi bi-check-circle"></i></div>
-        <div>
-            <div class="stat-label">Laporan Selesai</div>
-            <div class="stat-value">{{ stats.laporan_selesai|default:0 }}</div>
-        </div>
-    </div>
-</div>
-
-<!-- Chart Row 1 -->
-<div class="row g-3 mb-3">
-    <!-- Bar Chart Laporan 12 Bulan -->
-    <div class="col-md-8">
-        <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Laporan per Bulan</div>
-                    <div class="chart-card-sub">12 bulan terakhir</div>
-                </div>
+    <!-- ── STAT CARDS ─────────────────────────────────── -->
+    <div class="stat-grid">
+        <div class="stat-card sc-accent">
+            <div class="stat-icon si-accent"><i class="bi bi-people-fill"></i></div>
+            <div>
+                <div class="stat-label">Supervisor</div>
+                <div class="stat-value">{{ stats.total_supervisor|default:0 }}</div>
+                <div class="stat-sub">Aktif bulan ini</div>
             </div>
-            <canvas id="chartLaporan" height="100"></canvas>
         </div>
-    </div>
-    <!-- Donut Item Hari Ini -->
-    <div class="col-md-4">
-        <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Item Kegiatan Hari Ini</div>
-                    <div class="chart-card-sub">{{ item_hari_ini.count }} total item</div>
-                </div>
+        <div class="stat-card sc-success">
+            <div class="stat-icon si-success"><i class="bi bi-person-badge-fill"></i></div>
+            <div>
+                <div class="stat-label">Total Staff</div>
+                <div class="stat-value">{{ stats.total_staff|default:0 }}</div>
+                <div class="stat-sub">Di semua supervisor</div>
             </div>
-            <div style="display:flex;align-items:center;gap:20px;">
-                <div style="width:130px;height:130px;flex-shrink:0;">
-                    <canvas id="chartDonut"></canvas>
-                </div>
-                <div class="donut-legend">
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:#94a3b8;"></div>
-                        <span class="legend-label">Terjadwal</span>
-                        <span class="legend-val">{{ item_stats.terjadwal }}</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:#f59e0b;"></div>
-                        <span class="legend-label">On Progress</span>
-                        <span class="legend-val">{{ item_stats.on_progress }}</span>
-                    </div>
-                    <div class="legend-item">
-                        <div class="legend-dot" style="background:#22c55e;"></div>
-                        <span class="legend-label">Selesai</span>
-                        <span class="legend-val">{{ item_stats.selesai }}</span>
-                    </div>
-                </div>
+        </div>
+        <div class="stat-card sc-teal">
+            <div class="stat-icon si-teal"><i class="bi bi-building-check"></i></div>
+            <div>
+                <div class="stat-label">Perusahaan</div>
+                <div class="stat-value">{{ stats.total_perusahaan|default:0 }}</div>
+                <div class="stat-sub">Perlu laporan bulan ini</div>
+            </div>
+        </div>
+        <div class="stat-card sc-danger">
+            <div class="stat-icon si-danger"><i class="bi bi-hourglass-split"></i></div>
+            <div>
+                <div class="stat-label">Belum Laporan</div>
+                <div class="stat-value">{{ stats.belum_laporan|default:0 }}</div>
+                <div class="stat-sub">Dari {{ stats.total_perusahaan|default:0 }} perusahaan</div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Chart Row 2: Produktivitas Supervisor -->
-<div class="row g-3 mb-3">
-    <div class="col-12">
-        <div class="chart-card">
-            <div class="chart-card-header">
-                <div>
-                    <div class="chart-card-title">Produktivitas Supervisor</div>
-                    <div class="chart-card-sub">
-                        Jumlah laporan bulan
+    <!-- ── COMPLETION BANNER ───────────────────────────── -->
+    <div class="completion-banner">
+        <div class="cb-donut-wrap">
+            <canvas id="donutCompletion" width="72" height="72"></canvas>
+            <div class="cb-center">
+                <div class="cb-pct">{{ stats.completion_rate|default:0 }}%</div>
+            </div>
+        </div>
+        <div class="cb-info">
+            <div class="cb-label">Progress Laporan Bulan Ini</div>
+            <div class="cb-sub">
+                {{ stats.laporan_dikirim|default:0 }} dikirim ·
+                {{ stats.laporan_selesai|default:0 }} selesai ·
+                {{ stats.laporan_draft|default:0 }} draft ·
+                <span style="color:var(--clr-danger);">{{ stats.belum_laporan|default:0 }} belum dibuat</span>
+            </div>
+        </div>
+        <div class="cb-stats">
+            <div class="cb-stat">
+                <div class="cb-stat-val" style="color:#a5b4fc;">{{ stats.laporan_dikirim|default:0 }}</div>
+                <div class="cb-stat-label">Dikirim</div>
+            </div>
+            <div class="cb-stat">
+                <div class="cb-stat-val" style="color:var(--clr-success);">{{ stats.laporan_selesai|default:0 }}</div>
+                <div class="cb-stat-label">Selesai</div>
+            </div>
+            <div class="cb-stat">
+                <div class="cb-stat-val" style="color:var(--clr-text-muted);">{{ stats.laporan_draft|default:0 }}</div>
+                <div class="cb-stat-label">Draft</div>
+            </div>
+            <div class="cb-stat">
+                <div class="cb-stat-val" style="color:var(--clr-danger);">{{ stats.belum_laporan|default:0 }}</div>
+                <div class="cb-stat-label">Belum</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── ROW: PROGRESS PER SPV + NOTIFIKASI ─────────── -->
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="ks-card">
+                <div class="ks-card-head">
+                    <h6 class="ks-card-title">Status Laporan per Supervisor</h6>
+                    <span style="font-size:11px;color:var(--clr-text-muted);">
                         {% for val, label in bulan_choices %}{% if val == bulan %}{{ label }}{% endif %}{% endfor %}
                         {{ tahun }}
-                    </div>
+                    </span>
                 </div>
-            </div>
-            <canvas id="chartSupervisor" height="60"></canvas>
-        </div>
-    </div>
-</div>
-
-<!-- Bottom Row -->
-<div class="row g-3">
-    <!-- Laporan Terbaru -->
-    <div class="col-md-7">
-        <div class="section-card">
-            <div class="section-card-header">
-                <h6 class="section-card-title">Laporan Terbaru</h6>
-                <a href="{% url 'kepala_laporan_list' %}" style="font-size:12px;color:#0d6efd;text-decoration:none;">Lihat semua →</a>
-            </div>
-            <div class="table-responsive">
-                <table class="table mb-0">
-                    <thead>
-                        <tr>
-                            <th>Nama Laporan</th>
-                            <th>Supervisor</th>
-                            <th>Tanggal</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for l in laporan_terbaru %}
-                        <tr>
-                            <td>
-                                <a href="{% url 'kepala_laporan_detail' l.pk %}" class="laporan-link">
-                                    {{ l.nama_laporan }}
-                                </a>
-                                <div class="cell-muted">{{ l.perusahaan.nama_perusahaan }}</div>
-                            </td>
-                            <td class="cell-muted">{{ l.supervisor.nama_lengkap }}</td>
-                            <td class="cell-muted">{{ l.tanggal_laporan|date:"d/m/Y" }}</td>
-                            <td>
-                                {% if l.status == 'draft' %}<span class="status-badge s-draft">Draft</span>
-                                {% elif l.status == 'selesai' %}<span class="status-badge s-selesai">Selesai</span>
-                                {% elif l.status == 'dikirim_customer' %}<span class="status-badge s-dikirim">Dikirim</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="4" class="text-center text-muted py-4">Belum ada laporan.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Item Hari Ini Feed -->
-    <div class="col-md-5">
-        <div class="section-card">
-            <div class="section-card-header">
-                <h6 class="section-card-title">Item Kegiatan Hari Ini</h6>
-            </div>
-            <div class="item-feed">
-                {% for item in item_hari_ini %}
-                <div class="item-feed-row">
-                    <div class="item-dot {{ item.status }}"></div>
-                    <div style="flex:1;min-width:0;">
-                        <div class="item-feed-name">{{ item.nama_item }}</div>
-                        <div class="item-feed-meta">
-                            {% for s in item.staff.all %}{{ s.nama_lengkap }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
-                            · {{ item.laporan.perusahaan.nama_perusahaan }}
+                {% for spv in spv_progress %}
+                <div class="spv-row">
+                    <div class="spv-avatar">{{ spv.inisial }}</div>
+                    <div class="spv-info">
+                        <div class="spv-name">{{ spv.nama_lengkap }}</div>
+                        <div class="spv-meta">
+                            {{ spv.total_perusahaan }} perusahaan ·
+                            {{ spv.dikirim }} dikirim,
+                            {{ spv.selesai }} selesai,
+                            {{ spv.draft }} draft,
+                            <span style="color:var(--clr-danger);">{{ spv.belum }} belum</span>
                         </div>
                     </div>
-                    <div class="item-feed-meta" style="flex-shrink:0;">
-                        {{ item.jam_mulai|default:"—" }}–{{ item.jam_selesai|default:"—" }}
+                    <div class="spv-bars">
+                        <div class="progress-wrap">
+                            <span class="progress-label">Dikirim</span>
+                            <div class="progress-track">
+                                <div class="progress-fill pf-accent"
+                                    style="width:{% if spv.total_perusahaan %}{{ spv.pct_dikirim }}{% else %}0{% endif %}%;"></div>
+                            </div>
+                        </div>
+                        <div class="progress-wrap">
+                            <span class="progress-label">Selesai</span>
+                            <div class="progress-track">
+                                <div class="progress-fill pf-success"
+                                    style="width:{% if spv.total_perusahaan %}{{ spv.pct_selesai }}{% else %}0{% endif %}%;"></div>
+                            </div>
+                        </div>
+                        <div class="progress-wrap">
+                            <span class="progress-label">Draft</span>
+                            <div class="progress-track">
+                                <div class="progress-fill pf-muted"
+                                    style="width:{% if spv.total_perusahaan %}{{ spv.pct_draft }}{% else %}0{% endif %}%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="spv-pct">
+                        {% if spv.total_perusahaan %}{{ spv.pct_done }}%{% else %}—{% endif %}
                     </div>
                 </div>
                 {% empty %}
-                <div class="text-center text-muted py-5" style="font-size:13px;">
-                    <i class="bi bi-calendar-check" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>
-                    Tidak ada item hari ini.
+                <div class="empty-state"><i class="bi bi-people"></i>Belum ada data supervisor.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Notifikasi -->
+        <div class="col-lg-4">
+            <div class="ks-card h-100">
+                <div class="ks-card-head">
+                    <h6 class="ks-card-title">Perlu Perhatian</h6>
+                    {% if notif_count > 0 %}
+                    <span class="ks-badge kb-pending">{{ notif_count }} item</span>
+                    {% endif %}
+                </div>
+                {% if stats.belum_laporan > 0 %}
+                <div class="notif-row">
+                    <div class="notif-icon ni-danger"><i class="bi bi-exclamation-circle-fill"></i></div>
+                    <div>
+                        <div class="notif-text">
+                            <strong>{{ stats.belum_laporan }} perusahaan</strong> belum ada laporan bulan ini
+                        </div>
+                        <div class="notif-meta">
+                            <a href="{% url 'kepala_laporan_list' %}?status=belum">Lihat detail →</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if stats.izin_pending > 0 %}
+                <div class="notif-row">
+                    <div class="notif-icon ni-warning"><i class="bi bi-person-exclamation"></i></div>
+                    <div>
+                        <div class="notif-text">
+                            <strong>{{ stats.izin_pending }} pengajuan izin</strong> menunggu persetujuan
+                        </div>
+                        
+                    </div>
+                </div>
+                {% endif %}
+                {% if stats.overtime_pending > 0 %}
+                <div class="notif-row">
+                    <div class="notif-icon ni-purple"><i class="bi bi-clock-history"></i></div>
+                    <div>
+                        <div class="notif-text">
+                            <strong>{{ stats.overtime_pending }} overtime</strong> belum direview
+                        </div>
+                       
+                    </div>
+                </div>
+                {% endif %}
+                {% if stats.draft_lama > 0 %}
+                <div class="notif-row">
+                    <div class="notif-icon ni-warning"><i class="bi bi-file-earmark-exclamation"></i></div>
+                    <div>
+                        <div class="notif-text">
+                            <strong>{{ stats.draft_lama }} laporan</strong> masih draft lebih dari 7 hari
+                        </div>
+                        <div class="notif-meta">
+                            <a href="{% url 'kepala_laporan_list' %}?status=draft">Cek laporan →</a>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                {% if stats.belum_laporan == 0 and stats.izin_pending == 0 and stats.overtime_pending == 0 and stats.draft_lama == 0 %}
+                <div class="empty-state">
+                    <i class="bi bi-check2-circle"></i>
+                    Semua beres!
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- ── ROW: PERUSAHAAN BELUM + ABSENSI ─────────────── -->
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="ks-card">
+                <div class="ks-card-head">
+                    <h6 class="ks-card-title">Perusahaan Belum Ada Laporan</h6>
+                    <a href="{% url 'kepala_laporan_list' %}" class="ks-card-link">Semua laporan →</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="ks-table">
+                        <thead>
+                            <tr>
+                                <th>Perusahaan</th>
+                                <th>Supervisor</th>
+                                <th>Jenis Jasa</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in perusahaan_belum_laporan %}
+                            <tr>
+                                <td><span class="td-name">{{ item.perusahaan.nama_perusahaan }}</span></td>
+                                <td class="td-muted">{{ item.supervisor.nama_lengkap }}</td>
+                                <td class="td-muted">{{ item.jenis_jasa.nama_jasa }}</td>
+                                <td><span class="ks-badge kb-belum">Belum dibuat</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4">
+                                    <div class="empty-state" style="padding:1.5rem;">
+                                        <i class="bi bi-check2-all"></i>
+                                        Semua perusahaan sudah ada laporan.
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="ks-card">
+               
+                <div class="ks-card-body">
+                    <div class="absen-grid">
+                        <div class="absen-item">
+                            <div class="absen-dot" style="background:var(--clr-accent);"></div>
+                            <div class="absen-count">{{ absensi_hari_ini.masuk|default:0 }}</div>
+                            <div class="absen-label">Masuk</div>
+                        </div>
+                        <div class="absen-item">
+                            <div class="absen-dot" style="background:var(--clr-danger);"></div>
+                            <div class="absen-count">{{ absensi_hari_ini.alpa|default:0 }}</div>
+                            <div class="absen-label">Alpa</div>
+                        </div>
+                        <div class="absen-item">
+                            <div class="absen-dot" style="background:var(--clr-warning);"></div>
+                            <div class="absen-count">{{ absensi_hari_ini.izin|default:0 }}</div>
+                            <div class="absen-label">Izin/Cuti</div>
+                        </div>
+                        <div class="absen-item">
+                            <div class="absen-dot" style="background:#c4b5fd;"></div>
+                            <div class="absen-count">{{ absensi_hari_ini.overtime|default:0 }}</div>
+                            <div class="absen-label">Overtime</div>
+                        </div>
+                        <div class="absen-item">
+                            <div class="absen-dot" style="background:#2dd4bf;"></div>
+                            <div class="absen-count">{{ absensi_hari_ini.terlambat|default:0 }}</div>
+                            <div class="absen-label">Terlambat</div>
+                        </div>
+                        <div class="absen-item">
+                            <div class="absen-dot" style="background:var(--clr-text-muted);"></div>
+                            <div class="absen-count">{{ absensi_hari_ini.belum|default:0 }}</div>
+                            <div class="absen-label">Belum absen</div>
+                        </div>
+                    </div>
+                    {% if absensi_per_spv %}
+                    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--clr-border);">
+                        <div style="font-size:10.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--clr-text-muted);margin-bottom:8px;">Per Supervisor</div>
+                        {% for spv in absensi_per_spv %}
+                        <div class="spv-absen-row">
+                            <span class="spv-absen-name">{{ spv.nama_singkat }}</span>
+                            <span class="spv-absen-count">{{ spv.hadir }}/{{ spv.total }} hadir</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── ROW: LAPORAN TERBARU + ITEM HARI INI ────────── -->
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <div class="ks-card">
+                <div class="ks-card-head">
+                    <h6 class="ks-card-title">Laporan Terbaru</h6>
+                    <a href="{% url 'kepala_laporan_list' %}" class="ks-card-link">Lihat semua →</a>
+                </div>
+                {% for l in laporan_terbaru %}
+                <div class="lap-row">
+                    <div class="lap-dot" style="background:
+                        {% if l.status == 'dikirim_customer' %}var(--clr-accent)
+                        {% elif l.status == 'selesai' %}var(--clr-success)
+                        {% else %}var(--clr-text-muted){% endif %};"></div>
+                    <div class="lap-info">
+                        <a href="{% url 'kepala_laporan_detail' l.pk %}" class="lap-name">
+                            {{ l.nama_laporan }}
+                        </a>
+                        <div class="lap-sub">{{ l.perusahaan.nama_perusahaan }} · {{ l.supervisor.nama_lengkap }}</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                        <div class="lap-date">{{ l.tanggal_laporan|date:"d/m/Y" }}</div>
+                        {% if l.status == 'draft' %}
+                            <span class="ks-badge kb-draft">Draft</span>
+                        {% elif l.status == 'selesai' %}
+                            <span class="ks-badge kb-selesai">Selesai</span>
+                        {% elif l.status == 'dikirim_customer' %}
+                            <span class="ks-badge kb-dikirim">Dikirim</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="empty-state">
+                    <i class="bi bi-file-earmark-text"></i>
+                    Belum ada laporan bulan ini.
                 </div>
                 {% endfor %}
             </div>
         </div>
-    </div>
-</div>
 
+        <div class="col-lg-5">
+            <div class="ks-card">
+                <div class="ks-card-head">
+                    <h6 class="ks-card-title">Item Kegiatan Hari Ini</h6>
+                    <span style="font-size:11px;color:var(--clr-text-muted);">{{ item_hari_ini|length }} item</span>
+                </div>
+                <div style="display:flex;gap:16px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--clr-border);">
+                    <div style="width:56px;height:56px;flex-shrink:0;position:relative;">
+                        <canvas id="donutItem" width="56" height="56"></canvas>
+                    </div>
+                    <div class="legend-list">
+                        <div class="legend-row">
+                            <div class="legend-dot" style="background:rgba(255,255,255,0.2);"></div>
+                            <span class="legend-name">Terjadwal</span>
+                            <span class="legend-val">{{ item_stats.terjadwal }}</span>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-dot" style="background:var(--clr-warning);"></div>
+                            <span class="legend-name">On progress</span>
+                            <span class="legend-val">{{ item_stats.on_progress }}</span>
+                        </div>
+                        <div class="legend-row">
+                            <div class="legend-dot" style="background:var(--clr-success);"></div>
+                            <span class="legend-name">Selesai</span>
+                            <span class="legend-val">{{ item_stats.selesai }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="max-height:240px;overflow-y:auto;">
+                    {% for item in item_hari_ini %}
+                    <div class="item-row">
+                        <div class="lap-dot" style="flex-shrink:0;background:
+                            {% if item.status == 'selesai' %}var(--clr-success)
+                            {% elif item.status == 'on_progress' %}var(--clr-warning)
+                            {% else %}rgba(255,255,255,0.2){% endif %};"></div>
+                        <div style="flex:1;min-width:0;">
+                            <div class="item-name">{{ item.nama_item }}</div>
+                            <div class="item-sub">
+                                {% for s in item.staff.all %}{{ s.nama_lengkap }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+                                · {{ item.laporan.perusahaan.nama_perusahaan }}
+                            </div>
+                        </div>
+                        <div class="item-time">
+                            {{ item.jam_mulai|default:"—" }}<br>{{ item.jam_selesai|default:"—" }}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="bi bi-calendar-check"></i>
+                        Tidak ada item hari ini.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
 {% endblock %}
+
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
 <script>
-const isDark = document.documentElement.classList.contains('dark');
-const gridColor = 'rgba(0,0,0,0.06)';
-const textColor = getComputedStyle(document.documentElement)
-    .getPropertyValue('--clr-text-muted') || '#94a3b8';
-
 Chart.defaults.font.family = "'Montserrat', sans-serif";
 Chart.defaults.font.size   = 11;
 
-// ================== DATA DARI DJANGO ==================
-const laporanLabels   = JSON.parse('{{ chart_laporan_labels|escapejs }}');
-const laporanDraft    = JSON.parse('{{ chart_laporan_draft|escapejs }}');
-const laporanSelesai  = JSON.parse('{{ chart_laporan_selesai|escapejs }}');
-const laporanDikirim  = JSON.parse('{{ chart_laporan_dikirim|escapejs }}');
+const donutItemData  = JSON.parse('{{ chart_donut_data|escapejs }}');
+const completionData = JSON.parse('{{ chart_completion_data|escapejs }}');
 
-const donutData       = JSON.parse('{{ chart_donut_data|escapejs }}');
+const tooltipDefaults = {
+    backgroundColor: 'rgba(2,6,23,0.92)',
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderWidth: 1,
+    titleColor: '#f1f5f9',
+    bodyColor: '#94a3b8',
+    padding: 10,
+};
 
-const spvLabels       = JSON.parse('{{ chart_spv_labels|escapejs }}');
-const spvCounts       = JSON.parse('{{ chart_spv_counts|escapejs }}');
-
-// ================== CHART 1 ==================
-new Chart(document.getElementById('chartLaporan'), {
-    type: 'bar',
-    data: {
-        labels: laporanLabels,
-        datasets: [
-            {
-                label: 'Draft',
-                data: laporanDraft,
-                backgroundColor: '#e2e8f0',
-                borderRadius: 5,
-                borderSkipped: false,
-            },
-            {
-                label: 'Selesai',
-                data: laporanSelesai,
-                backgroundColor: '#93c5fd',
-                borderRadius: 5,
-                borderSkipped: false,
-            },
-            {
-                label: 'Dikirim',
-                data: laporanDikirim,
-                backgroundColor: '#6ee7b7',
-                borderRadius: 5,
-                borderSkipped: false,
-            },
-        ],
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top',
-                labels: { boxWidth: 10, padding: 16, font: { size: 11 } }
-            },
-            tooltip: { mode: 'index', intersect: false },
-        },
-        scales: {
-            x: {
-                stacked: true,
-                grid: { display: false },
-                ticks: { color: textColor }
-            },
-            y: {
-                stacked: true,
-                grid: { color: gridColor },
-                ticks: { color: textColor, precision: 0 },
-                beginAtZero: true
-            },
-        },
-    },
-});
-
-// ================== CHART 2 ==================
-new Chart(document.getElementById('chartDonut'), {
+/* ── DONUT COMPLETION ─────────────────────────────────── */
+new Chart(document.getElementById('donutCompletion'), {
     type: 'doughnut',
     data: {
-        labels: ['Terjadwal', 'On Progress', 'Selesai'],
+        labels: ['Dikirim', 'Selesai', 'Draft', 'Belum'],
         datasets: [{
-            data: donutData,
-            backgroundColor: ['#e2e8f0', '#fcd34d', '#6ee7b7'],
+            data: completionData,
+            backgroundColor: [
+                'rgba(99,102,241,0.85)',
+                'rgba(34,197,94,0.8)',
+                'rgba(255,255,255,0.1)',
+                'rgba(239,68,68,0.5)',
+            ],
             borderWidth: 0,
-            hoverOffset: 4,
+            hoverOffset: 3,
         }],
     },
     options: {
-        responsive: true,
+        responsive: false,
         cutout: '72%',
         plugins: {
             legend: { display: false },
             tooltip: {
-                callbacks: {
-                    label: ctx => ` ${ctx.label}: ${ctx.parsed}`
-                }
+                ...tooltipDefaults,
+                callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` }
             },
         },
     },
 });
 
-// ================== CHART 3 ==================
-new Chart(document.getElementById('chartSupervisor'), {
-    type: 'bar',
+/* ── DONUT ITEM ───────────────────────────────────────── */
+new Chart(document.getElementById('donutItem'), {
+    type: 'doughnut',
     data: {
-        labels: spvLabels,
+        labels: ['Terjadwal', 'On Progress', 'Selesai'],
         datasets: [{
-            label: 'Laporan',
-            data: spvCounts,
-            backgroundColor: '#818cf8',
-            borderRadius: 6,
-            borderSkipped: false,
-            barThickness: 32,
+            data: donutItemData,
+            backgroundColor: [
+                'rgba(255,255,255,0.1)',
+                'rgba(250,204,21,0.75)',
+                'rgba(34,197,94,0.75)',
+            ],
+            borderWidth: 0,
+            hoverOffset: 3,
         }],
     },
     options: {
-        responsive: true,
+        responsive: false,
+        cutout: '70%',
         plugins: {
             legend: { display: false },
             tooltip: {
-                callbacks: {
-                    label: ctx => ` ${ctx.parsed.y} laporan`
-                }
-            },
-        },
-        scales: {
-            x: {
-                grid: { display: false },
-                ticks: { color: textColor }
-            },
-            y: {
-                grid: { color: gridColor },
-                ticks: { color: textColor, precision: 0 },
-                beginAtZero: true
+                ...tooltipDefaults,
+                callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed}` }
             },
         },
     },

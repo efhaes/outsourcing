@@ -297,7 +297,22 @@ input[type="month"], .filter-select { color-scheme: dark; }
             Bulan ini
           </a>
           {% endif %}
-
+<!-- Tambah setelah tombol "Bulan ini" -->
+{% if filter_hari_ini %}
+  <a href="?bulan={{ bulan_filter }}{% if search_nama %}&q={{ search_nama }}{% endif %}&tab={{ active_tab|default:'absensi' }}"
+     class="btn btn-sm"
+     style="background:rgba(99,102,241,.2);color:#a5b4fc;
+            border:1px solid rgba(99,102,241,.4);font-size:12px;white-space:nowrap">
+    📅 Semua bulan ini
+  </a>
+{% else %}
+  <a href="?hari_ini=1&tab={{ active_tab|default:'absensi' }}{% if search_nama %}&q={{ search_nama }}{% endif %}"
+     class="btn btn-sm"
+     style="background:rgba(34,197,94,.15);color:#4ade80;
+            border:1px solid rgba(34,197,94,.3);font-size:12px;white-space:nowrap">
+    📍 Hari ini
+  </a>
+{% endif %}
           <div style="margin-left:auto;position:relative">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                  style="position:absolute;left:10px;top:50%;transform:translateY(-50%);

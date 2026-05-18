@@ -170,6 +170,17 @@
         .user-role { font-size: 11px; color: var(--clr-text-muted); display: flex; align-items: center; gap: 4px; margin-top: 1px; }
         .role-badge-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--clr-success); }
         .user-chevron { color: var(--clr-text-muted); flex-shrink: 0; }
+        /* Menyelaraskan button form agar perilakunya sama persis dengan tag <a> */
+        .logout-nav-btn {
+            width: 100%;             /* Mengisi penuh lebar sidebar-nav */
+            background: none;        /* Menghilangkan background abu-abu bawaan button */
+            border: none;            /* Menghilangkan border bawaan button */
+            text-align: left;        /* Memastikan teks tetap rata kiri */
+            cursor: pointer;         /* Mengubah kursor menjadi pointer saat di-hover */
+            font-family: inherit;    /* Mengikuti font Montserrat dari parent */
+            padding: 8px 10px;       /* Samakan paddingnya dengan .nav-link asli */
+        }
+
 
         .logout-btn {
             width: 100%; display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -314,47 +325,59 @@
         .badge-selesai { background: var(--clr-accent-light); color: #a5b4fc; padding: 4px 10px; border-radius: 20px; font-weight: 500; font-size: 11px; }
         .badge-dikirim { background: var(--clr-warning-light); color: var(--clr-warning); padding: 4px 10px; border-radius: 20px; font-weight: 500; font-size: 11px; }
 
-        @media (max-width: 768px) {
-            :root { --sidebar-w: 280px; }
-            .sidebar {
-                transform: translateX(-100%);
-                background: #020617; /* ← solid saat jadi overlay */
-                height: 100vh;
-                display: flex;
-                flex-direction: column;
-            }
-            .sidebar.open {
-                transform: translateX(0);
-                box-shadow: 2px 0 20px rgba(0,0,0,0.6);
-            }
-            .sidebar-nav {
-                flex: 1;
-                overflow-y: auto;
-                padding: 10px 12px 0;
-            }
-            .sidebar-footer {
-                flex-shrink: 0;
-                padding: 8px;
-                border-top: 1px solid var(--clr-border);
-                background: #020617;
-            }
-            .menu-toggle-btn { display: flex; }
-            .main-area { margin-left: 0; }
-            .top-header { padding: 0 16px; }
-            .page-content { padding: 16px 14px 28px; }
-        }
-
-        @media (max-width: 640px) {
-            :root { --sidebar-w: 240px; --header-h: 56px; }
-            .sidebar {
-                background: #020617; /* ← sama */
-            }
-            .sidebar-logo { padding: 0 14px; }
-            .logo-mark { width: 140px; }
-            .nav-link { font-size: 13px; padding: 7px 8px; }
-            .page-content { padding: 12px 10px; }
-        }
-
-        body.sidebar-open:not(.modal-open) {
+@media (max-width: 768px) {
+    :root { --sidebar-w: 280px; }
+    
+    .sidebar {
+        transform: translateX(-100%);
+        background: #020617; /* ← solid saat jadi overlay */
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        z-index: 50; /* Memastikan posisi di atas overlay */
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+        box-shadow: 2px 0 20px rgba(0,0,0,0.6);
+    }
+    
+    .sidebar-nav {
+        flex: 1;
+        overflow-y: auto !important; /* Paksa aktif untuk scroll vertikal menu */
+        -webkit-overflow-scrolling: touch; /* KUNCI UTAMA: Supaya scroll lancar di mobile/iOS */
+        padding: 10px 12px 0;
+    }
+    
+    .sidebar-footer {
+        display: none !important;
+    }
+    
+    .menu-toggle-btn { display: flex; }
+    .main-area { margin-left: 0; }
+    .top-header { padding: 0 16px; }
+    .page-content { padding: 16px 14px 28px; position: relative; z-index: 1; }
+    
+    /* Trik mengunci halaman belakang khusus saat mobile sidebar terbuka */
+    body.sidebar-open {
+        position: fixed;
+        width: 100%;
         overflow: hidden;
-        }
+    }
+}
+
+@media (max-width: 640px) {
+    :root { --sidebar-w: 240px; --header-h: 56px; }
+    .sidebar {
+        background: #020617; /* ← sama */
+    }
+    .sidebar-logo { padding: 0 14px; }
+    .logo-mark { width: 140px; }
+    .nav-link { font-size: 13px; padding: 7px 8px; }
+    .page-content { padding: 12px 10px; position: relative; z-index: 1; }
+}
+
+/* Hapus atau ganti kode 'body.sidebar-open:not(.modal-open)' lama kamu dengan ini */
+body.modal-open {
+    overflow: hidden;
+}

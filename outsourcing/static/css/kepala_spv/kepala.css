@@ -561,3 +561,11 @@ label.form-label.small.text-muted {
     display: none;
   }
 }
+
+@media (max-width: 640px) {
+    .table-card { display: none !important; }
+    .mobile-cards { display: flex !important; flex-direction: column; gap: 10px; }
+}
+@media (min-width: 641px) {
+    .mobile-cards { display: none !important; }
+}

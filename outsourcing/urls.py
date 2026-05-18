@@ -18,7 +18,7 @@ from outsourcing.views.kepala_supervisor import (
     staff_list as kepala_staff_list,
     penugasan_list, penugasan_create, penugasan_edit, penugasan_delete,
     laporan_list as kepala_laporan_list, laporan_detail as kepala_laporan_detail,
-    area_list, area_create, area_edit, area_delete,
+    area_list, area_create, area_edit, area_delete,pilih_supervisor,set_acting_supervisor,clear_acting_supervisor
 )
 from outsourcing.views.supervisor import (
     dashboard_view as supervisor_dashboard,
@@ -95,6 +95,10 @@ urlpatterns = [
     path('kepala/area/tambah/', area_create, name='kepala_area_create'),
     path('kepala/area/<int:pk>/edit/', area_edit, name='kepala_area_edit'),
     path('kepala/area/<int:pk>/hapus/', area_delete, name='kepala_area_delete'),
+    # urls.py
+    path('kepala/pilih-supervisor/', pilih_supervisor, name='kepala_pilih_supervisor'),
+    path('kepala/akses-supervisor/<int:supervisor_id>/',set_acting_supervisor, name='kepala_set_acting_supervisor'),
+    path('kepala/keluar-supervisor/', clear_acting_supervisor, name='kepala_clear_acting_supervisor'),
 
     # Supervisor
     path('supervisor/', supervisor_dashboard, name='supervisor_dashboard'),

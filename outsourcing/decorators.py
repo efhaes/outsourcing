@@ -64,6 +64,52 @@ def kepala_supervisor_required(view_func):
     return wrapped_view
 
 
+
+# decorators.py
+
+from .models import SupervisorPerusahaan
+
+def supervisor_or_kepala_required(view_func):
+    """
+    Supervisor akses halaman sendiri.
+    Kepala Supervisor bisa akses halaman supervisor mana saja yang di bawahnya.
+    supervisor yang sedang 'diwakili' disimpan di request.supervisor_context
+    """
+    @wraps(view_func)
+    @login_required(login_url='login')
+    def wrapped_view(request, *args, **kwargs):
+        user = request.user
+
+        if user.role == 'supervisor':
+            request.supervisor_context = user  # supervisor = diri sendiri
+            return view_func(request, *args, **kwargs)
+
+        if user.role == 'kepala_supervisor':
+            supervisor_id = request.session.get('acting_as_supervisor_id')
+            if not supervisor_id:
+                messages.error(request, 'Pilih supervisor terlebih dahulu.')
+                return redirect('kepala_pilih_supervisor')
+
+            is_assigned = SupervisorPerusahaan.objects.filter(
+                kepala_supervisor=user,
+                supervisor_id=supervisor_id,
+                is_active=True,
+            ).exists()
+
+            if not is_assigned:
+                messages.error(request, 'Supervisor ini tidak di bawah pengawasan Anda.')
+                request.session.pop('acting_as_supervisor_id', None)
+                return redirect('kepala_pilih_supervisor')
+
+            from .models import User as UserModel
+            request.supervisor_context = UserModel.objects.get(pk=supervisor_id)
+            return view_func(request, *args, **kwargs)
+
+        messages.error(request, 'Anda tidak memiliki akses.')
+        return redirect('dashboard')
+
+    return wrapped_view
+
 def supervisor_required(view_func):
     """Hanya Supervisor Lapangan yang bisa akses."""
     @wraps(view_func)

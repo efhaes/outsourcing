@@ -8,15 +8,14 @@ from outsourcing.forms.user_forms import CreateKepalaSupervisorForm, CreateCusto
 
 @admin_required
 def akun_list(request):
-    """
-    Daftar semua akun (kecuali admin itu sendiri).
-    Bisa filter berdasarkan role dan pencarian nama.
-    """
-    q    = request.GET.get('q', '').strip()
-    role = request.GET.get('role', '').strip()
+    q                 = request.GET.get('q', '').strip()
+    role              = request.GET.get('role', '').strip()
+    perusahaan_filter = request.GET.get('perusahaan', '').strip()
 
     akun = User.objects.exclude(role=RoleChoices.ADMIN).order_by('role', 'nama_lengkap')
 
+    if perusahaan_filter:
+        akun = akun.filter(perusahaan_id=perusahaan_filter)
     if q:
         akun = akun.filter(
             Q(nama_lengkap__icontains=q) | Q(username__icontains=q)
@@ -24,12 +23,22 @@ def akun_list(request):
     if role:
         akun = akun.filter(role=role)
 
+    # Base queryset tanpa filter role/q untuk stats yang akurat
+    base_qs = User.objects.exclude(role=RoleChoices.ADMIN)
+
     context = {
-        'akun_list'   : akun,
-        'role_choices': RoleChoices.choices,  # untuk dropdown filter di template
-        'q'           : q,
-        'role'        : role,
-        'page_title'  : 'Manajemen Akun',
+        'akun_list'      : akun,
+        'role_choices'   : RoleChoices.choices,
+        'q'              : q,
+        'role'           : role,
+        'page_title'     : 'Manajemen Akun',
+        'perusahaan_list': Perusahaan.objects.all(),
+        'perusahaan'     : perusahaan_filter,
+        # Stats — total keseluruhan, bukan hasil filter
+        'total_akun'     : base_qs.count(),
+        'total_supervisor': base_qs.filter(role=RoleChoices.SUPERVISOR).count(),
+        'total_staff'    : base_qs.filter(role=RoleChoices.STAFF).count(),
+        'total_kepala'   : base_qs.filter(role=RoleChoices.KEPALA_SUPERVISOR).count(),
     }
     return render(request, 'admin/akun/list.html', context)
 

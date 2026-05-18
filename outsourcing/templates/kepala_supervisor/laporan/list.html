@@ -32,14 +32,28 @@
                 </option>
             {% endfor %}
         </select>
-        <input type="date" name="tgl_dari" value="{{ filter.tgl_dari }}"
-            class="form-control form-control-sm" style="max-width:140px;">
-        <input type="date" name="tgl_sampai" value="{{ filter.tgl_sampai }}"
-            class="form-control form-control-sm" style="max-width:140px;">
-        <button class="btn btn-sm btn-secondary">Filter</button>
-        {% if filter.q or filter.perusahaan or filter.status or filter.tgl_dari or filter.tgl_sampai %}
-            <a href="?" class="btn btn-sm btn-outline-secondary">Reset</a>
-        {% endif %}
+
+        <!-- Tanggal dengan label -->
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <div style="display:flex;flex-direction:column;gap:2px;">
+                <label style="font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(160,160,192,0.7);padding-left:2px;">Dari</label>
+                <input type="date" name="tgl_dari" value="{{ filter.tgl_dari }}"
+                    class="form-control form-control-sm" style="max-width:140px;">
+            </div>
+            <div style="color:rgba(160,160,192,0.5);font-size:13px;margin-top:14px;">—</div>
+            <div style="display:flex;flex-direction:column;gap:2px;">
+                <label style="font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(160,160,192,0.7);padding-left:2px;">Sampai</label>
+                <input type="date" name="tgl_sampai" value="{{ filter.tgl_sampai }}"
+                    class="form-control form-control-sm" style="max-width:140px;">
+            </div>
+        </div>
+
+        <div style="display:flex;align-items:flex-end;gap:6px;">
+            <button class="btn btn-sm btn-secondary">Filter</button>
+            {% if filter.q or filter.perusahaan or filter.status or filter.tgl_dari or filter.tgl_sampai %}
+                <a href="?" class="btn btn-sm btn-outline-secondary">Reset</a>
+            {% endif %}
+        </div>
     </form>
 </div>
 

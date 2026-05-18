@@ -1,105 +1,816 @@
 {% extends 'base/base_admin.html' %}
 {% load static %}
+{% block title %}Manajemen Akun{% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/admin/responsive-table.css' %}">
+<style>
+/* ── GLOBAL OVERFLOW FIX ─────────────────────────────────── */
+html, body { overflow-x: hidden; }
+.page-content { overflow-x: hidden; max-width: 100%; }
+
+/* ── PAGE ────────────────────────────────────────────────── */
+.akun-page { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 100%; overflow-x: hidden; }
+
+/* ── HEADER ──────────────────────────────────────────────── */
+.akun-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.akun-header-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--clr-text-primary);
+    margin: 0;
+    letter-spacing: -0.3px;
+}
+.akun-header-sub {
+    font-size: 12px;
+    color: var(--clr-text-muted);
+    margin: 3px 0 0;
+}
+.akun-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.btn-akun {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+    font-weight: 600;
+    font-family: var(--font-base);
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+}
+.btn-akun-primary {
+    background: var(--clr-accent);
+    color: #fff;
+}
+.btn-akun-primary:hover { background: #4f46e5; color: #fff; }
+.btn-akun-secondary {
+    background: rgba(255,255,255,0.06);
+    color: var(--clr-text-secondary);
+    border: 1px solid var(--clr-border);
+}
+.btn-akun-secondary:hover {
+    background: rgba(255,255,255,0.1);
+    color: var(--clr-text-primary);
+    border-color: var(--clr-border-strong);
+}
+
+/* ── STATS ───────────────────────────────────────────────── */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+.stat-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color var(--transition), background var(--transition);
+}
+.stat-card:hover { background: rgba(255,255,255,0.05); border-color: var(--clr-border-strong); }
+.stat-icon {
+    width: 38px; height: 38px;
+    border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0;
+}
+.stat-icon.total  { background: var(--clr-accent-light); }
+.stat-icon.sup    { background: var(--clr-success-light); }
+.stat-icon.staff  { background: rgba(59,130,246,.12); }
+.stat-icon.kepala { background: var(--clr-warning-light); }
+.stat-number { font-size: 22px; font-weight: 700; color: var(--clr-text-primary); line-height: 1; }
+.stat-label  { font-size: 10.5px; color: var(--clr-text-muted); margin-top: 3px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── FILTER BAR ──────────────────────────────────────────── */
+.filter-bar {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+.filter-bar-label {
+    font-size: 11.5px;
+    color: var(--clr-text-muted);
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.filter-chip-group {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    width: 100%;
+    min-width: 0;
+}
+.filter-chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 11px;
+    border-radius: 20px; font-size: 12px; font-weight: 500;
+    cursor: pointer; border: 1px solid var(--clr-border);
+    background: rgba(255,255,255,0.04);
+    color: var(--clr-text-secondary);
+    text-decoration: none;
+    transition: all var(--transition);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.filter-chip:hover { background: rgba(255,255,255,0.08); color: var(--clr-text-primary); border-color: var(--clr-border-strong); }
+.filter-chip.active { background: var(--clr-accent-light); color: #a5b4fc; border-color: var(--clr-accent-mid); }
+.filter-chip.chip-sup.active    { background: rgba(34,197,94,.14);  color: #4ade80; border-color: rgba(34,197,94,.3); }
+.filter-chip.chip-staff.active  { background: rgba(59,130,246,.14); color: #93c5fd; border-color: rgba(59,130,246,.3); }
+.filter-chip.chip-kepala.active { background: rgba(250,204,21,.14); color: #facc15; border-color: rgba(250,204,21,.3); }
+
+.filter-divider { width: 1px; height: 22px; background: var(--clr-border); flex-shrink: 0; }
+
+.filter-select-wrap {
+    position: relative; display: flex; align-items: center;
+    min-width: 0;
+}
+.filter-select-wrap svg { position: absolute; left: 10px; color: var(--clr-text-muted); pointer-events: none; width: 13px; height: 13px; }
+.akun-select {
+    font-size: 12px; font-family: inherit;
+    background: rgba(255,255,255,0.04); color: var(--clr-text-secondary);
+    border: 1px solid var(--clr-border); border-radius: var(--radius-md);
+    padding: 7px 12px 7px 28px; cursor: pointer; outline: none;
+    transition: all var(--transition); appearance: none; -webkit-appearance: none;
+    color-scheme: dark; min-width: 160px; box-sizing: border-box;
+}
+.akun-select:focus { border-color: var(--clr-accent); color: var(--clr-text-primary); }
+.akun-select option { background: #0c1327; }
+
+.search-wrap {
+    position: relative;
+    min-width: 0;
+}
+.search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--clr-text-muted); pointer-events: none; width: 13px; height: 13px; }
+.search-input {
+    font-size: 13px; font-family: inherit;
+    background: rgba(255,255,255,0.05); color: var(--clr-text-primary);
+    border: 1px solid var(--clr-border); border-radius: var(--radius-md);
+    padding: 7px 12px 7px 30px;
+    box-sizing: border-box;
+    outline: none; transition: all var(--transition); color-scheme: dark;
+}
+.search-input::placeholder { color: var(--clr-text-muted); }
+.search-input:focus { border-color: var(--clr-accent); box-shadow: 0 0 0 3px rgba(99,102,241,.15); background: rgba(255,255,255,0.07); }
+
+/* ── TABLE — TRANSPARAN ───────────────────────────────────── */
+.akun-table-wrap {
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+.akun-table-wrap .table-responsive { background: transparent !important; }
+.akun-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent !important;
+}
+.akun-table thead tr {
+    background: rgba(255,255,255,0.03) !important;
+    border-bottom: 1px solid var(--clr-border);
+}
+.akun-table thead th {
+    padding: 11px 18px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--clr-text-muted);
+    background: transparent !important;
+    border: none !important;
+    white-space: nowrap;
+}
+.akun-table tbody tr {
+    background: transparent !important;
+    border-bottom: 1px solid var(--clr-border);
+    transition: background var(--transition);
+}
+.akun-table tbody tr:last-child { border-bottom: none; }
+.akun-table tbody tr:hover { background: rgba(255,255,255,0.03) !important; }
+.akun-table tbody td {
+    padding: 12px 18px;
+    vertical-align: middle;
+    background: transparent !important;
+    border: none !important;
+    color: var(--clr-text-primary);          /* ← putih */
+    font-size: 13px;
+}
+
+/* ── AVATAR ──────────────────────────────────────────────── */
+.akun-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--clr-accent), #8b5cf6);
+}
+.akun-avatar.sup    { background: linear-gradient(135deg, #22c55e, #16a34a); }
+.akun-avatar.staff  { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.akun-avatar.kepala { background: linear-gradient(135deg, #f59e0b, #d97706); }
+
+/* ── ROLE PILL ───────────────────────────────────────────── */
+.role-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.role-pill.supervisor { background: rgba(34,197,94,.12);   color: #4ade80;  border: 1px solid rgba(34,197,94,.25); }
+.role-pill.staff      { background: rgba(59,130,246,.12);  color: #93c5fd;  border: 1px solid rgba(59,130,246,.25); }
+.role-pill.kepala     { background: rgba(250,204,21,.12);  color: #facc15;  border: 1px solid rgba(250,204,21,.25); }
+.role-pill.default    { background: rgba(255,255,255,.07); color: var(--clr-text-secondary); border: 1px solid var(--clr-border); }
+
+/* ── STATUS ──────────────────────────────────────────────── */
+.status-indicator { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; }
+.status-indicator .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.status-indicator.aktif    .dot { background: var(--clr-success); box-shadow: 0 0 0 2px var(--clr-success-light); }
+.status-indicator.nonaktif .dot { background: var(--clr-text-muted); }
+.status-indicator.aktif    { color: var(--clr-success); }
+.status-indicator.nonaktif { color: var(--clr-text-muted); }
+
+/* ── ACTION BUTTONS ──────────────────────────────────────── */
+.akun-action-btn {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 9px; border-radius: var(--radius-sm);
+    font-size: 11px; font-weight: 500; cursor: pointer;
+    text-decoration: none; transition: all var(--transition);
+    border: 1px solid; font-family: var(--font-base);
+    background: transparent; white-space: nowrap;
+}
+.akun-action-btn.edit   { background: var(--clr-accent-light); color: #a5b4fc; border-color: var(--clr-accent-mid); }
+.akun-action-btn.edit:hover { background: rgba(99,102,241,.25); }
+.akun-action-btn.reset  { background: rgba(250,204,21,.1); color: #facc15; border-color: rgba(250,204,21,.25); }
+.akun-action-btn.reset:hover { background: rgba(250,204,21,.2); }
+.akun-action-btn.delete { background: var(--clr-danger-light); color: var(--clr-danger); border-color: rgba(239,68,68,.25); }
+.akun-action-btn.delete:hover { background: rgba(239,68,68,.22); }
+
+/* ── MOBILE CARDS ────────────────────────────────────────── */
+.akun-card-list {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.akun-mcard {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+    padding: 11px 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+    transition: border-color var(--transition), background var(--transition);
+}
+.akun-mcard:hover { background: rgba(255,255,255,0.05); border-color: var(--clr-border-strong); }
+
+.akun-mcard-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+    min-width: 0;
+    overflow: hidden;
+}
+.akun-mcard-identity {
+    display: flex; align-items: center; gap: 8px;
+    flex: 1; min-width: 0; overflow: hidden;
+}
+.akun-mcard-name {
+    font-size: 13px; font-weight: 600; color: var(--clr-text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 100%;
+}
+.akun-mcard-username { font-size: 10.5px; color: var(--clr-text-muted); margin-top: 1px; }
+.akun-mcard-badges {
+    display: flex; flex-direction: column; align-items: flex-end;
+    gap: 4px; flex-shrink: 0; max-width: 110px;
+}
+.akun-mcard-badges .role-pill { font-size: 10px; padding: 2px 7px; }
+.akun-mcard-badges .status-indicator { font-size: 10px; }
+
+.akun-mcard-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 10px;
+    padding: 10px 0;
+    border-top: 1px solid var(--clr-border);
+    border-bottom: 1px solid var(--clr-border);
+    margin-bottom: 10px;
+    min-width: 0;
+}
+.akun-mcard-meta-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; overflow: hidden; }
+.akun-mcard-meta-item .meta-label {
+    font-size: 9.5px; color: var(--clr-text-muted);
+    font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.akun-mcard-meta-item .meta-value {
+    font-size: 12px; color: var(--clr-text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.akun-mcard-actions { display: flex; gap: 5px; width: 100%; box-sizing: border-box; }
+.akun-mcard-actions .akun-action-btn {
+    flex: 1; justify-content: center;
+    font-size: 11px; padding: 6px 6px;
+    min-width: 0; overflow: hidden;
+}
+
+/* ── EMPTY STATE ─────────────────────────────────────────── */
+.empty-state {
+    text-align: center; padding: 48px 24px;
+    color: var(--clr-text-muted);
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--clr-border);
+    border-radius: var(--radius-lg);
+}
+.empty-state-icon { font-size: 36px; margin-bottom: 12px; opacity: .4; }
+.empty-state-text { font-size: 13px; }
+
+/* ── TOAST ───────────────────────────────────────────────── */
+#akunToast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999; min-width: 240px;
+    padding: 12px 18px; border-radius: var(--radius-lg);
+    font-size: 13px; font-weight: 500; color: #fff;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity .25s, transform .25s;
+    pointer-events: none; backdrop-filter: blur(12px);
+}
+#akunToast.show { opacity: 1; transform: translateY(0); }
+#akunToast.success { background: rgba(34,197,94,.85);  border: 1px solid rgba(34,197,94,.4); }
+#akunToast.error   { background: rgba(239,68,68,.85);  border: 1px solid rgba(239,68,68,.4); }
+
+/* ── RESULT INFO ─────────────────────────────────────────── */
+.result-info {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    font-size: 12px; color: var(--clr-text-muted);
+}
+.result-info strong { color: var(--clr-text-secondary); }
+.result-reset {
+    font-size: 11px; color: var(--clr-text-muted); text-decoration: none;
+    background: rgba(255,255,255,.05); border: 1px solid var(--clr-border);
+    padding: 2px 8px; border-radius: 20px; transition: all var(--transition);
+}
+.result-reset:hover { color: var(--clr-text-primary); border-color: var(--clr-border-strong); }
+
+/* ── RESPONSIVE ──────────────────────────────────────────── */
+@media (max-width: 991px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 767px) {
+    * { box-sizing: border-box !important; }
+
+    .akun-header { flex-direction: column; align-items: stretch; gap: 8px; }
+    .akun-header-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .akun-header-actions .btn-akun { justify-content: center; }
+
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .stat-card { padding: 12px; }
+    .stat-number { font-size: 20px; }
+
+    /* Filter bar: stack vertikal */
+    .filter-bar { flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; }
+    .filter-bar-label { display: none; }
+    .filter-divider { display: none !important; }
+    .filter-chip-group { width: 100%; }
+    .filter-select-wrap { width: 100% !important; }
+    .akun-select { width: 100% !important; min-width: 0 !important; border-radius: var(--radius-md); }
+    .search-wrap { width: 100% !important; margin-left: 0 !important; }
+    .search-input { width: 100% !important; }
+
+    /* Avatar lebih kecil di mobile */
+    .akun-mcard .akun-avatar { width: 30px; height: 30px; font-size: 11px; }
+
+    /* Sembunyikan table, tampilkan card */
+    .akun-table-view { display: none !important; }
+    .akun-card-list  { display: flex !important; }
+}
+
+@media (max-width: 420px) {
+    .akun-header-actions { grid-template-columns: 1fr; }
+    .filter-chip { font-size: 11.5px; padding: 4px 9px; }
+}
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">Manajemen Akun</h5>
-    <div class="btn-group">
-        <a href="{% url 'admin_akun_create_kepala' %}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> Tambah Kepala Supervisor
-        </a>
-        <a href="{% url 'admin_akun_create_customer' %}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg"></i> Tambah Customer
-        </a>
-    </div>
-</div>
+<div class="akun-page">
 
-<div class="card p-3 mb-3">
-    <form method="get" class="row g-2">
-        <div class="col-md-5">
-            <input type="text" name="q" value="{{ q }}" class="form-control form-control-sm" placeholder="Cari nama / username...">
+    <!-- ── HEADER ─────────────────────────────────────────── -->
+    <div class="akun-header">
+        <div>
+            <h5 class="akun-header-title">Manajemen Akun</h5>
+            <p class="akun-header-sub">Kelola semua akun supervisor, kepala supervisor, dan staff lapangan</p>
         </div>
-        <div class="col-md-4">
-            <select name="role" class="form-select form-select-sm">
-                <option value="">— Semua Role —</option>
-                <option value="kepala_supervisor" {% if role == 'kepala_supervisor' %}selected{% endif %}>Kepala Supervisor</option>
-                <option value="supervisor" {% if role == 'supervisor' %}selected{% endif %}>Supervisor</option>
-                <option value="staff" {% if role == 'staff' %}selected{% endif %}>Staff</option>
-                <option value="customer" {% if role == 'customer' %}selected{% endif %}>Customer</option>
-            </select>
+        <div class="akun-header-actions">
+            <a href="{% url 'admin_akun_create_kepala' %}" class="btn-akun btn-akun-primary">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                Tambah Akun
+            </a>
+            <a href="{% url 'admin_akun_create_customer' %}" class="btn-akun btn-akun-secondary">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                Tambah Customer
+            </a>
         </div>
-        <div class="col-md-3">
-            <button class="btn btn-sm btn-secondary w-100">Filter</button>
+    </div>
+
+    <!-- ── STATS ──────────────────────────────────────────── -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon total">👥</div>
+            <div>
+                <div class="stat-number">{{ total_semua|default:akun_list.count }}</div>
+                <div class="stat-label">Total Akun</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon sup">🟢</div>
+            <div>
+                <div class="stat-number">{{ total_supervisor|default:"-" }}</div>
+                <div class="stat-label">Supervisor</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon staff">🔵</div>
+            <div>
+                <div class="stat-number">{{ total_staff|default:"-" }}</div>
+                <div class="stat-label">Staff</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon kepala">🟡</div>
+            <div>
+                <div class="stat-number">{{ total_kepala|default:"-" }}</div>
+                <div class="stat-label">Kepala Supervisor</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── FILTER BAR ─────────────────────────────────────── -->
+    <form method="get" id="filterForm" style="width:100%;min-width:0;overflow:hidden;">
+        <div class="filter-bar">
+            <span class="filter-bar-label">Filter:</span>
+
+            <div class="filter-chip-group">
+                <a href="?{% if q %}q={{ q }}&{% endif %}{% if perusahaan %}perusahaan={{ perusahaan }}{% endif %}"
+                   class="filter-chip {% if not role %}active{% endif %}">Semua</a>
+                {% for value, label in role_choices %}
+                {% if value != 'admin' %}
+                <a href="?role={{ value }}{% if q %}&q={{ q }}{% endif %}{% if perusahaan %}&perusahaan={{ perusahaan }}{% endif %}"
+                   class="filter-chip
+                   {% if value == 'supervisor' %}chip-sup
+                   {% elif value == 'staff' %}chip-staff
+                   {% elif value == 'kepala_supervisor' %}chip-kepala{% endif %}
+                   {% if role == value %}active{% endif %}">
+                    {% if value == 'supervisor' %}🟢
+                    {% elif value == 'staff' %}🔵
+                    {% elif value == 'kepala_supervisor' %}🟡{% endif %}
+                    {{ label }}
+                </a>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+
+            
+
+            <div class="search-wrap" style="margin-left:auto;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                </svg>
+                <input type="text" name="q" class="search-input"
+                       value="{{ q }}" placeholder="Cari nama / username..."
+                       autocomplete="off" oninput="debounceSearch()"
+                       style="width:200px;">
+                <input type="hidden" name="role" value="{{ role }}">
+                {% if perusahaan %}<input type="hidden" name="perusahaan" value="{{ perusahaan }}">{% endif %}
+            </div>
         </div>
     </form>
-</div>
 
-<div class="card">
-    <div class="table-responsive">
-        <table class="table table-hover mb-0">
-            <thead class="">
-                <tr><th>#</th><th>Nama</th><th>Username</th><th>Role</th><th>Telepon</th><th>Status</th><th>Aksi</th></tr>
-            </thead>
-            <tbody>
-                {% for akun in akun_list %}
-                <tr>
-                    <td class="text-muted small" data-label="#">{{ forloop.counter }}</td>
-                    <td class="fw-semibold" data-label="Nama">{{ akun.nama_lengkap|default:akun.username }}</td>
-                    <td class="text-muted small" data-label="Username">{{ akun.username }}</td>
-                    <td data-label="Role"><span class="badge bg-light text-dark border">{{ akun.get_role_display }}</span></td>
-                    <td class="text-muted small" data-label="Telepon">{{ akun.telepon|default:'—' }}</td>
-                    <td data-label="Status">
-                        {% if akun.is_active %}
-                            <span class="badge bg-success">Aktif</span>
-                        {% else %}
-                            <span class="badge bg-secondary">Nonaktif</span>
-                        {% endif %}
-                    </td>
-                    <td data-label="Aksi">
-                        {% if akun.role == 'kepala_supervisor' %}
-                        <a href="{% url 'admin_akun_edit_kepala' akun.pk %}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        {% else %}
-                        <a href="{% url 'admin_akun_edit' akun.pk %}" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-pencil"></i>
-                        </a>
-                        {% endif %}
-                        <button class="btn btn-sm btn-outline-{% if akun.is_active %}warning{% else %}success{% endif %}"
-                            data-bs-toggle="modal" data-bs-target="#modalToggle{{ akun.pk }}">
-                            <i class="bi bi-{% if akun.is_active %}pause{% else %}play{% endif %}"></i>
-                        </button>
-                    </td>
-                </tr>
-                <!-- Modal Toggle -->
-                <div class="modal fade" id="modalToggle{{ akun.pk }}" tabindex="-1">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h6 class="modal-title">{% if akun.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %} Akun</h6>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                {% if akun.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %} akun <strong>{{ akun.nama_lengkap }}</strong>?
-                            </div>
-                            <div class="modal-footer">
-                                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Batal</button>
-                                <form method="post" action="{% url 'admin_akun_toggle_aktif' akun.pk %}">
-                                    {% csrf_token %}
-                                    <button class="btn btn-{% if akun.is_active %}warning{% else %}success{% endif %} btn-sm">Ya</button>
-                                </form>
-                            </div>
-                        </div>
+    <!-- ── RESULT INFO ────────────────────────────────────── -->
+    {% if q or role or perusahaan %}
+    <div class="result-info">
+        Menampilkan <strong>{{ akun_list|length }}</strong> akun
+        {% if q %}untuk "<strong style="color:var(--clr-text-primary)">{{ q }}</strong>"{% endif %}
+        {% if role %}· role <strong style="color:var(--clr-text-primary)">{{ role }}</strong>{% endif %}
+        <a href="{% url 'admin_akun_list' %}" class="result-reset">✕ Reset filter</a>
+    </div>
+    {% endif %}
+
+    {% if akun_list %}
+
+    <!-- ════════════════════════════════════════════════════ -->
+    <!--  DESKTOP TABLE                                       -->
+    <!-- ════════════════════════════════════════════════════ -->
+    <div class="akun-table-view">
+        <div class="akun-table-wrap">
+            <div class="table-responsive">
+                <table class="akun-table">
+                    <thead>
+                        <tr>
+                            <th>Akun</th>
+                            <th>Role</th>
+                            <th>No. HP</th>
+                            <th>Status</th>
+                            <th>Bergabung</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for akun in akun_list %}
+                        <tr>
+                            <!-- Akun -->
+                            <td>
+                                <div style="display:flex;align-items:center;gap:10px;">
+                                    <div class="akun-avatar
+                                        {% if akun.role == 'supervisor' %}sup
+                                        {% elif akun.role == 'staff' %}staff
+                                        {% elif akun.role == 'kepala_supervisor' %}kepala{% endif %}">
+                                        {{ akun.nama_lengkap|default:akun.username|slice:":2"|upper }}
+                                    </div>
+                                    <div>
+                                        <div style="font-weight:500;font-size:13px;color:var(--clr-text-primary);">
+                                            {{ akun.nama_lengkap|default:"-" }}
+                                        </div>
+                                        <div style="font-size:11px;color:var(--clr-text-muted);">@{{ akun.username }}</div>
+                                    </div>
+                                </div>
+                            </td>
+
+                            <!-- Role -->
+                            <td>
+                                <span class="role-pill
+                                    {% if akun.role == 'supervisor' %}supervisor
+                                    {% elif akun.role == 'staff' %}staff
+                                    {% elif akun.role == 'kepala_supervisor' %}kepala
+                                    {% else %}default{% endif %}">
+                                    {% if akun.role == 'supervisor' %}🟢
+                                    {% elif akun.role == 'staff' %}🔵
+                                    {% elif akun.role == 'kepala_supervisor' %}🟡{% endif %}
+                                    {{ akun.get_role_display }}
+                                </span>
+                            </td>
+
+                            <!-- Perusahaan -->
+                           
+                            <!-- No HP -->
+                            <td style="color:var(--clr-text-secondary);">{{ akun.telepon|default:"—" }}</td>
+
+                            <!-- Status -->
+                            <td>
+                                {% if akun.is_active %}
+                                <span class="status-indicator aktif"><span class="dot"></span>Aktif</span>
+                                {% else %}
+                                <span class="status-indicator nonaktif"><span class="dot"></span>Nonaktif</span>
+                                {% endif %}
+                            </td>
+
+                            <!-- Bergabung -->
+                            <td>
+                                <div style="font-size:12px;color:var(--clr-text-primary);">{{ akun.date_joined|date:"d M Y" }}</div>
+                                <div style="font-size:11px;color:var(--clr-text-muted);">{{ akun.date_joined|timesince }} lalu</div>
+                            </td>
+
+                            <!-- Aksi -->
+                            
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════ -->
+    <!--  MOBILE CARDS                                        -->
+    <!-- ════════════════════════════════════════════════════ -->
+    <div class="akun-card-list">
+        {% for akun in akun_list %}
+        <div class="akun-mcard">
+
+            <!-- Top: avatar + nama + badge -->
+            <div class="akun-mcard-top">
+                <div class="akun-mcard-identity">
+                    <div class="akun-avatar
+                        {% if akun.role == 'supervisor' %}sup
+                        {% elif akun.role == 'staff' %}staff
+                        {% elif akun.role == 'kepala_supervisor' %}kepala{% endif %}">
+                        {{ akun.nama_lengkap|default:akun.username|slice:":2"|upper }}
+                    </div>
+                    <div style="min-width:0;">
+                        <div class="akun-mcard-name">{{ akun.nama_lengkap|default:"-" }}</div>
+                        <div class="akun-mcard-username">@{{ akun.username }}</div>
                     </div>
                 </div>
-                {% empty %}
-                <tr><td colspan="7" class="text-center text-muted py-4">Belum ada akun.</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                <div class="akun-mcard-badges">
+                    <span class="role-pill
+                        {% if akun.role == 'supervisor' %}supervisor
+                        {% elif akun.role == 'staff' %}staff
+                        {% elif akun.role == 'kepala_supervisor' %}kepala
+                        {% else %}default{% endif %}">
+                        {{ akun.get_role_display }}
+                    </span>
+                    {% if akun.is_active %}
+                    <span class="status-indicator aktif"><span class="dot"></span>Aktif</span>
+                    {% else %}
+                    <span class="status-indicator nonaktif"><span class="dot"></span>Nonaktif</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Meta grid -->
+            <div class="akun-mcard-meta">
+                <div class="akun-mcard-meta-item">
+                    <span class="meta-label">No. HP</span>
+                    <span class="meta-value">{{ akun.telepon|default:"—" }}</span>
+                </div>
+                <div class="akun-mcard-meta-item">
+                    <span class="meta-label">Bergabung</span>
+                    <span class="meta-value">{{ akun.date_joined|date:"d M Y" }}</span>
+                </div>
+                <div class="akun-mcard-meta-item">
+                    <span class="meta-label">Email</span>
+                    <span class="meta-value" style="word-break:break-all;font-size:12px;">{{ akun.email|default:"—" }}</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            
+
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <!-- Empty state -->
+    <div class="empty-state">
+        <div class="empty-state-icon">👤</div>
+        <div class="empty-state-text">
+            {% if q or role or perusahaan %}
+            Tidak ada akun yang cocok dengan filter yang dipilih.<br>
+            <a href="{% url 'admin_akun_list' %}" style="color:var(--clr-accent);">Reset filter</a>
+            {% else %}
+            Belum ada akun yang terdaftar.
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- ── TOAST ──────────────────────────────────────────────── -->
+<div id="akunToast"></div>
+
+<!-- ── CONFIRM MODAL ──────────────────────────────────────── -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content"
+             style="background:#0c1327;border:1px solid var(--clr-border);border-radius:var(--radius-lg);">
+            <div class="modal-body" style="padding:28px 24px;text-align:center;">
+                <div id="modalIcon" style="font-size:34px;margin-bottom:12px;"></div>
+                <h6 id="modalTitle" style="color:var(--clr-text-primary);font-weight:600;margin-bottom:8px;"></h6>
+                <p id="modalDesc" style="color:var(--clr-text-muted);font-size:13px;margin-bottom:20px;"></p>
+                <div style="display:flex;gap:8px;justify-content:center;">
+                    <button class="btn" data-bs-dismiss="modal"
+                            style="background:rgba(255,255,255,.05);color:var(--clr-text-secondary);
+                                   border:1px solid var(--clr-border);font-size:13px;">
+                        Batal
+                    </button>
+                    <button id="modalConfirmBtn" class="btn" style="font-size:13px;">
+                        Konfirmasi
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Debounce search ────────────────────────────────────────
+let _st = null;
+function debounceSearch() {
+    clearTimeout(_st);
+    _st = setTimeout(() => document.getElementById('filterForm').submit(), 420);
+}
+
+// ── Toast ──────────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+    const el = document.getElementById('akunToast');
+    el.textContent = msg;
+    el.className = `show ${type}`;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = ''; }, 3200);
+}
+
+// ── CSRF ───────────────────────────────────────────────────
+function getCsrf() {
+    return document.cookie.split(';')
+        .find(c => c.trim().startsWith('csrftoken='))
+        ?.split('=')[1] || '';
+}
+
+// ── Modal helpers ──────────────────────────────────────────
+let _modalCb = null;
+function openConfirmModal({ icon, title, desc, btnLabel, btnColor, onConfirm }) {
+    document.getElementById('modalIcon').textContent  = icon;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDesc').textContent  = desc;
+    const btn = document.getElementById('modalConfirmBtn');
+    btn.textContent        = btnLabel;
+    btn.style.background   = btnColor;
+    btn.style.color        = '#fff';
+    btn.style.border       = 'none';
+    _modalCb = onConfirm;
+    new bootstrap.Modal(document.getElementById('confirmModal')).show();
+}
+document.getElementById('modalConfirmBtn').addEventListener('click', () => {
+    if (_modalCb) _modalCb();
+    bootstrap.Modal.getInstance(document.getElementById('confirmModal'))?.hide();
+});
+
+// ── Reset Password ─────────────────────────────────────────
+function resetPassword(akunId, nama) {
+    openConfirmModal({
+        icon    : '🔑',
+        title   : `Reset Password — ${nama}`,
+        desc    : 'Password akan direset ke default. Pastikan menginformasikan ke user.',
+        btnLabel: 'Ya, Reset',
+        btnColor: 'rgba(250,204,21,.85)',
+        onConfirm: () => {
+            const fd = new FormData();
+            fd.append('csrfmiddlewaretoken', getCsrf());
+            fetch(`/admin/akun/${akunId}/reset-password/`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd,
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.ok) showToast(`Password ${nama} berhasil direset ✓`, 'success');
+                else showToast(d.error || 'Gagal reset password.', 'error');
+            })
+            .catch(() => showToast('Terjadi kesalahan koneksi.', 'error'));
+        }
+    });
+}
+
+// ── Hapus Akun ─────────────────────────────────────────────
+function hapusAkun(akunId, nama) {
+    openConfirmModal({
+        icon    : '🗑️',
+        title   : `Hapus Akun — ${nama}`,
+        desc    : 'Akun ini akan dihapus permanen dan tidak dapat dikembalikan.',
+        btnLabel: 'Ya, Hapus',
+        btnColor: 'rgba(239,68,68,.9)',
+        onConfirm: () => {
+            const fd = new FormData();
+            fd.append('csrfmiddlewaretoken', getCsrf());
+            fetch(`/admin/akun/${akunId}/delete/`, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd,
+            })
+            .then(r => r.json())
+            .then(d => {
+                if (d.ok) {
+                    showToast(`Akun ${nama} dihapus.`, 'success');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    showToast(d.error || 'Gagal menghapus akun.', 'error');
+                }
+            })
+            .catch(() => showToast('Terjadi kesalahan koneksi.', 'error'));
+        }
+    });
+}
+</script>
 {% endblock %}

@@ -164,3 +164,52 @@ def staff_list(request):
         'page_title'     : 'Daftar Staff Lapangan',
     }
     return render(request, 'kepala_supervisor/akun/staff_list.html', context)
+
+
+
+@kepala_supervisor_required
+def pilih_supervisor(request):
+    penugasan = SupervisorPerusahaan.objects.filter(
+        kepala_supervisor=request.user,
+        is_active=True,
+    ).select_related('supervisor', 'perusahaan', 'jenis_jasa').order_by('supervisor__nama_lengkap')
+
+    supervisors = {}
+    for p in penugasan:
+        if p.supervisor_id not in supervisors:
+            supervisors[p.supervisor_id] = {
+                'supervisor': p.supervisor,
+                'penugasan' : [],
+            }
+        supervisors[p.supervisor_id]['penugasan'].append(p)
+
+    return render(request, 'kepala_supervisor/akun/pilih_supervisor.html', {
+        'supervisors'          : supervisors.values(),
+        'acting_as_supervisor' : request.session.get('acting_as_supervisor_id'),
+        'page_title'           : 'Pilih Supervisor',
+    })
+
+
+@kepala_supervisor_required
+def set_acting_supervisor(request, supervisor_id):
+    """Simpan pilihan supervisor ke session, lalu redirect ke dashboard supervisor."""
+    is_assigned = SupervisorPerusahaan.objects.filter(
+        kepala_supervisor=request.user,
+        supervisor_id=supervisor_id,
+        is_active=True,
+    ).exists()
+
+    if not is_assigned:
+        messages.error(request, 'Supervisor ini tidak di bawah pengawasan Anda.')
+        return redirect('kepala_pilih_supervisor')
+
+    request.session['acting_as_supervisor_id'] = supervisor_id
+    messages.success(request, 'Anda sekarang mengakses sebagai supervisor tersebut.')
+    return redirect('supervisor_dashboard')
+
+
+@kepala_supervisor_required  
+def clear_acting_supervisor(request):
+    """Kembali ke mode kepala supervisor normal."""
+    request.session.pop('acting_as_supervisor_id', None)
+    return redirect('kepala_dashboard')

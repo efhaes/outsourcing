@@ -4,16 +4,16 @@ from django.db.models import Count, Q
 from outsourcing.decorators import supervisor_required
 from outsourcing.models import LaporanKegiatan, ItemKegiatan, StaffSupervisor
 import json
+from outsourcing.decorators import supervisor_or_kepala_required  # ← ganti import
 
-
-@supervisor_required
+@supervisor_or_kepala_required  # ← ganti decorator
 def dashboard_view(request):
-    user  = request.user
+    user  = request.supervisor_context  # ← pakai konteks supervisor, bukan request.user
     today = timezone.now().date()
 
     # ── Stat Cards ──────────────────────────────────────────
-    laporan_aktif  = LaporanKegiatan.objects.filter(supervisor=user, status='aktif').count()
-    laporan_draft  = LaporanKegiatan.objects.filter(supervisor=user, status='draft').count()
+    laporan_aktif   = LaporanKegiatan.objects.filter(supervisor=user, status='aktif').count()
+    laporan_draft   = LaporanKegiatan.objects.filter(supervisor=user, status='draft').count()
     laporan_selesai = LaporanKegiatan.objects.filter(supervisor=user, status='selesai').count()
     total_staff = StaffSupervisor.objects.filter(
         supervisor=user, is_active=True

@@ -1,0 +1,42 @@
+{% extends 'kepala_supervisor/base_kepala.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/kepala_spv/kepala.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h5>{{ page_title }}</h5>
+</div>
+
+<div class="row g-3">
+    {% for item in supervisors %}
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title" style="font-size:14px;font-weight:700;color:#f0f0ff;margin-bottom:10px;">
+                    {{ item.supervisor.nama_lengkap }}
+                </h5>
+                <ul class="list-unstyled" style="margin-bottom:12px;">
+                    {% for p in item.penugasan %}
+                    <li style="font-size:12.5px;color:rgba(160,160,192,0.75);padding:3px 0;border-bottom:1px solid rgba(255,255,255,0.05);">
+                        • {{ p.perusahaan.nama_perusahaan }} — {{ p.jenis_jasa.nama_jasa }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'kepala_set_acting_supervisor' item.supervisor.id %}"
+                    class="btn btn-primary btn-sm">
+                    Akses sebagai Supervisor →
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p style="color:rgba(160,160,192,0.6);font-size:13px;">
+            Tidak ada supervisor di bawah pengawasan Anda.
+        </p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
