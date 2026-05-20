@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.urls import reverse
@@ -41,9 +42,25 @@ def izin_submit(request):
 @staff_required
 def izin_batal(request, pk):
     izin = get_object_or_404(IzinStaff, pk=pk, staff=request.user)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+    if request.method != 'POST':
+        if is_ajax:
+            return JsonResponse({'success': False, 'error': 'Request tidak valid.'}, status=400)
+        messages.error(request, 'Request tidak valid.')
+        return redirect(reverse('staff_absensi_riwayat') + '?tab=izin')
+
     if izin.status != StatusIzinChoices.PENDING:
+        if is_ajax:
+            return JsonResponse({'success': False, 'error': 'Hanya izin pending yang bisa dibatalkan.'})
         messages.error(request, 'Hanya izin dengan status pending yang bisa dibatalkan.')
         return redirect(reverse('staff_absensi_riwayat') + '?tab=izin')
+
+    izin.delete()
+
+    if is_ajax:
+        return JsonResponse({'success': True})
+
     messages.success(request, 'Pengajuan izin berhasil dibatalkan.')
     return redirect(reverse('staff_absensi_riwayat') + '?tab=izin')
 
@@ -53,3 +70,4 @@ def izin_detail(request, pk):
     """Detail satu izin."""
     izin = get_object_or_404(IzinStaff, pk=pk, staff=request.user)
     return render(request, 'staff/izin/detail.html', {'izin': izin})
+

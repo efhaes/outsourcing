@@ -3,420 +3,1143 @@
 
 {% block extra_css %}
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'css/admin/dashboard.css' %}">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:        #0a0c10;
+  --bg-card:   #0f1117;
+  --bg-hover:  #141720;
+  --border:    rgba(255,255,255,.07);
+  --border-hi: rgba(255,255,255,.14);
+  --text-1:    #f0f2f8;
+  --text-2:    #8b90a0;
+  --text-3:    #4a4f5e;
+  --green:     #22c55e;
+  --green-dim: rgba(34,197,94,.12);
+  --red:       #ef4444;
+  --red-dim:   rgba(239,68,68,.12);
+  --amber:     #f59e0b;
+  --amber-dim: rgba(245,158,11,.12);
+  --blue:      #3b82f6;
+  --blue-dim:  rgba(59,130,246,.12);
+  --purple:    #a78bfa;
+  --purple-dim:rgba(167,139,250,.12);
+  --cyan:      #06b6d4;
+  --cyan-dim:  rgba(6,182,212,.12);
+  --radius:    12px;
+  --radius-sm: 8px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+}
+
+/* ── Layout ── */
+.dash {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
+}
+
+/* ── Header ── */
+.dash-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.dash-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text-1);
+  letter-spacing: -.3px;
+}
+.dash-header p {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 4px;
+}
+.dash-timestamp {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: .5px;
+  text-align: right;
+}
+
+/* ── Filter ── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.filter-bar select {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-1);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  outline: none;
+  transition: border-color .15s;
+}
+.filter-bar select:hover { border-color: var(--border-hi); }
+.filter-bar label { font-size: 12px; color: var(--text-2); }
+.btn-filter {
+  padding: 7px 16px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn-filter:hover { opacity: .85; }
+.btn-reset {
+  padding: 7px 14px;
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  transition: border-color .15s, color .15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.btn-reset:hover { border-color: var(--border-hi); color: var(--text-1); }
+.period-tag {
+  margin-left: auto;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-2);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* ── Section heading ── */
+.section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── ALERT BANNER ── */
+.alert-strip {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.alert-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid;
+  cursor: default;
+  transition: transform .1s;
+  text-decoration: none;
+  color: inherit;
+}
+.alert-chip:hover { transform: translateY(-1px); }
+.alert-chip.warn  { background: var(--amber-dim); color: var(--amber); border-color: rgba(245,158,11,.2); }
+.alert-chip.danger{ background: var(--red-dim);   color: var(--red);   border-color: rgba(239,68,68,.2); }
+.alert-chip.info  { background: var(--blue-dim);  color: var(--blue);  border-color: rgba(59,130,246,.2); }
+.alert-chip .count {
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── TODAY PULSE ── */
+.pulse-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.pulse-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color .15s;
+}
+.pulse-card:hover { border-color: var(--border-hi); }
+.pulse-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent, var(--blue));
+  opacity: .6;
+}
+.pulse-num {
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text-1);
+  font-variant-numeric: tabular-nums;
+}
+.pulse-label {
+  font-size: 11px;
+  color: var(--text-2);
+  margin-top: 6px;
+}
+.pulse-sub {
+  font-size: 10px;
+  color: var(--text-3);
+  margin-top: 3px;
+  font-family: 'DM Mono', monospace;
+}
+.pulse-bar {
+  margin-top: 10px;
+  height: 3px;
+  background: rgba(255,255,255,.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.pulse-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent, var(--blue));
+  transition: width 1s ease;
+}
+
+/* ── KPI ROW ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.kpi-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: border-color .15s;
+}
+.kpi-card:hover { border-color: var(--border-hi); }
+.kpi-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.kpi-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--icon-bg, var(--blue-dim));
+  color: var(--icon-color, var(--blue));
+}
+.kpi-icon svg { width: 16px; height: 16px; }
+.kpi-delta {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 20px;
+  font-family: 'DM Mono', monospace;
+}
+.kpi-delta.up   { background: var(--green-dim); color: var(--green); }
+.kpi-delta.down { background: var(--red-dim);   color: var(--red); }
+.kpi-delta.flat { background: rgba(255,255,255,.05); color: var(--text-3); }
+.kpi-val {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text-1);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-label {
+  font-size: 12px;
+  color: var(--text-2);
+  margin-top: 5px;
+}
+.kpi-sparkline {
+  margin-top: 14px;
+  height: 36px;
+}
+
+/* ── TWO-COL LAYOUT ── */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+.three-col { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+@media (max-width: 1024px) { .three-col { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 768px)  { .two-col, .three-col { grid-template-columns: 1fr; } }
+
+/* ── PANEL ── */
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.panel-head h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-1);
+}
+.panel-head span {
+  font-size: 11px;
+  color: var(--text-3);
+  font-family: 'DM Mono', monospace;
+}
+.panel-body { padding: 0; }
+
+/* ── TABLE ── */
+.dtable { width: 100%; border-collapse: collapse; font-size: 12px; }
+.dtable thead th {
+  padding: 10px 20px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+}
+.dtable tbody tr { border-bottom: 1px solid var(--border); transition: background .1s; }
+.dtable tbody tr:last-child { border-bottom: none; }
+.dtable tbody tr:hover { background: var(--bg-hover); }
+.dtable td { padding: 11px 20px; color: var(--text-2); vertical-align: middle; }
+.dtable td.strong { color: var(--text-1); font-weight: 500; }
+.dtable td.mono { font-family: 'DM Mono', monospace; font-size: 11px; }
+
+/* ── STATUS BADGES ── */
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+  letter-spacing: .3px;
+}
+.badge.draft     { background: rgba(255,255,255,.06); color: var(--text-2); }
+.badge.aktif     { background: var(--blue-dim);   color: var(--blue); }
+.badge.selesai   { background: var(--green-dim);  color: var(--green); }
+.badge.dikirim   { background: var(--purple-dim); color: var(--purple); }
+.badge.pending   { background: var(--amber-dim);  color: var(--amber); }
+.badge.approved  { background: var(--green-dim);  color: var(--green); }
+.badge.rejected  { background: var(--red-dim);    color: var(--red); }
+
+/* ── SUPERVISOR LEADERBOARD ── */
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.leaderboard-item:last-child { border-bottom: none; }
+.leaderboard-item:hover { background: var(--bg-hover); }
+.lb-rank {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--text-3);
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.lb-rank.gold   { color: #f59e0b; }
+.lb-rank.silver { color: #94a3b8; }
+.lb-rank.bronze { color: #92400e; }
+.lb-avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 600; color: #fff;
+  flex-shrink: 0;
+}
+.lb-info { flex: 1; min-width: 0; }
+.lb-name { font-size: 12px; font-weight: 500; color: var(--text-1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lb-meta { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+.lb-bar-wrap { width: 80px; flex-shrink: 0; }
+.lb-bar-track { height: 4px; background: rgba(255,255,255,.06); border-radius: 2px; overflow: hidden; }
+.lb-bar-fill  { height: 100%; border-radius: 2px; background: var(--blue); transition: width 1s ease; }
+.lb-count { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-1); font-weight: 500; width: 28px; text-align: right; flex-shrink: 0; }
+
+/* ── PERUSAHAAN HEALTH ── */
+.health-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.health-item:last-child { border-bottom: none; }
+.health-item:hover { background: var(--bg-hover); }
+.health-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.health-dot.good { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.health-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+.health-dot.bad  { background: var(--red);   box-shadow: 0 0 6px var(--red); }
+.health-name { flex: 1; font-size: 12px; color: var(--text-1); font-weight: 500; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.health-pct  { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600; }
+
+/* ── CHART AREA ── */
+.chart-wrap {
+  padding: 16px 20px 20px;
+  position: relative;
+}
+.chart-wrap canvas { display: block; }
+
+/* ── ABSENSI HEATMAP ── */
+.heatmap-wrap {
+  padding: 16px 20px 20px;
+}
+.heatmap-label-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.heatmap-day-label {
+  width: 24px;
+  font-size: 9px;
+  color: var(--text-3);
+  text-align: center;
+  font-family: 'DM Mono', monospace;
+}
+.heatmap-grid {
+  display: flex;
+  gap: 4px;
+}
+.heatmap-week {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.heatmap-cell {
+  width: 14px; height: 14px;
+  border-radius: 3px;
+  background: rgba(255,255,255,.04);
+  position: relative;
+  cursor: default;
+  transition: transform .1s;
+}
+.heatmap-cell:hover { transform: scale(1.3); }
+.heatmap-cell[data-pct]::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e2232;
+  border: 1px solid var(--border-hi);
+  color: var(--text-1);
+  font-size: 10px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .15s;
+  z-index: 10;
+  font-family: 'DM Mono', monospace;
+}
+.heatmap-cell:hover[data-pct]::after { opacity: 1; }
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 10px;
+}
+.heatmap-legend span { font-size: 10px; color: var(--text-3); }
+.legend-cell { width: 10px; height: 10px; border-radius: 2px; }
+
+/* ── OVERTIME SUMMARY ── */
+.ot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.ot-row:last-child { border-bottom: none; }
+.ot-row:hover { background: var(--bg-hover); }
+.ot-label { color: var(--text-2); }
+.ot-val { font-family: 'DM Mono', monospace; font-weight: 600; }
+
+/* ── RECENT ALERTS TABLE ── */
+.alert-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  transition: background .1s;
+}
+.alert-row:last-child { border-bottom: none; }
+.alert-row:hover { background: var(--bg-hover); }
+.alert-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.alert-text { flex: 1; color: var(--text-2); }
+.alert-text strong { color: var(--text-1); }
+.alert-time { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-3); flex-shrink: 0; }
+
+/* ── IZIN RING ── */
+.ring-wrap {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.ring-legend { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.ring-legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.ring-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.ring-legend-label { color: var(--text-2); flex: 1; }
+.ring-legend-val { font-family: 'DM Mono', monospace; font-weight: 600; color: var(--text-1); }
+
+/* ── EMPTY ── */
+.empty-row {
+  padding: 32px 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .pulse-grid { grid-template-columns: repeat(2, 1fr); }
+  .kpi-grid   { grid-template-columns: 1fr 1fr; }
+}
+</style>
 {% endblock %}
 
 {% block content %}
+<div class="dash">
 
-<!-- ═══════════════ HEADER ═══════════════ -->
-<div class="dash-header">
-  <div class="dash-header-left">
-    <h1>Command Center</h1>
-    <p>Pantau performa operasional outsourcing secara real‑time</p>
+  <!-- ══ HEADER ══ -->
+  <div class="dash-header">
+    <div>
+      <h1>Business Overview</h1>
+      <p>Performa operasional outsourcing — semua klien & tim</p>
+    </div>
+    <div class="dash-timestamp">{% now "d M Y · H:i" %}</div>
   </div>
-  <div class="dash-header-right">
-    <span class="timestamp">{% now "d M Y, H:i" %}</span>
-  </div>
-</div>
 
-<!-- ═══════════════ FILTER ═══════════════ -->
-<div class="filter-wrap">
-  <span class="filter-label">Periode</span>
-  <form method="get" class="filter-form">
-    <div class="filter-inputs">
-      <select name="tahun" class="form-select-clean">
-        {% for t in tahun_choices %}
-          <option value="{{ t }}" {% if t == filter_tahun %}selected{% endif %}>{{ t }}</option>
-        {% endfor %}
-      </select>
-      <select name="bulan" class="form-select-clean">
-        <option value="">Semua Bulan</option>
-        {% for val, label in bulan_choices %}
-          <option value="{{ val }}" {% if val == filter_bulan %}selected{% endif %}>{{ label }}</option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="filter-actions">
-      <button type="submit" class="btn-primary-clean">Terapkan</button>
-      <a href="{% url 'admin_dashboard' %}" class="btn-ghost-clean">Reset</a>
-    </div>
-    <span class="period-badge">{{ stats.bulan_label }} {{ stats.tahun }}</span>
+  <!-- ══ FILTER ══ -->
+  <form method="get" class="filter-bar">
+    <label>Tahun</label>
+    <select name="tahun">
+      {% for t in tahun_choices %}
+        <option value="{{ t }}" {% if t == filter_tahun %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+    <label>Bulan</label>
+    <select name="bulan">
+      <option value="">Semua</option>
+      {% for val, label in bulan_choices %}
+        <option value="{{ val }}" {% if val == filter_bulan %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn-filter">Terapkan</button>
+    <a href="{% url 'admin_dashboard' %}" class="btn-reset">Reset</a>
+    <span class="period-tag">{{ stats.bulan_label }} {{ stats.tahun }}</span>
   </form>
-</div>
 
-<!-- ═══════════════ SDM ═══════════════ -->
-<section class="dashboard-section">
-  <h2 class="section-heading">Sumber Daya Manusia</h2>
-  <div class="stat-grid stat-grid-5">
-    <div class="stat-card-enhanced" style="--accent:#3b82f6;--bg-soft:#dbeafe">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Perusahaan</span>
-        <span class="stat-value-large">{{ stats.total_perusahaan }}</span>
-        <span class="stat-desc">Klien aktif</span>
-      </div>
+  <!-- ══ ALERT STRIP ══ -->
+  {% if stats.alert_ot_pending or stats.alert_izin_pending or stats.alert_laporan_stuck %}
+  <div class="alert-strip">
+    {% if stats.alert_ot_pending %}
+    <div class="alert-chip warn">
+      <span class="count">{{ stats.alert_ot_pending }}</span>
+      Overtime belum direview
     </div>
-
-    <div class="stat-card-enhanced" style="--accent:#10b981;--bg-soft:#d1fae5">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Kepala Supervisor</span>
-        <span class="stat-value-large">{{ stats.total_kepala }}</span>
-        <span class="stat-desc">Akun aktif</span>
-      </div>
+    {% endif %}
+    {% if stats.alert_izin_pending %}
+    <div class="alert-chip danger">
+      <span class="count">{{ stats.alert_izin_pending }}</span>
+      Izin menunggu approval
     </div>
-
-    <div class="stat-card-enhanced" style="--accent:#f59e0b;--bg-soft:#fef3c7">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Supervisor</span>
-        <span class="stat-value-large">{{ stats.total_supervisor }}</span>
-        <span class="stat-desc">Akun aktif</span>
-      </div>
+    {% endif %}
+    {% if stats.alert_laporan_stuck %}
+    <div class="alert-chip info">
+      <span class="count">{{ stats.alert_laporan_stuck }}</span>
+      Laporan stuck draft &gt;7 hari
     </div>
-
-    <div class="stat-card-enhanced" style="--accent:#8b5cf6;--bg-soft:#ede9fe">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Staff Lapangan</span>
-        <span class="stat-value-large">{{ stats.total_staff }}</span>
-        <span class="stat-desc">Akun aktif</span>
-      </div>
-    </div>
-
-    <div class="stat-card-enhanced" style="--accent:#06b6d4;--bg-soft:#cffafe">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Customer</span>
-        <span class="stat-value-large">{{ stats.total_customer }}</span>
-        <span class="stat-desc">Akun aktif</span>
-      </div>
-    </div>
+    {% endif %}
   </div>
-</section>
+  {% endif %}
 
-<!-- ═══════════════ LAPORAN ═══════════════ -->
-<section class="dashboard-section">
-  <h2 class="section-heading">Laporan Kegiatan <span class="heading-period">{{ stats.bulan_label }} {{ stats.tahun }}</span></h2>
-  <div class="stat-grid stat-grid-4">
-    <div class="stat-card-enhanced" style="--accent:#64748b;--bg-soft:#f1f5f9">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Total Laporan</span>
-        <span class="stat-value-large">{{ stats.total_laporan }}</span>
+  <!-- ══ TODAY PULSE ══ -->
+  <!-- Ganti section-label "Hari Ini" -->
+<div class="section-label">
+  Hari Ini
+  <span style="font-size:10px;color:var(--text-3);font-family:'DM Mono',monospace;
+               text-transform:none;letter-spacing:0;margin-left:4px">
+    {% now "d M Y" %} · tidak terpengaruh filter
+  </span>
+</div>
+  <div class="pulse-grid">
+
+    <div class="pulse-card" style="--accent:var(--green)">
+      <div class="pulse-num">{{ stats.today_hadir }}</div>
+      <div class="pulse-label">Staff Hadir</div>
+      <div class="pulse-sub">dari {{ stats.total_staff }} total</div>
+      <div class="pulse-bar">
+        <div class="pulse-bar-fill" style="width:{% if stats.total_staff %}{% widthratio stats.today_hadir stats.total_staff 100 %}{% else %}0{% endif %}%;background:var(--green)"></div>
       </div>
     </div>
-    <div class="stat-card-enhanced" style="--accent:#3b82f6;--bg-soft:#dbeafe">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-        </svg>
+
+    <div class="pulse-card" style="--accent:var(--red)">
+      <div class="pulse-num">{{ stats.today_belum_absen }}</div>
+      <div class="pulse-label">Belum Absen</div>
+      <div class="pulse-sub">dari staff aktif</div>
+      <div class="pulse-bar">
+        <div class="pulse-bar-fill" style="width:{% if stats.total_staff %}{% widthratio stats.today_belum_absen stats.total_staff 100 %}{% else %}0{% endif %}%;background:var(--red)"></div>
       </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Draft / Aktif</span>
-        <span class="stat-value-inline">
-          <span>{{ stats.total_laporan_draft }}</span>
-          <span class="divider">/</span>
-          <span>{{ stats.total_laporan_aktif }}</span>
+    </div>
+
+    <div class="pulse-card" style="--accent:var(--amber)">
+      <div class="pulse-num">{{ stats.today_terlambat }}</div>
+      <div class="pulse-label">Terlambat Hari Ini</div>
+      <div class="pulse-sub">check-in lewat jam</div>
+      <div class="pulse-bar">
+        <div class="pulse-bar-fill" style="width:{% if stats.today_hadir %}{% widthratio stats.today_terlambat stats.today_hadir 100 %}{% else %}0{% endif %}%;background:var(--amber)"></div>
+      </div>
+    </div>
+
+    <div class="pulse-card" style="--accent:var(--purple)">
+      <div class="pulse-num">{{ stats.today_overtime }}</div>
+      <div class="pulse-label">Overtime Hari Ini</div>
+      <div class="pulse-sub">belum pulang / OT aktif</div>
+      <div class="pulse-bar">
+        <div class="pulse-bar-fill" style="width:{% if stats.today_hadir %}{% widthratio stats.today_overtime stats.today_hadir 100 %}{% else %}0{% endif %}%;background:var(--purple)"></div>
+      </div>
+    </div>
+
+    <div class="pulse-card" style="--accent:var(--cyan)">
+      <div class="pulse-num">{{ stats.today_izin }}</div>
+      <div class="pulse-label">Izin Hari Ini</div>
+      <div class="pulse-sub">approved &amp; berlaku</div>
+      <div class="pulse-bar">
+        <div class="pulse-bar-fill" style="width:{% if stats.total_staff %}{% widthratio stats.today_izin stats.total_staff 100 %}{% else %}0{% endif %}%;background:var(--cyan)"></div>
+      </div>
+    </div>
+
+    <div class="pulse-card" style="--accent:var(--blue)">
+      <div class="pulse-num">{{ stats.today_laporan_aktif }}</div>
+      <div class="pulse-label">Laporan Aktif</div>
+      <div class="pulse-sub">sedang berjalan</div>
+      <div class="pulse-bar">
+        <div class="pulse-bar-fill" style="width:{% if stats.total_laporan %}{% widthratio stats.today_laporan_aktif stats.total_laporan 100 %}{% else %}0{% endif %}%;background:var(--blue)"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ KPI PERIODE ══ -->
+  <div class="section-label">KPI Periode — {{ stats.bulan_label }} {{ stats.tahun }}</div>
+  <div class="kpi-grid">
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--green-dim);--icon-color:var(--green)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <span class="kpi-delta {% if stats.delta_completion >= 0 %}up{% else %}down{% endif %}">
+          {% if stats.delta_completion >= 0 %}+{% endif %}{{ stats.delta_completion }}%
         </span>
       </div>
+      <div class="kpi-val">{{ stats.completion_rate }}%</div>
+      <div class="kpi-label">Completion Rate Laporan</div>
     </div>
-    <div class="stat-card-enhanced" style="--accent:#10b981;--bg-soft:#d1fae5">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Selesai</span>
-        <span class="stat-value-large">{{ stats.total_laporan_selesai }}</span>
-      </div>
-    </div>
-    <div class="stat-card-enhanced" style="--accent:#8b5cf6;--bg-soft:#ede9fe">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Dikirim ke Customer</span>
-        <span class="stat-value-large">{{ stats.total_laporan_dikirim }}</span>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- ═══════════════ ITEM KEGIATAN ═══════════════ -->
-<section class="dashboard-section">
-  <h2 class="section-heading">Item Kegiatan</h2>
-  <div class="stat-grid stat-grid-4">
-    <div class="stat-card-enhanced" style="--accent:#f59e0b;--bg-soft:#fef3c7">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-        </svg>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--blue-dim);--icon-color:var(--blue)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        </div>
+        <span class="kpi-delta {% if stats.delta_laporan >= 0 %}up{% else %}down{% endif %}">
+          {% if stats.delta_laporan >= 0 %}+{% endif %}{{ stats.delta_laporan }}
+        </span>
       </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Terjadwal</span>
-        <span class="stat-value-large">{{ stats.total_item_terjadwal }}</span>
-      </div>
+      <div class="kpi-val">{{ stats.total_laporan }}</div>
+      <div class="kpi-label">Total Laporan Dibuat</div>
     </div>
-    <div class="stat-card-enhanced" style="--accent:#3b82f6;--bg-soft:#dbeafe">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">On Progress</span>
-        <span class="stat-value-large">{{ stats.total_item_progress }}</span>
-      </div>
-    </div>
-    <div class="stat-card-enhanced" style="--accent:#10b981;--bg-soft:#d1fae5">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Selesai</span>
-        <span class="stat-value-large">{{ stats.total_item_selesai }}</span>
-      </div>
-    </div>
-    <div class="stat-card-enhanced" style="--accent:#ef4444;--bg-soft:#fee2e2">
-      <div class="stat-icon-wrap">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-        </svg>
-      </div>
-      <div class="stat-content">
-        <span class="stat-label-clean">Insidental</span>
-        <span class="stat-value-large">{{ stats.total_item_insidental }}</span>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- ═══════════════ CHARTS ═══════════════ -->
-<section class="dashboard-section">
-  <div class="charts-row">
-    <div class="chart-panel chart-panel-wide">
-      <div class="chart-header">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
-        </svg>
-        <div>
-          <h3>Tren Laporan per Bulan</h3>
-          <p>Distribusi laporan selama tahun {{ stats.tahun }}</p>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--amber-dim);--icon-color:var(--amber)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
+        <span class="kpi-delta {% if stats.delta_kehadiran >= 0 %}up{% else %}down{% endif %}">
+          {% if stats.delta_kehadiran >= 0 %}+{% endif %}{{ stats.delta_kehadiran }}%
+        </span>
       </div>
-      <div class="chart-body">
-        <canvas id="chartBulanan" height="120"></canvas>
-      </div>
+      <div class="kpi-val">{{ stats.avg_kehadiran }}%</div>
+      <div class="kpi-label">Rata-rata Kehadiran Staff</div>
     </div>
-    <div class="chart-panel chart-panel-narrow">
-      <div class="chart-header">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
-          <path stroke-linecap="round" stroke-linejoin="round" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
-        </svg>
-        <div>
-          <h3>Per Jenis Jasa</h3>
-          <p>Proporsi kategori jasa</p>
-        </div>
-      </div>
-      <div class="chart-body">
-        <canvas id="chartJasa" height="220"></canvas>
-      </div>
-    </div>
-  </div>
-</section>
 
-<!-- ═══════════════ BOTTOM ═══════════════ -->
-<section class="dashboard-section">
-  <div class="charts-row">
-    <div class="chart-panel chart-panel-narrow">
-      <div class="chart-header">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-        <div>
-          <h3>Top Perusahaan</h3>
-          <p>Paling banyak laporan</p>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--purple-dim);--icon-color:var(--purple)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         </div>
+        <span class="kpi-delta flat">—</span>
       </div>
-      <div class="chart-body">
-        {% with max_val=stats.top_perusahaan.0.total %}
-          {% for item in stats.top_perusahaan %}
-          <div class="top-item-clean">
-            <span class="top-rank-badge {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">#{{ forloop.counter }}</span>
-            <div class="top-info">
-              <span class="top-company-name">{{ item.perusahaan__nama_perusahaan }}</span>
-              <div class="top-bar-track">
-                <div class="top-bar-progress" style="width:{% widthratio item.total max_val 100 %}%;background:var(--accent, #3b82f6)"></div>
-              </div>
-            </div>
-            <span class="top-company-count">{{ item.total }}</span>
+      <div class="kpi-val">{{ stats.total_overtime_bulan }}</div>
+      <div class="kpi-label">Total Overtime</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--cyan-dim);--icon-color:var(--cyan)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+        <span class="kpi-delta {% if stats.delta_item >= 0 %}up{% else %}down{% endif %}">
+          {% if stats.delta_item >= 0 %}+{% endif %}{{ stats.delta_item }}
+        </span>
+      </div>
+      <div class="kpi-val">{{ stats.total_item_selesai }}</div>
+      <div class="kpi-label">Item Kegiatan Selesai</div>
+    </div>
+
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--red-dim);--icon-color:var(--red)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+        </div>
+        <span class="kpi-delta {% if stats.delta_izin <= 0 %}up{% else %}down{% endif %}">
+          {% if stats.delta_izin >= 0 %}+{% endif %}{{ stats.delta_izin }}
+        </span>
+      </div>
+      <div class="kpi-val">{{ stats.total_izin_bulan }}</div>
+      <div class="kpi-label">Pengajuan Izin</div>
+    </div>
+
+  </div>
+
+  <!-- ══ CHART TREN + SUPERVISOR LEADERBOARD ══ -->
+  <div class="section-label">Tren & Performa Tim</div>
+  <div class="three-col">
+
+    <!-- Chart -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Tren Laporan {{ stats.tahun }}</h3>
+        <span>per bulan</span>
+      </div>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="chartTren"></canvas>
+      </div>
+    </div>
+
+    <!-- Supervisor Leaderboard -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Top Supervisor</h3>
+        <span>laporan selesai</span>
+      </div>
+      <div class="panel-body">
+        {% for sv in stats.top_supervisor %}
+        <div class="leaderboard-item">
+          <span class="lb-rank {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% elif forloop.counter == 3 %}bronze{% endif %}">{{ forloop.counter }}</span>
+          <div class="lb-avatar">{{ sv.nama|slice:":2"|upper }}</div>
+          <div class="lb-info">
+            <div class="lb-name">{{ sv.nama }}</div>
+            <div class="lb-meta">{{ sv.perusahaan }}</div>
           </div>
-          {% empty %}
-          <div class="empty-state">Belum ada data</div>
-          {% endfor %}
-        {% endwith %}
+          <div class="lb-bar-wrap">
+            <div class="lb-bar-track">
+              <div class="lb-bar-fill" style="width:{% if stats.top_supervisor.0.total %}{% widthratio sv.total stats.top_supervisor.0.total 100 %}{% else %}0{% endif %}%"></div>
+            </div>
+          </div>
+          <span class="lb-count">{{ sv.total }}</span>
+        </div>
+        {% empty %}
+        <div class="empty-row">Belum ada data supervisor</div>
+        {% endfor %}
       </div>
     </div>
 
-    <div class="chart-panel chart-panel-wide">
-      <div class="chart-header">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-        </svg>
-        <div>
-          <h3>Laporan Terbaru</h3>
-          <p>8 laporan paling baru</p>
+    <!-- Perusahaan Health -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Health Klien</h3>
+        <span>% completion</span>
+      </div>
+      <div class="panel-body">
+        {% for p in stats.perusahaan_health %}
+        <div class="health-item">
+          <div class="health-dot {% if p.pct >= 75 %}good{% elif p.pct >= 40 %}warn{% else %}bad{% endif %}"></div>
+          <div class="health-name" title="{{ p.nama }}">{{ p.nama }}</div>
+          <span class="health-pct" style="color:{% if p.pct >= 75 %}var(--green){% elif p.pct >= 40 %}var(--amber){% else %}var(--red){% endif %}">{{ p.pct }}%</span>
+        </div>
+        {% empty %}
+        <div class="empty-row">Belum ada data klien</div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ ATTENDANCE + IZIN + OT ══ -->
+  <div class="section-label">Kehadiran & Izin</div>
+  <div class="two-col">
+
+    <!-- Absensi breakdown -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Rekap Kehadiran Bulan Ini</h3>
+        <span>{{ stats.bulan_label }}</span>
+      </div>
+      <div class="panel-body">
+        <div class="ot-row">
+          <span class="ot-label">✅ Hadir</span>
+          <span class="ot-val" style="color:var(--green)">{{ stats.absensi_hadir }}</span>
+        </div>
+        <div class="ot-row">
+          <span class="ot-label">⏰ Terlambat</span>
+          <span class="ot-val" style="color:var(--amber)">{{ stats.absensi_terlambat }}</span>
+        </div>
+        <div class="ot-row">
+          <span class="ot-label">🕐 Overtime</span>
+          <span class="ot-val" style="color:var(--purple)">{{ stats.absensi_overtime }}</span>
+        </div>
+        <div class="ot-row">
+          <span class="ot-label">❌ Tidak Masuk / Alpa</span>
+          <span class="ot-val" style="color:var(--red)">{{ stats.absensi_alpa }}</span>
+        </div>
+        <div class="ot-row" style="border-top:1px solid var(--border-hi);margin-top:4px;padding-top:14px">
+          <span class="ot-label" style="color:var(--text-1);font-weight:500">OT Belum Dibayar</span>
+          <span class="ot-val" style="color:var(--amber)">{{ stats.ot_belum_review }}</span>
+        </div>
+        <div class="ot-row">
+          <span class="ot-label" style="color:var(--text-1);font-weight:500">OT Sudah Dibayar</span>
+          <span class="ot-val" style="color:var(--green)">{{ stats.ot_paid }}</span>
         </div>
       </div>
-      <div class="chart-body">
-        <div class="table-clean-wrap">
-          <table class="table-clean">
-            <thead>
-              <tr>
-                <th>Nama Laporan</th>
-                <th>Perusahaan</th>
-                <th>Supervisor</th>
-                <th>Jasa</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for lap in stats.laporan_terbaru %}
-              <tr>
-                <td class="td-bold">{{ lap.nama_laporan }}</td>
-                <td>{{ lap.perusahaan.nama_perusahaan }}</td>
-                <td>{{ lap.supervisor.nama_lengkap }}</td>
-                <td>{{ lap.jenis_jasa.nama_jasa }}</td>
-                <td>
-                  {% if lap.status == 'draft' %}
-                    <span class="status-badge draft">Draft</span>
-                  {% elif lap.status == 'aktif' %}
-                    <span class="status-badge aktif">Aktif</span>
-                  {% elif lap.status == 'selesai' %}
-                    <span class="status-badge selesai">Selesai</span>
-                  {% elif lap.status == 'dikirim_customer' %}
-                    <span class="status-badge dikirim">Dikirim</span>
-                  {% endif %}
-                </td>
-              </tr>
-              {% empty %}
-              <tr>
-                <td colspan="5" class="empty-state">Belum ada laporan pada periode ini</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
+    </div>
+
+    <!-- Izin breakdown -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Pengajuan Izin Bulan Ini</h3>
+        <span>{{ stats.bulan_label }}</span>
+      </div>
+      <div class="ring-wrap">
+        <canvas id="chartIzin" width="120" height="120" style="flex-shrink:0"></canvas>
+        <div class="ring-legend">
+          <div class="ring-legend-item">
+            <div class="ring-legend-dot" style="background:var(--amber)"></div>
+            <span class="ring-legend-label">Pending</span>
+            <span class="ring-legend-val">{{ stats.izin_pending }}</span>
+          </div>
+          <div class="ring-legend-item">
+            <div class="ring-legend-dot" style="background:var(--green)"></div>
+            <span class="ring-legend-label">Disetujui</span>
+            <span class="ring-legend-val">{{ stats.izin_approved }}</span>
+          </div>
+          <div class="ring-legend-item">
+            <div class="ring-legend-dot" style="background:var(--red)"></div>
+            <span class="ring-legend-label">Ditolak</span>
+            <span class="ring-legend-val">{{ stats.izin_rejected }}</span>
+          </div>
+          <div class="ring-legend-item" style="margin-top:6px;padding-top:8px;border-top:1px solid var(--border)">
+            <div class="ring-legend-dot" style="background:var(--text-3)"></div>
+            <span class="ring-legend-label">Total</span>
+            <span class="ring-legend-val">{{ stats.total_izin_bulan }}</span>
+          </div>
         </div>
       </div>
+    </div>
+
+  </div>
+
+  <!-- ══ LAPORAN TERBARU + SDM ══ -->
+  <div class="section-label">Laporan & SDM</div>
+  <div class="two-col">
+
+    <!-- Laporan terbaru -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Laporan Terbaru</h3>
+        <span>10 terakhir</span>
+      </div>
+      <div class="panel-body">
+        <table class="dtable">
+          <thead>
+            <tr>
+              <th>Laporan</th>
+              <th>Klien</th>
+              <th>Supervisor</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lap in stats.laporan_terbaru %}
+            <tr>
+              <td class="strong">{{ lap.nama_laporan|truncatechars:28 }}</td>
+              <td>{{ lap.perusahaan.nama_perusahaan|truncatechars:20 }}</td>
+              <td>{{ lap.supervisor.nama_lengkap|truncatechars:18 }}</td>
+              <td>
+                {% if lap.status == 'draft' %}<span class="badge draft">Draft</span>
+                {% elif lap.status == 'aktif' %}<span class="badge aktif">Aktif</span>
+                {% elif lap.status == 'selesai' %}<span class="badge selesai">Selesai</span>
+                {% elif lap.status == 'dikirim_customer' %}<span class="badge dikirim">Dikirim</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="empty-row">Belum ada laporan</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SDM ringkasan -->
+    <div class="panel">
+      <div class="panel-head">
+        <h3>Ringkasan SDM</h3>
+        <span>semua waktu</span>
+      </div>
+      <div class="panel-body">
+        <div class="ot-row">
+          <span class="ot-label">🏢 Perusahaan Klien</span>
+          <span class="ot-val" style="color:var(--blue)">{{ stats.total_perusahaan }}</span>
+        </div>
+        <div class="ot-row">
+          <span class="ot-label">👑 Kepala Supervisor</span>
+          <span class="ot-val">{{ stats.total_kepala }}</span>
+        </div>
+        <div class="ot-row">
+          <span class="ot-label">🧑‍💼 Supervisor Lapangan</span>
+          <span class="ot-val">{{ stats.total_supervisor }}</span>
+        </div>
+        <div class="ot-row">
+          <span class="ot-label">👷 Staff Lapangan</span>
+          <span class="ot-val">{{ stats.total_staff }}</span>
+        </div>
+        <div class="ot-row">
+          <span class="ot-label">👤 Customer Akun</span>
+          <span class="ot-val">{{ stats.total_customer }}</span>
+        </div>
+        <div class="ot-row" style="border-top:1px solid var(--border-hi);margin-top:4px">
+          <span class="ot-label">📋 Jenis Jasa Aktif</span>
+          <span class="ot-val" style="color:var(--cyan)">{{ stats.total_jenis_jasa }}</span>
+        </div>
+        <div class="ot-row">
+          <span class="ot-label">📍 Area Kerja Aktif</span>
+          <span class="ot-val" style="color:var(--cyan)">{{ stats.total_area }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ ITEM KEGIATAN STATUS ══ -->
+  <div class="section-label">Item Kegiatan Periode Ini</div>
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr));margin-bottom:40px">
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:rgba(100,116,139,.12);--icon-color:#94a3b8">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </div>
+      </div>
+      <div class="kpi-val">{{ stats.total_item_terjadwal }}</div>
+      <div class="kpi-label">Terjadwal</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--blue-dim);--icon-color:var(--blue)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+      </div>
+      <div class="kpi-val">{{ stats.total_item_progress }}</div>
+      <div class="kpi-label">On Progress</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--green-dim);--icon-color:var(--green)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+        </div>
+      </div>
+      <div class="kpi-val">{{ stats.total_item_selesai }}</div>
+      <div class="kpi-label">Selesai</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--amber-dim);--icon-color:var(--amber)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        </div>
+      </div>
+      <div class="kpi-val">{{ stats.total_item_insidental }}</div>
+      <div class="kpi-label">Insidental</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-top">
+        <div class="kpi-icon" style="--icon-bg:var(--red-dim);--icon-color:var(--red)">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+      </div>
+      <div class="kpi-val">{{ stats.total_item_terjadwal|add:stats.total_item_progress }}</div>
+      <div class="kpi-label">Belum Selesai</div>
     </div>
   </div>
-</section>
 
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-  const bulanLabels = {{ stats.bulan_labels_json|safe }};
-  const dataTotal   = {{ stats.chart_total_json|safe }};
-  const dataDikirim = {{ stats.chart_dikirim_json|safe }};
-  const dataSelesai = {{ stats.chart_selesai_json|safe }};
-  const jasaLabels  = {{ stats.chart_jasa_labels_json|safe }};
-  const jasaData    = {{ stats.chart_jasa_data_json|safe }};
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.color = '#4a4f5e';
 
-  Chart.defaults.font.family = "'Montserrat', sans-serif";
-  Chart.defaults.color = '#94a3b8';
-  Chart.defaults.plugins.tooltip.backgroundColor = '#fff';
-  Chart.defaults.plugins.tooltip.titleColor = '#0f172a';
-  Chart.defaults.plugins.tooltip.bodyColor = '#64748b';
-  Chart.defaults.plugins.tooltip.borderColor = '#e2e8f0';
-  Chart.defaults.plugins.tooltip.borderWidth = 1;
-  Chart.defaults.plugins.tooltip.padding = 12;
-  Chart.defaults.plugins.tooltip.cornerRadius = 10;
+// ── Tren Laporan ─────────────────────────────────────
+const trenLabels  = {{ stats.bulan_labels_json|safe }};
+const trenTotal   = {{ stats.chart_total_json|safe }};
+const trenSelesai = {{ stats.chart_selesai_json|safe }};
+const trenDikirim = {{ stats.chart_dikirim_json|safe }};
 
-  new Chart(document.getElementById('chartBulanan'), {
-    type: 'bar',
-    data: {
-      labels: bulanLabels,
-      datasets: [
-        { label:'Total',   data:dataTotal,   backgroundColor:'rgba(37,99,235,.08)', borderColor:'#2563eb', borderWidth:2, borderRadius:6, borderSkipped:false },
-        { label:'Selesai', data:dataSelesai, backgroundColor:'rgba(22,163,74,.08)', borderColor:'#16a34a', borderWidth:2, borderRadius:6, borderSkipped:false },
-        { label:'Dikirim', data:dataDikirim, backgroundColor:'rgba(124,58,237,.08)',borderColor:'#7c3aed', borderWidth:2, borderRadius:6, borderSkipped:false },
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: { mode:'index', intersect:false },
-      plugins: {
-        legend: { position:'top', labels:{ usePointStyle:true, pointStyleWidth:6, padding:18, font:{size:12} } }
+new Chart(document.getElementById('chartTren'), {
+  type: 'line',
+  data: {
+    labels: trenLabels,
+    datasets: [
+      {
+        label: 'Total',
+        data: trenTotal,
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59,130,246,.08)',
+        borderWidth: 2,
+        tension: .35,
+        fill: true,
+        pointRadius: 3,
+        pointBackgroundColor: '#3b82f6',
       },
-      scales: {
-        x: { grid:{ display:false }, border:{ display:false } },
-        y: { beginAtZero:true, grid:{ color:'rgba(0,0,0,.03)' }, border:{ display:false }, ticks:{ precision:0 } }
+      {
+        label: 'Selesai',
+        data: trenSelesai,
+        borderColor: '#22c55e',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        tension: .35,
+        pointRadius: 3,
+        pointBackgroundColor: '#22c55e',
+      },
+      {
+        label: 'Dikirim',
+        data: trenDikirim,
+        borderColor: '#a78bfa',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        tension: .35,
+        pointRadius: 3,
+        pointBackgroundColor: '#a78bfa',
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { usePointStyle: true, pointStyleWidth: 6, padding: 14, font: { size: 11 } }
+      },
+      tooltip: {
+        backgroundColor: '#1e2232',
+        titleColor: '#f0f2f8',
+        bodyColor: '#8b90a0',
+        borderColor: 'rgba(255,255,255,.1)',
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 8,
       }
-    }
-  });
-
-  new Chart(document.getElementById('chartJasa'), {
-    type: 'doughnut',
-    data: {
-      labels: jasaLabels,
-      datasets: [{
-        data: jasaData,
-        backgroundColor: ['#2563eb','#16a34a','#ea580c','#7c3aed','#d97706','#0891b2','#ec4899','#64748b'],
-        borderWidth: 0,
-        hoverOffset: 6,
-      }]
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '70%',
-      plugins: {
-        legend: { position:'bottom', labels:{ padding:14, usePointStyle:true, pointStyleWidth:6, font:{size:11} } },
-        tooltip: {
-          callbacks: {
-            label(ctx) {
-              const t = ctx.dataset.data.reduce((a,b)=>a+b,0);
-              return ` ${ctx.label}: ${ctx.parsed} (${t?((ctx.parsed/t)*100).toFixed(1):0}%)`;
-            }
-          }
-        }
+    scales: {
+      x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 } } },
+      y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,.04)' }, border: { display: false }, ticks: { precision: 0, font: { size: 10 } } }
+    }
+  }
+});
+
+// ── Izin Doughnut ─────────────────────────────────────
+new Chart(document.getElementById('chartIzin'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Pending', 'Disetujui', 'Ditolak'],
+    datasets: [{
+      data: [{{ stats.izin_pending }}, {{ stats.izin_approved }}, {{ stats.izin_rejected }}],
+      backgroundColor: ['#f59e0b', '#22c55e', '#ef4444'],
+      borderWidth: 0,
+      hoverOffset: 4,
+    }]
+  },
+  options: {
+    responsive: false,
+    cutout: '72%',
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: '#1e2232',
+        titleColor: '#f0f2f8',
+        bodyColor: '#8b90a0',
+        borderColor: 'rgba(255,255,255,.1)',
+        borderWidth: 1,
+        padding: 8,
+        cornerRadius: 6,
       }
     }
-  });
+  }
+});
 </script>
 {% endblock %}

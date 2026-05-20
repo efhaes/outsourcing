@@ -27,7 +27,6 @@
     flex-wrap: wrap;
   }
 
-  /* Native month picker — styling supaya sesuai tema dark */
   input[type="month"] {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.15);
@@ -43,13 +42,11 @@
     border-color: var(--clr-accent);
     box-shadow: 0 0 0 3px rgba(165,180,252,.15);
   }
-  /* Chrome: warna icon kalender */
   input[type="month"]::-webkit-calendar-picker-indicator {
     filter: invert(1) opacity(.6);
     cursor: pointer;
   }
 
-  /* Dropdown bulan tersedia */
   .bulan-select {
     background: rgba(255,255,255,0.06);
     border: 1px solid rgba(255,255,255,0.15);
@@ -62,33 +59,6 @@
   }
   .bulan-select:focus { border-color: var(--clr-accent); }
   .bulan-select option { background: #1a1f35; color: #fff; }
-
-  /* Label bulan aktif */
-  .bulan-label {
-    font-size: 13px;
-    color: rgba(255,255,255,.5);
-  }
-  .bulan-label strong { color: #fff; }
-
-  /* Nav prev/next bulan */
-  .btn-nav-bulan {
-    background: rgba(255,255,255,.06);
-    border: 1px solid rgba(255,255,255,.12);
-    border-radius: 8px;
-    color: rgba(255,255,255,.7);
-    padding: 7px 10px;
-    font-size: 13px;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    transition: background .15s, color .15s;
-  }
-  .btn-nav-bulan:hover { background: rgba(255,255,255,.12); color: #fff; }
-  .btn-nav-bulan:disabled, .btn-nav-bulan.disabled {
-    opacity: .3;
-    pointer-events: none;
-  }
 
   /* ── Badge overtime ── */
   .ot-badge {
@@ -116,7 +86,7 @@
     word-break: break-word;
   }
 
-  /* Mobile Card View */
+  /* ── Mobile Card View ── */
   .absensi-card-list { display: none; }
 
   @media (max-width: 768px) {
@@ -138,12 +108,6 @@
       border-bottom: 1px solid rgba(255,255,255,0.1);
       gap: 8px;
     }
-    .absensi-card-badges {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 4px;
-    }
     .absensi-card-meta {
       display: flex;
       flex-direction: column;
@@ -155,28 +119,11 @@
     .absensi-card-meta span { display: flex; align-items: center; gap: 8px; }
     .absensi-card-meta .label { color: rgba(255,255,255,0.5); font-size: 11px; min-width: 80px; }
 
-    .ot-section-mobile {
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .ot-section-mobile.overtime  { background:rgba(234,179,8,.08);  border:1px solid rgba(234,179,8,.2);  }
-    .ot-section-mobile.izin-awal { background:rgba(249,115,22,.08); border:1px solid rgba(249,115,22,.2); }
-    .ot-section-title {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-    }
-
     .filter-bar { gap: 8px; }
     input[type="month"] { min-width: 140px; font-size: 12px; }
   }
 
-
+  /* ── Tab Bar ── */
   .tab-bar {
     display: flex;
     gap: 4px;
@@ -203,13 +150,126 @@
   }
   .tab-btn:hover { color: var(--clr-text-primary); background: rgba(255,255,255,0.05); }
   .tab-btn.active { background: var(--clr-accent); color: #fff; }
+
+  /* ── Modal ── */
+  .batal-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.6);
+    backdrop-filter: blur(4px);
+    z-index: 1050;
+    align-items: center;
+    justify-content: center;
+  }
+  .batal-modal-backdrop.show { display: flex; }
+  .batal-modal-box {
+    background: #141720;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px;
+    padding: 28px 24px;
+    width: 90%;
+    max-width: 380px;
+    animation: modalIn .2s ease;
+    text-align: center;
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform:scale(.95) translateY(8px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+  .batal-modal-icon { font-size: 36px; margin-bottom: 12px; }
+  .batal-modal-title {
+    font-size: 15px; font-weight: 600;
+    color: #fff; margin: 0 0 8px;
+  }
+  .batal-modal-desc {
+    font-size: 13px; color: rgba(255,255,255,.55);
+    margin: 0 0 22px; line-height: 1.55;
+  }
+  .batal-modal-actions { display: flex; gap: 8px; justify-content: center; }
+
+  .btn-batal-cancel {
+    padding: 8px 18px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 8px;
+    color: rgba(255,255,255,.7);
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .btn-batal-cancel:hover { background: rgba(255,255,255,.1); }
+
+  .btn-batal-confirm {
+    padding: 8px 18px;
+    background: rgba(239,68,68,.2);
+    border: 1px solid rgba(239,68,68,.35);
+    border-radius: 8px;
+    color: #f87171;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s, opacity .15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-batal-confirm:hover { background: rgba(239,68,68,.3); }
+  .btn-batal-confirm:disabled { opacity: .6; pointer-events: none; }
+  .btn-batal-confirm .spinner {
+    display: none;
+    width: 12px; height: 12px;
+    border: 2px solid rgba(248,113,113,.35);
+    border-top-color: #f87171;
+    border-radius: 50%;
+    animation: spin .6s linear infinite;
+  }
+  .btn-batal-confirm.loading .spinner { display: inline-block; }
+  .btn-batal-confirm.loading .btn-label { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toast ── */
+  #riwayatToast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    z-index: 9999;
+    min-width: 220px;
+    padding: 11px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity .25s, transform .25s;
+    pointer-events: none;
+  }
+  #riwayatToast.show { opacity: 1; transform: translateY(0); }
+  #riwayatToast.success { background: rgba(34,197,94,.85);  border: 1px solid rgba(34,197,94,.4); }
+  #riwayatToast.error   { background: rgba(239,68,68,.85);  border: 1px solid rgba(239,68,68,.4); }
+
+  /* ── Batalkan link button ── */
+  .btn-batalkan {
+    font-size: 12px;
+    color: #f87171;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+    text-decoration: underline;
+    transition: opacity .15s;
+  }
+  .btn-batalkan:hover { opacity: .75; }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="page-content">
 
-  <!-- Header -->
+  <!-- ── Header ── -->
   <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
     <div>
       <h5 class="mb-1" style="font-weight:600;color:var(--clr-text-primary)">Riwayat</h5>
@@ -235,35 +295,30 @@
     </div>
   </div>
 
-  <!-- Tab Bar -->
+  <!-- ── Tab Bar ── -->
   <div class="tab-bar mb-4">
     <a href="?tab=absensi" class="tab-btn {% if active_tab == 'absensi' %}active{% endif %}">
       📋 Absensi
     </a>
     <a href="?tab=izin" class="tab-btn {% if active_tab == 'izin' %}active{% endif %}">
       🗂 Izin
-      {% if izin_qs %}
-        {% with pending=izin_qs|dictsortreversed:"dibuat_pada" %}
-          {% for i in izin_qs %}{% if i.status == 'pending' and forloop.first %}
-            <span style="background:rgba(234,179,8,.25);color:#facc15;
-                         font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700">
-              ●
-            </span>
-          {% endif %}{% endfor %}
-        {% endwith %}
+      {% if ada_izin_pending %}
+        <span style="background:rgba(234,179,8,.25);color:#facc15;
+                     font-size:10px;padding:1px 6px;border-radius:10px;font-weight:700">●</span>
       {% endif %}
     </a>
   </div>
 
-  <!-- ══════════════════════════════
-       TAB: ABSENSI
-  ══════════════════════════════ -->
+
+  {# ══════════════════════════════════════════ #}
+  {#  TAB: ABSENSI                             #}
+  {# ══════════════════════════════════════════ #}
   {% if active_tab == 'absensi' %}
 
   <!-- Filter Bulan -->
   <div class="card mb-4" style="background:rgba(255,255,255,0.02)!important;border:1px solid var(--clr-border)">
     <div class="card-body py-3 px-4">
-      <form method="get" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <form method="get" class="filter-bar">
         <input type="hidden" name="tab" value="absensi">
         <span style="font-size:13px;color:rgba(255,255,255,.5)">Tampilkan bulan:</span>
         <input type="month" name="bulan" value="{{ bulan_filter }}" onchange="this.form.submit()" min="2020-01">
@@ -318,6 +373,7 @@
   </div>
 
   {% if absensi_qs %}
+
   <!-- Desktop Table -->
   <div class="card absensi-table-view">
     <div class="card-body p-0">
@@ -336,10 +392,14 @@
           <tbody>
             {% for absen in absensi_qs %}
             <tr>
+
+              <!-- Tanggal -->
               <td style="padding:14px 20px">
                 <div style="font-weight:500;color:#fff">{{ absen.tanggal|date:"d M Y" }}</div>
                 <div style="font-size:11px;color:rgba(255,255,255,0.5)">{{ absen.tanggal|date:"l" }}</div>
               </td>
+
+              <!-- Check-in -->
               <td style="padding:14px 20px">
                 {% if absen.waktu_masuk %}
                 <div style="display:flex;align-items:center;gap:6px">
@@ -350,6 +410,8 @@
                 </div>
                 {% else %}<span style="color:rgba(255,255,255,0.4)">-</span>{% endif %}
               </td>
+
+              <!-- Check-out -->
               <td style="padding:14px 20px">
                 {% if absen.waktu_pulang %}
                 <div style="display:flex;align-items:center;gap:6px">
@@ -360,26 +422,46 @@
                 </div>
                 {% else %}<span style="color:rgba(255,255,255,0.4)">-</span>{% endif %}
               </td>
+
+              <!-- Durasi -->
               <td style="padding:14px 20px">
                 <span style="font-size:13px">{{ absen.durasi_str }}</span>
               </td>
+
+              <!-- Status -->
               <td style="padding:14px 20px">
                 <div style="display:flex;flex-direction:column;gap:4px">
-                  {% if absen.status == 'masuk' %}<span class="badge-aktif">Sudah Masuk</span>
-                  {% elif absen.status == 'pulang' %}<span class="badge-selesai">Sudah Pulang</span>
-                  {% elif absen.status == 'overtime' %}<span style="background:rgba(234,179,8,.12);color:#facc15;border:1px solid rgba(234,179,8,.25);font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500">Overtime</span>
-                  {% elif absen.status == 'terlambat' %}<span style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25);font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500">Terlambat</span>
-                  {% else %}<span class="badge-draft">Belum Absen</span>{% endif %}
-                  {% if absen.izin_pulang_awal %}<span class="ot-badge izin">🚪 Izin Pulang Awal</span>{% endif %}
+                  {% if absen.status == 'masuk' %}
+                    <span class="badge-aktif">Sudah Masuk</span>
+                  {% elif absen.status == 'pulang' %}
+                    <span class="badge-selesai">Sudah Pulang</span>
+                  {% elif absen.status == 'overtime' %}
+                    <span style="background:rgba(234,179,8,.12);color:#facc15;border:1px solid rgba(234,179,8,.25);font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500">Overtime</span>
+                  {% elif absen.status == 'terlambat' %}
+                    <span style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25);font-size:11px;padding:2px 8px;border-radius:6px;font-weight:500">Terlambat</span>
+                  {% else %}
+                    <span class="badge-draft">Belum Absen</span>
+                  {% endif %}
+                  {% if absen.izin_pulang_awal %}
+                    <span class="ot-badge izin">🚪 Izin Pulang Awal</span>
+                  {% endif %}
                 </div>
               </td>
+
+              <!-- Overtime / Keterangan -->
               <td style="padding:14px 20px">
                 {% if absen.is_overtime %}
                 <div style="display:flex;flex-direction:column;gap:4px">
-                  {% if absen.overtime_status == 'paid' %}<span class="ot-badge paid">💰 Dibayar</span>
-                  {% elif absen.overtime_status == 'unpaid' %}<span class="ot-badge unpaid">🔵 Tidak Dibayar</span>
-                  {% else %}<span class="ot-badge pending">⏱ Menunggu Review</span>{% endif %}
-                  {% if absen.catatan %}<div class="ot-keterangan">"{{ absen.catatan }}"</div>{% endif %}
+                  {% if absen.overtime_status == 'paid' %}
+                    <span class="ot-badge paid">💰 Dibayar</span>
+                  {% elif absen.overtime_status == 'unpaid' %}
+                    <span class="ot-badge unpaid">🔵 Tidak Dibayar</span>
+                  {% else %}
+                    <span class="ot-badge pending">⏱ Menunggu Review</span>
+                  {% endif %}
+                  {% if absen.catatan %}
+                    <div class="ot-keterangan">"{{ absen.catatan }}"</div>
+                  {% endif %}
                   {% if absen.overtime_reviewed_by and absen.overtime_status != 'belum_review' %}
                   <div style="font-size:10px;color:rgba(255,255,255,.3)">
                     Diputuskan oleh {{ absen.overtime_reviewed_by.nama_lengkap|default:absen.overtime_reviewed_by.username }}
@@ -387,9 +469,12 @@
                   {% endif %}
                 </div>
                 {% elif absen.izin_pulang_awal and absen.keterangan_izin_pulang %}
-                <div style="font-size:12px;color:#fb923c;font-style:italic;max-width:180px">{{ absen.keterangan_izin_pulang }}</div>
-                {% else %}<span style="color:rgba(255,255,255,.3)">-</span>{% endif %}
+                  <div style="font-size:12px;color:#fb923c;font-style:italic;max-width:180px">{{ absen.keterangan_izin_pulang }}</div>
+                {% else %}
+                  <span style="color:rgba(255,255,255,.3)">-</span>
+                {% endif %}
               </td>
+
             </tr>
             {% endfor %}
           </tbody>
@@ -416,29 +501,36 @@
           {% if absen.izin_pulang_awal %}<span class="ot-badge izin" style="font-size:10px">🚪 Izin Awal</span>{% endif %}
         </div>
       </div>
+
       <div class="absensi-card-meta">
-        <span><span class="label">Check-in</span>
+        <span>
+          <span class="label">Check-in</span>
           {% if absen.waktu_masuk %}<span style="color:var(--clr-success)">{{ absen.waktu_masuk|time:"H:i" }}</span>{% else %}-{% endif %}
         </span>
-        <span><span class="label">Check-out</span>
+        <span>
+          <span class="label">Check-out</span>
           {% if absen.waktu_pulang %}<span style="color:var(--clr-accent)">{{ absen.waktu_pulang|time:"H:i" }}</span>{% else %}-{% endif %}
         </span>
         <span><span class="label">Durasi</span><span>{{ absen.durasi_str }}</span></span>
       </div>
+
       {% if absen.is_overtime %}
       <div style="margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(234,179,8,.08);border:1px solid rgba(234,179,8,.2)">
         <div style="font-size:11px;font-weight:600;color:#facc15;margin-bottom:6px">🕐 OVERTIME</div>
         {% if absen.overtime_status == 'paid' %}<span class="ot-badge paid">💰 Dibayar</span>
         {% elif absen.overtime_status == 'unpaid' %}<span class="ot-badge unpaid">🔵 Tidak Dibayar</span>
         {% else %}<span class="ot-badge pending">⏱ Menunggu keputusan</span>{% endif %}
-        {% if absen.catatan %}<div style="font-size:12px;color:rgba(255,255,255,.6);font-style:italic;margin-top:6px">"{{ absen.catatan }}"</div>{% endif %}
+        {% if absen.catatan %}
+          <div style="font-size:12px;color:rgba(255,255,255,.6);font-style:italic;margin-top:6px">"{{ absen.catatan }}"</div>
+        {% endif %}
       </div>
       {% endif %}
+
       {% if absen.izin_pulang_awal %}
       <div style="margin-top:10px;padding:10px 12px;border-radius:8px;background:rgba(249,115,22,.08);border:1px solid rgba(249,115,22,.2)">
         <div style="font-size:11px;font-weight:600;color:#fb923c;margin-bottom:6px">🚪 IZIN PULANG AWAL</div>
         {% if absen.keterangan_izin_pulang %}
-        <div style="font-size:12px;color:rgba(255,255,255,.6);font-style:italic">"{{ absen.keterangan_izin_pulang }}"</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.6);font-style:italic">"{{ absen.keterangan_izin_pulang }}"</div>
         {% endif %}
       </div>
       {% endif %}
@@ -464,17 +556,20 @@
   {% endif %}{# end tab absensi #}
 
 
-  <!-- ══════════════════════════════
-       TAB: IZIN
-  ══════════════════════════════ -->
+  {# ══════════════════════════════════════════ #}
+  {#  TAB: IZIN                                #}
+  {# ══════════════════════════════════════════ #}
   {% if active_tab == 'izin' %}
 
   {% if izin_qs %}
   <div style="display:flex;flex-direction:column;gap:12px">
     {% for izin in izin_qs %}
-    <div class="card" style="background:rgba(255,255,255,0.03);border:1px solid var(--clr-border);border-radius:14px">
+    <div class="card" id="izin-card-{{ izin.pk }}"
+         style="background:rgba(255,255,255,0.03);border:1px solid var(--clr-border);border-radius:14px">
       <div class="card-body" style="padding:16px 20px">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+
+          <!-- Info izin -->
           <div style="display:flex;gap:14px;align-items:flex-start">
             <div style="font-size:28px;line-height:1">
               {% if izin.tipe == 'sakit' %}🤒
@@ -490,6 +585,7 @@
                 {% else %}
                   {{ izin.tanggal_mulai|date:"d M Y" }} — {{ izin.tanggal_selesai|date:"d M Y" }}
                 {% endif %}
+                <span style="margin-left:4px;color:var(--clr-text-muted)">({{ izin.jumlah_hari }} hari)</span>
               </div>
               {% if izin.keterangan %}
               <div style="font-size:12px;color:var(--clr-text-secondary);margin-top:6px;font-style:italic;max-width:400px">
@@ -503,20 +599,33 @@
               {% endif %}
             </div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+
+          <!-- Status + aksi -->
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
             {% if izin.status == 'pending' %}
-              <span style="background:rgba(234,179,8,.12);color:#facc15;border:1px solid rgba(234,179,8,.25);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600">⏳ Menunggu</span>
-              <a href="{% url 'staff_izin_batal' izin.pk %}"
-                 onclick="return confirm('Batalkan pengajuan izin ini?')"
-                 style="font-size:12px;color:#f87171;text-decoration:none">Batalkan</a>
+              <span style="background:rgba(234,179,8,.12);color:#facc15;border:1px solid rgba(234,179,8,.25);
+                           font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600">
+                ⏳ Menunggu
+              </span>
+              <button type="button" class="btn-batalkan"
+                      onclick="openBatalModal({{ izin.pk }}, '{{ izin.get_tipe_display }}', '{{ izin.tanggal_mulai|date:"d M Y" }}')">
+                Batalkan
+              </button>
             {% elif izin.status == 'approved' %}
-              <span style="background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.25);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600">✓ Disetujui</span>
+              <span style="background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.25);
+                           font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600">
+                ✓ Disetujui
+              </span>
             {% elif izin.status == 'rejected' %}
-              <span style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600">✕ Ditolak</span>
+              <span style="background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25);
+                           font-size:11px;padding:3px 10px;border-radius:20px;font-weight:600">
+                ✕ Ditolak
+              </span>
             {% endif %}
             {% if izin.lampiran %}
             <a href="{{ izin.lampiran.url }}" target="_blank"
-               style="font-size:12px;color:var(--clr-text-muted);text-decoration:none;display:flex;align-items:center;gap:4px">
+               style="font-size:12px;color:var(--clr-text-muted);text-decoration:none;
+                      display:flex;align-items:center;gap:4px">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
               </svg>
@@ -524,6 +633,7 @@
             </a>
             {% endif %}
           </div>
+
         </div>
       </div>
     </div>
@@ -545,5 +655,130 @@
 
   {% endif %}{# end tab izin #}
 
+</div>{# end page-content #}
+
+
+<!-- ══════════════════════════════════════════ -->
+<!--  MODAL KONFIRMASI BATALKAN IZIN           -->
+<!-- ══════════════════════════════════════════ -->
+<div class="batal-modal-backdrop" id="batalModal">
+  <div class="batal-modal-box">
+    <div class="batal-modal-icon">🗑️</div>
+    <h6 class="batal-modal-title">Batalkan Pengajuan Izin?</h6>
+    <p class="batal-modal-desc" id="batalModalDesc">
+      Tindakan ini tidak bisa dikembalikan.
+    </p>
+    <div class="batal-modal-actions">
+      <button class="btn-batal-cancel" onclick="closeBatalModal()">
+        Tidak, Kembali
+      </button>
+      <button class="btn-batal-confirm" id="btnConfirmBatal" onclick="confirmBatal()">
+        <span class="btn-label">Ya, Batalkan</span>
+        <span class="spinner"></span>
+      </button>
+    </div>
+  </div>
 </div>
+
+<!-- Toast -->
+<div id="riwayatToast"></div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// ─────────────────────────────────────────────
+//  Modal state
+// ─────────────────────────────────────────────
+let _batalId = null;
+const BATAL_URL_TEMPLATE = "{% url 'staff_izin_batal' 0 %}";
+
+function openBatalModal(izinId, tipe, tglMulai) {
+  _batalId = izinId;
+  document.getElementById('batalModalDesc').textContent =
+    `Yakin ingin membatalkan izin ${tipe} mulai ${tglMulai}? Tindakan ini tidak bisa dikembalikan.`;
+  document.getElementById('batalModal').classList.add('show');
+}
+
+function closeBatalModal() {
+  document.getElementById('batalModal').classList.remove('show');
+  _batalId = null;
+  const btn = document.getElementById('btnConfirmBatal');
+  btn.classList.remove('loading');
+  btn.disabled = false;
+}
+
+// Tutup klik backdrop
+document.getElementById('batalModal').addEventListener('click', function(e) {
+  if (e.target === this) closeBatalModal();
+});
+
+// Tutup ESC
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeBatalModal();
+});
+
+// ─────────────────────────────────────────────
+//  Konfirmasi → AJAX POST
+// ─────────────────────────────────────────────
+function confirmBatal() {
+  if (!_batalId) return;
+
+  const btn = document.getElementById('btnConfirmBatal');
+  btn.classList.add('loading');
+  btn.disabled = true;
+
+  const fd = new FormData();
+  fd.append('csrfmiddlewaretoken', getCsrf());
+
+  const url = BATAL_URL_TEMPLATE.replace('/0/', `/${_batalId}/`);
+
+  fetch(url, {
+    method : 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+    body   : fd,
+  })
+  .then(r => r.json())
+  .then(data => {
+    closeBatalModal();
+    if (data.success) {
+      const card = document.getElementById('izin-card-' + _batalId);
+      if (card) {
+        card.style.transition = 'opacity .3s, transform .3s';
+        card.style.opacity    = '0';
+        card.style.transform  = 'translateY(-8px)';
+        setTimeout(() => card.remove(), 320);
+      }
+      showToast('Pengajuan izin berhasil dibatalkan.', 'success');
+    } else {
+      showToast(data.error || 'Gagal membatalkan izin.', 'error');
+    }
+  })
+  .catch(() => {
+    closeBatalModal();
+    showToast('Terjadi kesalahan koneksi.', 'error');
+  });
+}
+
+// ─────────────────────────────────────────────
+//  Toast
+// ─────────────────────────────────────────────
+function showToast(msg, type = 'success') {
+  const el = document.getElementById('riwayatToast');
+  el.textContent = msg;
+  el.className   = `show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ''; }, 3200);
+}
+
+// ─────────────────────────────────────────────
+//  CSRF
+// ─────────────────────────────────────────────
+function getCsrf() {
+  return document.cookie.split(';')
+    .find(c => c.trim().startsWith('csrftoken='))
+    ?.split('=')[1] || '';
+}
+</script>
 {% endblock %}

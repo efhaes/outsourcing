@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseForbidden, JsonResponse
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.timezone import localtime
 
@@ -228,6 +229,7 @@ def absensi_riwayat(request):
     )
 
     active_tab = request.GET.get('tab', 'absensi')
+    ada_izin_pending = izin_qs.filter(status='pending').exists()
 
     return render(request, 'staff/absensi/riwayat.html', {
         'absensi_qs'     : absensi_qs,
@@ -240,6 +242,7 @@ def absensi_riwayat(request):
         'bulan_aktif'    : f"{tahun}-{bulan:02d}",
         'izin_qs'        : izin_qs,
         'active_tab'     : active_tab,
+        'ada_izin_pending': ada_izin_pending,
     })
 
 
@@ -270,3 +273,4 @@ def api_today_status(request):
         'last_checkin'    : last_checkin,
         'this_month_count': this_month_count,
     })
+
