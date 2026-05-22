@@ -1,21 +1,13 @@
 from django import forms
 from outsourcing.models import (
     LaporanKegiatan, ItemKegiatan,
-    Perusahaan, JenisJasa, AreaKerja, SubArea, Task,
+    Perusahaan, JenisJasa, SubArea, Task,
     User, RoleChoices, SupervisorPerusahaan, StaffSupervisor, StaffTask
 )
-
-
 class LaporanKegiatanForm(forms.ModelForm):
-    """
-    Form buat/edit laporan oleh Supervisor.
-    Pilihan perusahaan, jenis_jasa, dan area di-filter
-    sesuai penugasan supervisor yang login.
-    """
     def __init__(self, *args, supervisor=None, **kwargs):
         super().__init__(*args, **kwargs)
         if supervisor:
-            # Perusahaan yang ditugaskan ke supervisor ini
             penugasan = SupervisorPerusahaan.objects.filter(
                 supervisor=supervisor, is_active=True
             ).select_related('perusahaan', 'jenis_jasa')
@@ -27,21 +19,18 @@ class LaporanKegiatanForm(forms.ModelForm):
                 pk__in=perusahaan_ids, is_active=True
             )
             self.fields['perusahaan'].queryset = perusahaan_qs
-            
-            # Tambahkan data attribute untuk mapping perusahaan ke jenis jasa
+
             perusahaan_jasa_mapping = {}
             for p in perusahaan_qs:
                 perusahaan_jasa_mapping[str(p.pk)] = list(
                     p.jenis_jasa.filter(is_active=True).values_list('pk', flat=True)
                 )
             self.fields['perusahaan'].widget.attrs['data-jasa-mapping'] = str(perusahaan_jasa_mapping)
-            
+
             self.fields['jenis_jasa'].queryset = JenisJasa.objects.filter(
                 pk__in=jenis_jasa_ids, is_active=True
             )
-            self.fields['area'].queryset = AreaKerja.objects.filter(
-                perusahaan__in=perusahaan_ids, is_active=True
-            )
+            # ← HAPUS: self.fields['area'].queryset = ...
 
     perusahaan = forms.ModelChoiceField(
         queryset=Perusahaan.objects.none(),
@@ -53,15 +42,12 @@ class LaporanKegiatanForm(forms.ModelForm):
         label='Jenis Jasa',
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
-    area = forms.ModelChoiceField(
-        queryset=AreaKerja.objects.none(),
-        label='Area Kerja',
-        widget=forms.Select(attrs={'class': 'form-select'}),
-    )
+    # ← HAPUS seluruh field area
 
     class Meta:
         model  = LaporanKegiatan
-        fields = ['nama_laporan', 'tanggal_laporan', 'perusahaan', 'jenis_jasa', 'area', 'catatan']
+        # ← HAPUS 'area' dari fields
+        fields = ['nama_laporan', 'tanggal_laporan', 'perusahaan', 'jenis_jasa', 'catatan']
         widgets = {
             'nama_laporan'   : forms.TextInput(attrs={'class': 'form-control'}),
             'tanggal_laporan': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -75,36 +61,25 @@ class LaporanKegiatanForm(forms.ModelForm):
 
 
 class ItemKegiatanForm(forms.ModelForm):
-    """
-    Form buat/edit item kegiatan oleh Supervisor.
-    Staff dan sub_area di-filter sesuai laporan yang dipilih.
-    Task di-filter sesuai jenis jasa di laporan.
-    Staff di-filter berdasarkan task yang dipilih (staff harus punya skill task tersebut).
-    Tanggal bisa dipilih bebas oleh supervisor untuk penjadwalan sebulan ke depan.
-    """
     def __init__(self, *args, laporan=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.laporan = laporan
         if laporan:
-            # Task sesuai jenis jasa di laporan
             self.fields['task'].queryset = Task.objects.filter(
                 jenis_jasa=laporan.jenis_jasa,
                 is_active=True
             )
- 
-            # Staff yang ada di bawah supervisor pembuat laporan
             self.fields['staff'].queryset = User.objects.filter(
                 role=RoleChoices.STAFF,
                 supervisor_saya__supervisor=laporan.supervisor,
                 supervisor_saya__is_active=True,
                 is_active=True,
             )
- 
-            # Sub area sesuai area laporan
+            # ← DIUBAH: filter sub_area per perusahaan, bukan per area
             self.fields['sub_area'].queryset = SubArea.objects.filter(
-                area=laporan.area, is_active=True
+                area__perusahaan=laporan.perusahaan,
+                is_active=True
             )
- 
     def clean(self):
         cleaned_data = super().clean()
  

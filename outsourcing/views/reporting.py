@@ -110,10 +110,18 @@ def build_absensi_kalender(absensi_list, bulan, tahun, libur_set=None):
 
         if ab.tanggal:
             status_harian = getattr(ab, 'status_harian', None)
-            if status_harian and status_harian.strip():
+            
+            # Kalau status_harian di-set manual (Cuti, Izin, Dokter, Libur) → pakai itu
+            if status_harian and status_harian.strip() and status_harian.strip() != 'P':
                 status = status_harian.strip()
             else:
-                status = 'P' if ab.waktu_masuk else 'A'
+                # Tentukan dari status absensi
+                absensi_status = ab.status  # AbsensiStatusChoices
+                if absensi_status in ('masuk', 'pulang', 'terlambat', 'overtime'):
+                    status = 'P'
+                else:
+                    # belum_absen → Alpa
+                    status = 'A'
 
             absensi_map[sid][f'd_{ab.tanggal.day}'] = status
 
@@ -278,6 +286,15 @@ def generate_laporan_bulanan(request, perusahaan_id, tahun, bulan, jenis_jasa_id
                 return HttpResponse("Tidak punya akses.", status=403)
 
         data = get_data_laporan_bulanan(perusahaan_id, bulan, tahun, jenis_jasa_id)
+        for item in data['item_list']:
+            item.foto_on_progress_path = (
+                'file://' + item.foto_on_progress.path
+                if item.foto_on_progress else None
+            )
+            item.foto_after_path = (
+                'file://' + item.foto_after.path
+                if item.foto_after else None
+            )
 
         nama_bulan_list = [
             '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -332,10 +349,14 @@ def _fetch_resources(uri, rel):
 def _generate_pdf(request, context):
     try:
         from weasyprint import HTML
+        import os
+        from django.conf import settings
 
         html_string = render_to_string('laporan_bulanan_pdf.html', context, request=request)
-        base_url    = request.build_absolute_uri('/')
-        pdf_bytes   = HTML(string=html_string, base_url=base_url).write_pdf()
+        
+        # Ganti ini — baca file dari disk langsung, bukan via HTTP
+        base_url = 'file://' + os.path.abspath(settings.BASE_DIR) + '/'
+        pdf_bytes = HTML(string=html_string, base_url=base_url).write_pdf()
 
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{context["nama_file"]}.pdf"'
@@ -343,7 +364,6 @@ def _generate_pdf(request, context):
 
     except Exception as e:
         return HttpResponse(f"Error PDF: {e}", status=500)
-
 
 def _generate_word(context):
     try:

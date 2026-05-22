@@ -48,6 +48,7 @@ def staff_create(request):
             StaffSupervisor.objects.create(
                 staff=user,
                 supervisor=request.user,
+                area_kerja=form.cleaned_data.get('area_kerja'),  # ← TAMBAH
                 is_active=True,
             )
 
@@ -84,10 +85,8 @@ def staff_create(request):
 
 @supervisor_required
 def staff_edit(request, pk):
-    """Edit data staff — hanya staff yang ada di bawah supervisor ini."""
     staff = get_object_or_404(User, pk=pk, role='staff')
 
-    # Pastikan staff ini memang bawahan supervisor yang login
     is_bawahan = StaffSupervisor.objects.filter(
         staff=staff,
         supervisor=request.user,
@@ -106,24 +105,30 @@ def staff_edit(request, pk):
             supervisor=request.user,
         )
         if form.is_valid():
-            # Handle password change jika diisi
+            # Save user + handle password dalam satu commit
+            user = form.save(commit=False)
             password = form.cleaned_data.get('password')
             if password:
-                staff.set_password(password)
-            
-            # Save user data
-            form.save()
-            
+                user.set_password(password)
+            user.save()
+
             # Update StaffTask — hapus lama, isi baru
             tasks = form.cleaned_data.get('tasks', [])
             StaffTask.objects.filter(staff=staff).delete()
             for task in tasks:
-                StaffTask.objects.create(staff=staff, task=task,is_active=True)
+                StaffTask.objects.create(staff=staff, task=task, is_active=True)
+
+            # Update area_kerja di StaffSupervisor
+            area_kerja = form.cleaned_data.get('area_kerja')
+            StaffSupervisor.objects.filter(
+                staff=staff,
+                supervisor=request.user,
+                is_active=True,
+            ).update(area_kerja=area_kerja)
 
             messages.success(request, f'Data staff "{staff.nama_lengkap}" berhasil diperbarui.')
             return redirect('supervisor_staff_list')
     else:
-        # Pre-select tasks sudah dihandle di EditStaffForm.__init__
         form = EditStaffForm(instance=staff, supervisor=request.user)
 
     context = {

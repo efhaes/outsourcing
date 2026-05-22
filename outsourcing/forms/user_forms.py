@@ -1,5 +1,5 @@
 from django import forms
-from outsourcing.models import User, JenisJasa, Task, SupervisorPerusahaan, RoleChoices, Perusahaan, GenderChoices
+from outsourcing.models import AreaKerja, User, JenisJasa, Task, SupervisorPerusahaan, RoleChoices, Perusahaan, GenderChoices
 
 
 class PasswordMixin:
@@ -34,7 +34,7 @@ class CreateKepalaSupervisorForm(PasswordMixin, forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
+        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil' ]
         widgets = {
             'username'    : forms.TextInput(attrs={'class': 'form-control'}),
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
@@ -65,7 +65,7 @@ class CreateSupervisorForm(PasswordMixin, forms.ModelForm):
 
     class Meta:
         model  = User
-        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
+        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil']
         widgets = {
             'username'    : forms.TextInput(attrs={'class': 'form-control'}),
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
@@ -104,25 +104,41 @@ class CreateStaffForm(PasswordMixin, forms.ModelForm):
         required=False,
         label='Skill / Task yang Bisa Dikerjakan',
     )
+    area_kerja = forms.ModelChoiceField(
+        queryset=AreaKerja.objects.none(),
+        required=False,
+        label='Area / Divisi Kerja',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
 
     def __init__(self, *args, supervisor=None, **kwargs):
         super().__init__(*args, **kwargs)
+
         if supervisor:
-            # Hanya tampilkan task sesuai jenis jasa yang ditugaskan ke supervisor
             jenis_jasa_ids = SupervisorPerusahaan.objects.filter(
-                supervisor=supervisor,
-                is_active=True,
+                supervisor=supervisor, is_active=True,
             ).values_list('jenis_jasa_id', flat=True)
+
+            perusahaan_ids = SupervisorPerusahaan.objects.filter(
+                supervisor=supervisor, is_active=True,
+            ).values_list('perusahaan_id', flat=True)
+
             self.fields['tasks'].queryset = Task.objects.filter(
                 jenis_jasa_id__in=jenis_jasa_ids,
+                supervisor=supervisor,   # ← hanya task milik supervisor ini
                 is_active=True,
-            ).select_related('jenis_jasa')
+            )
+
+            self.fields['area_kerja'].queryset = AreaKerja.objects.filter(
+                perusahaan_id__in=perusahaan_ids, is_active=True,
+            )
         else:
             self.fields['tasks'].queryset = Task.objects.filter(is_active=True)
 
     class Meta:
         model  = User
-        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
+        fields = ['username', 'nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil']
         widgets = {
             'username'    : forms.TextInput(attrs={'class': 'form-control'}),
             'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
@@ -280,13 +296,7 @@ class EditSupervisorForm(forms.ModelForm):
             'is_active'    : 'Aktif',
         }
 
-
 class EditStaffForm(forms.ModelForm):
-    """
-    Edit Staff oleh Supervisor.
-    Bisa update tasks (skill) staff, di-filter sesuai wilayah supervisor.
-    Password opsional — biarkan kosong jika tidak ingin mengubah.
-    """
     password = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         label='Password Baru',
@@ -303,23 +313,41 @@ class EditStaffForm(forms.ModelForm):
         required=False,
         label='Skill / Task yang Bisa Dikerjakan',
     )
+    area_kerja = forms.ModelChoiceField(
+        queryset=AreaKerja.objects.none(),
+        required=False,
+        label='Area / Divisi Kerja',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
 
     def __init__(self, *args, supervisor=None, **kwargs):
         super().__init__(*args, **kwargs)
+
         if supervisor:
-            jenis_jasa_ids = SupervisorPerusahaan.objects.filter(
-                supervisor=supervisor,
-                is_active=True,
-            ).values_list('jenis_jasa_id', flat=True)
+            # 1 query, reuse untuk perusahaan_ids dan jenis_jasa_ids
+            sp_qs = SupervisorPerusahaan.objects.filter(
+                supervisor=supervisor, is_active=True,
+            )
+            perusahaan_ids = sp_qs.values_list('perusahaan_id', flat=True)
+            jenis_jasa_ids = sp_qs.values_list('jenis_jasa_id', flat=True)
+
+            self.fields['area_kerja'].queryset = AreaKerja.objects.filter(
+                perusahaan_id__in=perusahaan_ids, is_active=True,
+            )
             self.fields['tasks'].queryset = Task.objects.filter(
                 jenis_jasa_id__in=jenis_jasa_ids,
+                supervisor=supervisor,  # ← filter per supervisor
                 is_active=True,
             ).select_related('jenis_jasa')
         else:
             self.fields['tasks'].queryset = Task.objects.filter(is_active=True)
 
-        # Pre-select tasks yang sudah dimiliki staff
+        # Pre-select initial values dari instance
         if self.instance and self.instance.pk:
+            rel = self.instance.supervisor_saya.filter(is_active=True).first()
+            if rel:
+                self.fields['area_kerja'].initial = rel.area_kerja_id
+
             self.fields['tasks'].initial = (
                 self.instance.tasks_saya
                     .filter(is_active=True)
@@ -330,27 +358,30 @@ class EditStaffForm(forms.ModelForm):
         model  = User
         fields = ['nama_lengkap', 'jenis_kelamin', 'nik', 'telepon', 'foto_profil', 'is_active']
         widgets = {
-            'nama_lengkap': forms.TextInput(attrs={'class': 'form-control'}),
+            'nama_lengkap' : forms.TextInput(attrs={'class': 'form-control'}),
             'jenis_kelamin': forms.Select(attrs={'class': 'form-control'}),
-            'nik'         : forms.TextInput(attrs={'class': 'form-control'}),
-            'telepon'     : forms.TextInput(attrs={'class': 'form-control'}),
+            'nik'          : forms.TextInput(attrs={'class': 'form-control'}),
+            'telepon'      : forms.TextInput(attrs={'class': 'form-control'}),
         }
         labels = {
-            'nama_lengkap': 'Nama Lengkap',
+            'nama_lengkap' : 'Nama Lengkap',
             'jenis_kelamin': 'Jenis Kelamin',
-            'nik'         : 'NIK / ID Karyawan',
-            'telepon'     : 'Telepon',
-            'foto_profil' : 'Foto Profil',
+            'nik'          : 'NIK / ID Karyawan',
+            'telepon'      : 'Telepon',
+            'foto_profil'  : 'Foto Profil',
             'is_active'    : 'Aktif',
         }
 
     def clean(self):
         cleaned_data = super().clean()
-        password     = cleaned_data.get('password')
-        konfirmasi   = cleaned_data.get('konfirmasi_password')
+        password   = cleaned_data.get('password')
+        konfirmasi = cleaned_data.get('konfirmasi_password')
         if password and konfirmasi and password != konfirmasi:
             raise forms.ValidationError('Password dan konfirmasi password tidak cocok.')
         return cleaned_data
+
+
+
 
 
 class EditCustomerForm(forms.ModelForm):

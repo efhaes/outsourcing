@@ -20,9 +20,9 @@ def laporan_list(request):
     status     = request.GET.get('status', '').strip()
 
     laporan = LaporanKegiatan.objects.filter(
-        supervisor=supervisor
-    ).select_related('perusahaan', 'jenis_jasa', 'area').order_by('-tanggal_laporan')
-
+    supervisor=supervisor
+    ).select_related('perusahaan', 'jenis_jasa').order_by('-tanggal_laporan')
+    
     if q:
         laporan = laporan.filter(
             Q(nama_laporan__icontains=q) |

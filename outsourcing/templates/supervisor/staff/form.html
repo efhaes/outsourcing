@@ -144,7 +144,15 @@
                 <div class="field-error">{{ form.tasks.errors.0 }}</div>
             {% endif %}
         </div>
-
+<!-- Area Kerja -->
+        <div class="section-divider"><span>Area / Divisi Kerja</span></div>
+        <div class="field-group">
+            <label class="field-label">Area Kerja</label>
+            {{ form.area_kerja }}
+            {% if form.area_kerja.errors %}
+                <div class="field-error">{{ form.area_kerja.errors.0 }}</div>
+            {% endif %}
+        </div>
         <!-- Tombol Aksi -->
         <div class="d-flex gap-2 mt-4 pt-2" style="border-top:1px solid var(--clr-border);">
             <button type="submit" class="btn-submit">

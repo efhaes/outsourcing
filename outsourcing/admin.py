@@ -24,7 +24,6 @@ class CustomUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
     ('Info Tambahan', {
         'fields': ('role', 'nama_lengkap', 'telepon', 'foto_profil')
-        # is_active dihapus — sudah ada di UserAdmin.fieldsets bawaan
     }),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
@@ -49,7 +48,8 @@ class JenisJasaAdmin(admin.ModelAdmin):
 class AreaKerjaInline(admin.TabularInline):
     model  = AreaKerja
     extra  = 0
-    fields = ['nama_area', 'keterangan', 'is_active']
+    # ← DIUBAH: tambah supervisor ke inline
+    fields = ['nama_area', 'supervisor', 'keterangan', 'is_active']
 
 
 @admin.register(Perusahaan)
@@ -70,11 +70,27 @@ class SubAreaInline(admin.TabularInline):
 
 @admin.register(AreaKerja)
 class AreaKerjaAdmin(admin.ModelAdmin):
-    list_display  = ['nama_area', 'perusahaan', 'is_active']
+    # ← DIUBAH: tambah supervisor ke list_display dan fieldsets
+    list_display  = ['nama_area', 'perusahaan', 'supervisor', 'is_active']
     list_filter   = ['is_active', 'perusahaan']
-    search_fields = ['nama_area', 'perusahaan__nama_perusahaan']
+    search_fields = ['nama_area', 'perusahaan__nama_perusahaan', 'supervisor__nama_lengkap']
+    autocomplete_fields = ['supervisor']
     inlines       = [SubAreaInline]
     ordering      = ['perusahaan', 'nama_area']
+
+    fieldsets = (
+        ('Info Area', {
+            'fields': ('perusahaan', 'nama_area', 'keterangan', 'is_active')
+        }),
+        # ← TAMBAHAN: supervisor penanggung jawab area ini
+        ('Supervisor Penanggung Jawab', {
+            'fields': ('supervisor',),
+            'description': (
+                'Supervisor yang bertanggung jawab atas area/divisi kerja ini. '
+                'Contoh: Housekeeping diisi Supervisor HK yang bersangkutan.'
+            ),
+        }),
+    )
 
 
 @admin.register(SubArea)
@@ -111,10 +127,25 @@ class SupervisorPerusahaanAdmin(admin.ModelAdmin):
 
 @admin.register(StaffSupervisor)
 class StaffSupervisorAdmin(admin.ModelAdmin):
-    list_display  = ['staff', 'supervisor', 'is_active', 'dibuat_pada']
-    list_filter   = ['is_active']
+    # ← DIUBAH: tambah area_kerja ke list_display dan fieldsets
+    list_display  = ['staff', 'supervisor', 'area_kerja', 'is_active', 'dibuat_pada']
+    list_filter   = ['is_active', 'area_kerja__perusahaan']
     search_fields = ['staff__nama_lengkap', 'supervisor__nama_lengkap']
-    autocomplete_fields = ['staff', 'supervisor']
+    autocomplete_fields = ['staff', 'supervisor', 'area_kerja']
+
+    fieldsets = (
+        ('Relasi', {
+            'fields': ('staff', 'supervisor', 'is_active')
+        }),
+        # ← TAMBAHAN: area/divisi kerja staff ini
+        ('Penempatan', {
+            'fields': ('area_kerja',),
+            'description': (
+                'Area/divisi kerja staff ini. '
+                'Contoh: Housekeeping, Gardener, Limbah, Reliver.'
+            ),
+        }),
+    )
 
 
 # ============================================================
@@ -131,14 +162,15 @@ class ItemKegiatanInline(admin.TabularInline):
 
 @admin.register(LaporanKegiatan)
 class LaporanKegiatanAdmin(admin.ModelAdmin):
-    list_display  = ['nama_laporan', 'perusahaan', 'jenis_jasa', 'area', 'supervisor', 'tanggal_laporan', 'status']
+    # ← DIUBAH: area tetap ada tapi optional — data lama tidak rusak
+    list_display  = ['nama_laporan', 'perusahaan', 'jenis_jasa', 'supervisor', 'area', 'tanggal_laporan', 'status']
     list_filter   = ['status', 'jenis_jasa', 'perusahaan', 'tanggal_laporan']
     search_fields = [
         'nama_laporan',
         'perusahaan__nama_perusahaan',
         'supervisor__nama_lengkap',
     ]
-    autocomplete_fields = ['perusahaan', 'jenis_jasa', 'area', 'supervisor']
+    autocomplete_fields = ['perusahaan', 'jenis_jasa', 'supervisor']
     readonly_fields     = ['dibuat_pada', 'diubah_pada']
     inlines             = [ItemKegiatanInline]
     ordering            = ['-tanggal_laporan']
@@ -149,7 +181,10 @@ class LaporanKegiatanAdmin(admin.ModelAdmin):
             'fields': ('nama_laporan', 'tanggal_laporan', 'status', 'catatan')
         }),
         ('Relasi', {
-            'fields': ('perusahaan', 'jenis_jasa', 'area', 'supervisor')
+            # ← DIUBAH: area dihapus dari sini karena laporan per perusahaan per bulan,
+            # bukan per area. Field area di model dijadikan null=True, blank=True
+            # agar data laporan lama (Mei) tidak rusak.
+            'fields': ('perusahaan', 'jenis_jasa', 'supervisor', 'area')
         }),
         ('Timestamps', {
             'fields': ('dibuat_pada', 'diubah_pada'),
@@ -196,10 +231,8 @@ class ItemKegiatanAdmin(admin.ModelAdmin):
             icons.append('📸 Progress')
         if obj.foto_after:
             icons.append('✅ After')
-
         if not icons:
             return '—'
-
         return format_html("{}", ' &nbsp; '.join(icons))
 
 
@@ -273,4 +306,4 @@ class AbsensiAdmin(admin.ModelAdmin):
 
     @admin.display(description='Durasi')
     def durasi_kerja_str(self, obj):
-         return obj.durasi_str
+        return obj.durasi_str

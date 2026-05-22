@@ -17,18 +17,27 @@
     <form method="post">
         {% csrf_token %}
         <div class="row g-3">
-            <div class="col-md-12">
-                <label class="field-label">Area</label>
-                {{ form.area }}
-            </div>
-            <div class="col-md-12">
-                <label class="field-label">Nama Sub Area</label>
-                {{ form.nama_sub_area }}
-            </div>
-            <div class="col-md-12">
-                <label class="field-label">Keterangan</label>
-                {{ form.keterangan }}
-            </div>
+                    <div class="col-md-12">
+            <label class="field-label">Perusahaan</label>
+            {{ form.perusahaan }}
+            {% if form.perusahaan.errors %}
+                <div class="field-error">{{ form.perusahaan.errors.0 }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-12">
+            <label class="field-label">Nama Sub Area</label>
+            {{ form.nama_sub_area }}
+            {% if form.nama_sub_area.errors %}
+                <div class="field-error">{{ form.nama_sub_area.errors.0 }}</div>
+            {% endif %}
+        </div>
+        <div class="col-md-12">
+            <label class="field-label">Keterangan</label>
+            {{ form.keterangan }}
+            {% if form.keterangan.errors %}
+                <div class="field-error">{{ form.keterangan.errors.0 }}</div>
+            {% endif %}
+        </div>
             <div class="col-12">
                 <div class="form-actions">
                     <button type="submit" class="btn-submit">

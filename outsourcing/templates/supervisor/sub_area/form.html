@@ -1,12 +1,9 @@
-{% extends 'kepala_supervisor/base_kepala.html' %}
-{% load static %}
-{% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/kepala_spv/kepala.css' %}">
-{% endblock %}
+{% extends 'supervisor/base_supervisor.html' %}
+
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">{{ page_title }}</h5>
-    <a href="{% url 'kepala_area_list' %}" class="btn btn-outline-secondary btn-sm">
+    <a href="{% url 'supervisor_area_list' %}" class="btn btn-outline-secondary btn-sm">
         <i class="bi bi-arrow-left"></i> Kembali
     </a>
 </div>
@@ -30,7 +27,7 @@
             </div>
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">{{ action }}</button>
-                <a href="{% url 'kepala_area_list' %}" class="btn btn-secondary">Batal</a>
+                <a href="{% url 'supervisor_area_list' %}" class="btn btn-secondary">Batal</a>
             </div>
         </div>
     </form>

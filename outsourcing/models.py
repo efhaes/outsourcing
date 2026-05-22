@@ -66,7 +66,6 @@ class User(AbstractUser):
         max_length=20,
         blank=True,
         null=True,
-        unique=True,
         help_text='NIK / ID Karyawan (contoh: 202403157)',
     )
     telepon      = models.CharField(
@@ -194,14 +193,19 @@ class Perusahaan(models.Model):
 
 
 class AreaKerja(models.Model):
-    """
-    Area kerja di dalam satu perusahaan.
-    Contoh: Gedung A, Lantai 2, Area Parkir, dll.
-    """
+
     perusahaan  = models.ForeignKey(
         Perusahaan,
         on_delete=models.CASCADE,
         related_name='area_kerja',
+    )
+    supervisor  = models.ForeignKey(        
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='area_kerja_saya',
+        limit_choices_to={'role': RoleChoices.SUPERVISOR},
     )
     nama_area   = models.CharField(max_length=150)
     keterangan  = models.TextField(blank=True)
@@ -223,22 +227,30 @@ class AreaKerja(models.Model):
 
 
 class SubArea(models.Model):
-    """
-    Sub area di dalam AreaKerja.
-    Contoh: Toilet Lt.1, Lobby, Ruang Rapat, dll.
-    Berguna untuk membagi item kegiatan lebih spesifik.
-    """
-    area        = models.ForeignKey(
+    area = models.ForeignKey(
         AreaKerja,
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='sub_area',
+    )
+    supervisor = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='subarea_milik',
+    )
+    perusahaan = models.ForeignKey(   # ← tambah ini
+        Perusahaan,
+        on_delete=models.CASCADE,
+        null=True, blank=True,
         related_name='sub_area',
     )
     nama_sub_area = models.CharField(max_length=150)
     keterangan    = models.TextField(blank=True)
-    is_active      = models.BooleanField(default=True)
+    is_active     = models.BooleanField(default=True)
     dibuat_pada   = models.DateTimeField(auto_now_add=True)
     diubah_pada   = models.DateTimeField(auto_now=True)
-
     objects = models.Manager()
     aktif   = AktifManager()
 
@@ -253,20 +265,16 @@ class SubArea(models.Model):
 
 
 class Task(models.Model):
-    """
-    Master data tugas/pekerjaan standar yang bisa di-assign ke staff.
-    Contoh: Menyapu lantai, Membersihkan toilet, dll.
-    Terkait dengan Jenis Jasa (Cleaning Service, Security, dll).
-    Dikelola oleh Admin.
-    """
-    jenis_jasa  = models.ForeignKey(
-        JenisJasa,
+    jenis_jasa  = models.ForeignKey(JenisJasa, on_delete=models.CASCADE, related_name='tasks')
+    supervisor  = models.ForeignKey(          # ← tambah ini
+        User,
         on_delete=models.CASCADE,
-        related_name='tasks',
+        related_name='tasks_milik',
+        null=True, blank=True,                # null untuk task global buatan admin
     )
     nama_task   = models.CharField(max_length=200)
     deskripsi   = models.TextField(blank=True)
-    is_active    = models.BooleanField(default=True)
+    is_active   = models.BooleanField(default=True)
     dibuat_pada = models.DateTimeField(auto_now_add=True)
     diubah_pada = models.DateTimeField(auto_now=True)
 
@@ -280,7 +288,7 @@ class Task(models.Model):
         verbose_name        = 'Task'
         verbose_name_plural = 'Task'
         ordering            = ['jenis_jasa', 'nama_task']
-        unique_together     = ['jenis_jasa', 'nama_task']
+        unique_together = ['jenis_jasa', 'nama_task', 'supervisor']  # ← tambah supervisor
 
 
 # ============================================================
@@ -315,6 +323,7 @@ class KepalaSupervisorJasa(models.Model):
         unique_together     = ['kepala_supervisor', 'jenis_jasa']
 
 
+
 class SupervisorPerusahaan(models.Model):
     """
     Menghubungkan Supervisor Lapangan dengan Perusahaan & Jenis Jasa
@@ -325,6 +334,9 @@ class SupervisorPerusahaan(models.Model):
     dua kali ke perusahaan+jenis_jasa yang sama selagi keduanya aktif.
     Constraint ini dijaga di level clean() karena unique_together
     tidak mempertimbangkan is_active.
+
+    Validasi NIK: NIK supervisor harus unik per perusahaan.
+    NIK yang sama boleh ada di perusahaan berbeda.
     """
     supervisor        = models.ForeignKey(
         User,
@@ -358,7 +370,7 @@ class SupervisorPerusahaan(models.Model):
     aktif   = AktifManager()
 
     def clean(self):
-      
+
         if self.perusahaan_id and self.jenis_jasa_id:
             if not self.perusahaan.jenis_jasa.filter(pk=self.jenis_jasa_id).exists():
                 raise ValidationError(
@@ -380,6 +392,20 @@ class SupervisorPerusahaan(models.Model):
                     f"'{self.perusahaan}' untuk jasa '{self.jenis_jasa}'."
                 )
 
+        if self.is_active and self.supervisor_id and self.perusahaan_id:
+            nik = self.supervisor.nik
+            if nik:
+                qs_nik = SupervisorPerusahaan.objects.filter(
+                    perusahaan=self.perusahaan_id,
+                    supervisor__nik=nik,
+                    is_active=True,
+                ).exclude(supervisor=self.supervisor_id)
+                if qs_nik.exists():
+                    raise ValidationError(
+                        f"NIK '{nik}' sudah digunakan oleh supervisor lain "
+                        f"di perusahaan '{self.perusahaan}'."
+                    )
+
     def __str__(self):
         return f"{self.supervisor} → {self.perusahaan} [{self.jenis_jasa}]"
 
@@ -399,6 +425,9 @@ class StaffSupervisor(models.Model):
     Validasi: satu staff hanya boleh memiliki SATU supervisor aktif
     di waktu yang sama. Supervisor bisa dirotasi dengan cara
     menonaktifkan relasi lama (is_active=False) sebelum membuat yang baru.
+
+    Validasi NIK: NIK staff harus unik per perusahaan tempat supervisor bertugas.
+    NIK yang sama boleh ada di perusahaan berbeda.
     """
     staff       = models.ForeignKey(
         User,
@@ -411,6 +440,13 @@ class StaffSupervisor(models.Model):
         on_delete=models.CASCADE,
         related_name='staff_dibawahnya',
         limit_choices_to={'role': RoleChoices.SUPERVISOR},
+    )
+    area_kerja = models.ForeignKey(          # ← TAMBAH: staff ini di divisi/area mana
+        AreaKerja,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='anggota',
     )
     is_active    = models.BooleanField(default=True)
     dibuat_pada = models.DateTimeField(auto_now_add=True)
@@ -435,6 +471,30 @@ class StaffSupervisor(models.Model):
                     f"'{existing.supervisor}'. Nonaktifkan relasi lama sebelum "
                     f"menambahkan supervisor baru."
                 )
+        if self.is_active and self.staff_id and self.supervisor_id:
+            nik = self.staff.nik
+            if nik:
+                # Ambil semua perusahaan tempat supervisor ini aktif bertugas
+                perusahaan_ids = SupervisorPerusahaan.objects.filter(
+                    supervisor=self.supervisor_id,
+                    is_active=True,
+                ).values_list('perusahaan_id', flat=True)
+
+                for perusahaan_id in perusahaan_ids:
+
+                    qs_nik = StaffSupervisor.objects.filter(
+                        staff__nik=nik,
+                        is_active=True,
+                        supervisor__penugasan_supervisor__perusahaan_id=perusahaan_id,
+                        supervisor__penugasan_supervisor__is_active=True,
+                    ).exclude(staff=self.staff_id)
+
+                    if qs_nik.exists():
+                        perusahaan = Perusahaan.objects.get(pk=perusahaan_id)
+                        raise ValidationError(
+                            f"NIK '{nik}' sudah digunakan oleh staff lain "
+                            f"di perusahaan '{perusahaan}'."
+                        )
 
     def __str__(self):
         return f"{self.staff} → dibawah {self.supervisor}"
@@ -443,6 +503,7 @@ class StaffSupervisor(models.Model):
         verbose_name        = 'Staff per Supervisor'
         verbose_name_plural = 'Staff per Supervisor'
         unique_together     = ['staff', 'supervisor']
+
 
 
 class StaffTask(models.Model):
@@ -506,10 +567,12 @@ class LaporanKegiatan(models.Model):
         on_delete=models.CASCADE,
         related_name='laporan_kegiatan',
     )
-    area          = models.ForeignKey(
-        AreaKerja,
-        on_delete=models.CASCADE,
-        related_name='laporan_kegiatan',
+    area = models.ForeignKey(
+    AreaKerja,
+    on_delete=models.SET_NULL,  # ← ganti dari CASCADE ke SET_NULL
+    null=True,                   # ← tambah
+    blank=True,                  # ← tambah
+    related_name='laporan_kegiatan',
     )
     supervisor    = models.ForeignKey(
         User,
@@ -661,9 +724,9 @@ class ItemKegiatan(models.Model):
 
         # ── SUB AREA ───────────────────────────────────────────────────────
         if self.sub_area_id and self.laporan_id:
-            if self.sub_area.area_id != self.laporan.area_id:
+            if self.sub_area.area.perusahaan_id != self.laporan.perusahaan_id:
                 raise ValidationError(
-                    f"Sub area '{self.sub_area}' bukan bagian dari area '{self.laporan.area}'."
+                    f"Sub area '{self.sub_area}' bukan milik perusahaan '{self.laporan.perusahaan}'."
                 )
 
         # ── TASK ───────────────────────────────────────────────────────────

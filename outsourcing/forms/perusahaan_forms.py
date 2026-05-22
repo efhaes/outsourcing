@@ -83,59 +83,44 @@ class AreaKerjaForm(forms.ModelForm):
 
 
 class SubAreaForm(forms.ModelForm):
-    def __init__(self, *args, area_qs=None, **kwargs):
+    perusahaan = forms.ModelChoiceField(
+        queryset=Perusahaan.objects.none(),
+        label='Perusahaan',
+        widget=forms.Select(attrs={'class': 'form-select'}),
+    )
+
+    def __init__(self, *args, perusahaan_qs=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self._area_qs = area_qs
-
-        self.fields['area'] = forms.ModelChoiceField(
-            queryset=area_qs if area_qs is not None else SubArea.objects.none(),
-            label='Area',
-            widget=forms.Select(attrs={'class': 'form-select'}),
-        )
-
-    def clean_area(self):
-        area = self.cleaned_data.get('area')
-
-        if not area:
-            raise forms.ValidationError("Area wajib dipilih.")
-
-        if self._area_qs is not None and area not in self._area_qs:
-            raise forms.ValidationError("Area tidak termasuk dalam akses Anda.")
-
-        return area
+        if perusahaan_qs is not None:
+            self.fields['perusahaan'].queryset = perusahaan_qs
 
     def clean(self):
-        cleaned_data = super().clean()
-        area = cleaned_data.get('area')
+        cleaned_data  = super().clean()
         nama_sub_area = cleaned_data.get('nama_sub_area')
+        perusahaan    = cleaned_data.get('perusahaan')
 
-        if area and nama_sub_area:
-            qs = SubArea.objects.filter(area=area, nama_sub_area=nama_sub_area)
-
+        if nama_sub_area and perusahaan:
+            qs = SubArea.objects.filter(
+                nama_sub_area=nama_sub_area,
+                perusahaan=perusahaan,
+            )
             if self.instance and self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
-
             if qs.exists():
                 raise forms.ValidationError(
-                    f'Sub Area "{nama_sub_area}" di area "{area}" sudah ada.'
+                    f'Sub Area "{nama_sub_area}" di perusahaan "{perusahaan}" sudah ada.'
                 )
-
         return cleaned_data
 
     class Meta:
-        model = SubArea
-        fields = ['area', 'nama_sub_area', 'keterangan']
+        model  = SubArea
+        fields = ['perusahaan', 'nama_sub_area', 'keterangan']
         widgets = {
             'nama_sub_area': forms.TextInput(attrs={'class': 'form-control'}),
-            'keterangan': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+            'keterangan'   : forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
 class SupervisorPerusahaanForm(forms.ModelForm):
-    """
-    Dipakai Kepala Supervisor untuk assign Supervisor ke Perusahaan & Jenis Jasa.
-    Queryset supervisor, jenis_jasa, perusahaan di-inject dari view
-    agar hanya tampil pilihan yang relevan dengan kepala yang login.
-    """
     def __init__(self, *args, supervisor_qs=None, jenis_jasa_qs=None, perusahaan_qs=None, **kwargs):
         super().__init__(*args, **kwargs)
         if supervisor_qs is not None:
@@ -146,7 +131,7 @@ class SupervisorPerusahaanForm(forms.ModelForm):
             self.fields['perusahaan'].queryset = perusahaan_qs
 
     supervisor = forms.ModelChoiceField(
-        queryset=User.objects.filter(role=RoleChoices.SUPERVISOR,is_active=True),
+        queryset=User.objects.filter(role=RoleChoices.SUPERVISOR, is_active=True),
         label='Supervisor Lapangan',
         widget=forms.Select(attrs={'class': 'form-select'}),
     )
@@ -163,8 +148,7 @@ class SupervisorPerusahaanForm(forms.ModelForm):
 
     class Meta:
         model  = SupervisorPerusahaan
-        fields = ['supervisor', 'perusahaan', 'jenis_jasa', 'is_active']
-        labels = {'is_active': 'Aktif'}
+        fields = ['supervisor', 'perusahaan', 'jenis_jasa']  # ← is_active dihapus
 
     def clean(self):
         cleaned_data = super().clean()

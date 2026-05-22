@@ -5,10 +5,11 @@ from .laporan import (
 )
 from .item import item_create, item_edit, item_delete
 from .staff import staff_list, staff_create, staff_edit, staff_toggle_aktif, staff_delete
-from .area_kerja import (
+from .sub_area import (
     subarea_list, subarea_create, subarea_edit, subarea_delete,
 )
 from .task import task_list, task_create, task_edit, task_delete
 from .customer import customer_create
 from .absensi import qr_list, qr_generate, absensi_detail, qr_nonaktifkan,absensi_rekap,izin_review
 from .izin_staff import izin_list, izin_detail, izin_approve, izin_reject
+from .area_kerja import area_list, area_create, area_edit, area_delete

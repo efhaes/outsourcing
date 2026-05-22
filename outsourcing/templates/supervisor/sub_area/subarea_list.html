@@ -1,7 +1,7 @@
 {% extends 'supervisor/base_supervisor.html' %}
 {% load static %}
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/supervisor/list_subarea.css' %}">
+<link rel="stylesheet" href="{% static 'css/supervisor/subarea/list.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -19,24 +19,13 @@
             <input type="text" name="q" value="{{ q }}"
                    class="form-control" placeholder="Cari sub area...">
         </div>
-        <div class="col-md-3">
-            <select name="area_pk" class="form-select">
-                <option value="">— Semua Area —</option>
-                {% for area in area_qs %}
-                <option value="{{ area.pk }}"
-                    {% if area_pk == area.pk|stringformat:"s" %}selected{% endif %}>
-                    {{ area.nama_area }} ({{ area.perusahaan.nama_perusahaan }})
-                </option>
-                {% endfor %}
-            </select>
-        </div>
         <div class="col-md-2">
             <button type="submit" class="btn-filter">
                 <i class="bi bi-funnel"></i> Filter
             </button>
         </div>
         <div class="col-md-3">
-            {% if q or area_pk %}
+            {% if q %}
             <a href="?" class="btn-reset">
                 <i class="bi bi-x"></i> Reset
             </a>
@@ -52,7 +41,6 @@
             <tr>
                 <th>No</th>
                 <th>Nama Sub Area</th>
-                <th>Area</th>
                 <th>Perusahaan</th>
                 <th>Keterangan</th>
                 <th>Status</th>
@@ -64,8 +52,7 @@
             <tr>
                 <td class="td-no">{{ forloop.counter }}</td>
                 <td class="td-nama">{{ subarea.nama_sub_area }}</td>
-                <td>{{ subarea.area.nama_area }}</td>
-                <td>{{ subarea.area.perusahaan.nama_perusahaan }}</td>
+                <td>{{ subarea.perusahaan.nama_perusahaan|default:'—' }}</td>
                 <td class="td-muted">{{ subarea.keterangan|default:'—' }}</td>
                 <td>
                     {% if subarea.is_active %}
@@ -89,7 +76,7 @@
             </tr>
             {% empty %}
             <tr class="empty-row">
-                <td colspan="7">Belum ada sub area.</td>
+                <td colspan="6">Belum ada sub area.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -104,9 +91,7 @@
             <div>
                 <div class="m-card-nama">{{ subarea.nama_sub_area }}</div>
                 <div class="m-card-area">
-                    {{ subarea.area.nama_area }}
-                    <span class="m-card-sep">·</span>
-                    {{ subarea.area.perusahaan.nama_perusahaan }}
+                    {{ subarea.perusahaan.nama_perusahaan|default:'—' }}
                 </div>
             </div>
             {% if subarea.is_active %}

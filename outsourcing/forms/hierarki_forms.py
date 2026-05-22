@@ -28,8 +28,7 @@ class AssignSupervisorForm(forms.ModelForm):
 
     class Meta:
         model  = SupervisorPerusahaan
-        fields = ['supervisor', 'perusahaan', 'jenis_jasa', 'is_active']
-        labels = {'is_active': 'Aktif'}
+        fields = ['supervisor', 'perusahaan', 'jenis_jasa'] 
 
     def clean(self):
         cleaned_data = super().clean()

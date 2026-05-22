@@ -342,11 +342,11 @@
         <table class="table mb-0">
             <thead>
                 <tr>
-                    <th>#</th>
+                    <th>No.</th>
                     <th>Nama Laporan</th>
                     <th>Perusahaan</th>
                     <th>Jasa</th>
-                    <th>Area</th>
+          
                     <th>Tanggal</th>
                     <th>Status</th>
                     <th>Aksi</th>
@@ -363,7 +363,6 @@
                     </td>
                     <td class="cell-muted">{{ l.perusahaan.nama_perusahaan }}</td>
                     <td class="cell-muted">{{ l.jenis_jasa.nama_jasa }}</td>
-                    <td class="cell-muted">{{ l.area.nama_area }}</td>
                     <td class="cell-muted">{{ l.tanggal_laporan|date:"d/m/Y" }}</td>
                     <td>
                         {% if l.status == 'draft' %}
@@ -425,7 +424,6 @@
         <div class="laporan-card-meta">
             <div class="laporan-card-meta-item">Perusahaan <br><span>{{ l.perusahaan.nama_perusahaan }}</span></div>
             <div class="laporan-card-meta-item">Jasa <br><span>{{ l.jenis_jasa.nama_jasa }}</span></div>
-            <div class="laporan-card-meta-item">Area <br><span>{{ l.area.nama_area }}</span></div>
             <div class="laporan-card-meta-item">Tanggal <br><span>{{ l.tanggal_laporan|date:"d/m/Y" }}</span></div>
         </div>
         <div class="laporan-card-footer">

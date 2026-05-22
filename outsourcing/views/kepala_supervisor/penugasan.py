@@ -56,6 +56,7 @@ def penugasan_create(request):
         if form.is_valid():
             penugasan = form.save(commit=False)
             penugasan.kepala_supervisor = request.user
+            penugasan.is_active = True
             penugasan.save()
             messages.success(
                 request,

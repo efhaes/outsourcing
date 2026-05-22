@@ -289,105 +289,90 @@ textarea.form-control { resize: vertical; min-height: 90px; }
     </div>
 
     <form method="post">
-        {% csrf_token %}
+    {% csrf_token %}
 
-        <div class="form-card-body">
+    <div class="form-card-body">
 
-            {% if form.non_field_errors %}
-            <div class="alert-form-error">
-                <i class="bi bi-exclamation-circle" style="flex-shrink:0;margin-top:1px;"></i>
-                <div>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
-            </div>
-            {% endif %}
-
-            <!-- Nama Laporan -->
-            <div class="field-group">
-                <label class="field-label" for="{{ form.nama_laporan.id_for_label }}">
-                    Nama Laporan <span class="required">*</span>
-                </label>
-                {{ form.nama_laporan }}
-                {% if form.nama_laporan.errors %}
-                    <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.nama_laporan.errors.0 }}</div>
-                {% endif %}
-            </div>
-
-            <!-- Perusahaan + Jenis Jasa -->
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="field-group" style="margin-bottom:0;">
-                        <label class="field-label" for="{{ form.perusahaan.id_for_label }}">
-                            Perusahaan <span class="required">*</span>
-                        </label>
-                        {{ form.perusahaan }}
-                        {% if form.perusahaan.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.perusahaan.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="field-group" style="margin-bottom:0;">
-                        <label class="field-label" for="{{ form.jenis_jasa.id_for_label }}">
-                            Jenis Jasa <span class="required">*</span>
-                        </label>
-                        {{ form.jenis_jasa }}
-                        {% if form.jenis_jasa.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.jenis_jasa.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Area + Tanggal -->
-            <div class="form-section-label">Lokasi & Waktu</div>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="field-group" style="margin-bottom:0;">
-                        <label class="field-label" for="{{ form.area.id_for_label }}">
-                            Area Kerja <span class="required">*</span>
-                        </label>
-                        {{ form.area }}
-                        {% if form.area.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.area.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="field-group" style="margin-bottom:0;">
-                        <label class="field-label" for="{{ form.tanggal_laporan.id_for_label }}">
-                            Tanggal Laporan <span class="required">*</span>
-                        </label>
-                        {{ form.tanggal_laporan }}
-                        {% if form.tanggal_laporan.errors %}
-                            <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.tanggal_laporan.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-
-            <!-- Catatan -->
-            <div class="form-section-label">Catatan</div>
-            <div class="field-group" style="margin-bottom:0;">
-                <label class="field-label" for="{{ form.catatan.id_for_label }}">
-                    Catatan <span style="color:var(--clr-text-muted);font-weight:400;text-transform:none;letter-spacing:0;">(opsional)</span>
-                </label>
-                {{ form.catatan }}
-            </div>
-
+        {% if form.non_field_errors %}
+        <div class="alert-form-error">
+            <i class="bi bi-exclamation-circle" style="flex-shrink:0;margin-top:1px;"></i>
+            <div>{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
         </div>
+        {% endif %}
 
-        <!-- Footer actions -->
-        <div class="form-card-footer">
-            <button type="submit" class="btn-submit">
-                <i class="bi bi-check-lg"></i> {{ action }}
-            </button>
-            {% if laporan %}
-                <a href="{% url 'supervisor_laporan_detail' laporan.pk %}" class="btn-cancel">Batal</a>
-            {% else %}
-                <a href="{% url 'supervisor_laporan_list' %}" class="btn-cancel">Batal</a>
+        <!-- Nama Laporan -->
+        <div class="field-group">
+            <label class="field-label" for="{{ form.nama_laporan.id_for_label }}">
+                Nama Laporan <span class="required">*</span>
+            </label>
+            {{ form.nama_laporan }}
+            {% if form.nama_laporan.errors %}
+                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.nama_laporan.errors.0 }}</div>
             {% endif %}
         </div>
 
-    </form>
+        <!-- Perusahaan + Jenis Jasa -->
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="field-group" style="margin-bottom:0;">
+                    <label class="field-label" for="{{ form.perusahaan.id_for_label }}">
+                        Perusahaan <span class="required">*</span>
+                    </label>
+                    {{ form.perusahaan }}
+                    {% if form.perusahaan.errors %}
+                        <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.perusahaan.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="field-group" style="margin-bottom:0;">
+                    <label class="field-label" for="{{ form.jenis_jasa.id_for_label }}">
+                        Jenis Jasa <span class="required">*</span>
+                    </label>
+                    {{ form.jenis_jasa }}
+                    {% if form.jenis_jasa.errors %}
+                        <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.jenis_jasa.errors.0 }}</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- ← HAPUS blok Area, Tanggal langsung sendiri -->
+        <div class="form-section-label">Waktu</div>
+        <div class="field-group">
+            <label class="field-label" for="{{ form.tanggal_laporan.id_for_label }}">
+                Tanggal Laporan <span class="required">*</span>
+            </label>
+            {{ form.tanggal_laporan }}
+            {% if form.tanggal_laporan.errors %}
+                <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.tanggal_laporan.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Catatan -->
+        <div class="form-section-label">Catatan</div>
+        <div class="field-group" style="margin-bottom:0;">
+            <label class="field-label" for="{{ form.catatan.id_for_label }}">
+                Catatan <span style="color:var(--clr-text-muted);font-weight:400;text-transform:none;letter-spacing:0;">(opsional)</span>
+            </label>
+            {{ form.catatan }}
+        </div>
+
+    </div>
+
+    <!-- Footer actions -->
+    <div class="form-card-footer">
+        <button type="submit" class="btn-submit">
+            <i class="bi bi-check-lg"></i> {{ action }}
+        </button>
+        {% if laporan %}
+            <a href="{% url 'supervisor_laporan_detail' laporan.pk %}" class="btn-cancel">Batal</a>
+        {% else %}
+            <a href="{% url 'supervisor_laporan_list' %}" class="btn-cancel">Batal</a>
+        {% endif %}
+    </div>
+
+</form>
 </div>
 
 {% endblock %}

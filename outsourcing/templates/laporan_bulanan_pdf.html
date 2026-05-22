@@ -1218,22 +1218,22 @@ table.kal tbody tr:nth-child(even) td { background: #f7f9fc; }
             <table style="width:100%;border-collapse:collapse;table-layout:fixed;">
               <tr>
                 <td style="padding:3px;text-align:center;vertical-align:top;">
-                  <div class="foto-pair-label">On Progress</div>
-                  {% if item.foto_on_progress %}
-                    <img src="{{ item.foto_on_progress.url }}" class="foto-img">
-                    <div class="foto-cap">{{ item.nama_item }}</div>
-                  {% else %}
-                    <div class="foto-empty">N/A</div>
-                  {% endif %}
+                    <div class="foto-pair-label">On Progress</div>
+                    {% if item.foto_on_progress %}
+                        <img src="{{ item.foto_on_progress_path }}" class="foto-img">
+                        <div class="foto-cap">{{ item.nama_item }}</div>
+                    {% else %}
+                        <div class="foto-empty">N/A</div>
+                    {% endif %}
                 </td>
                 <td style="padding:3px;text-align:center;vertical-align:top;">
-                  <div class="foto-pair-label">After</div>
-                  {% if item.foto_after %}
-                    <img src="{{ item.foto_after.url }}" class="foto-img">
-                    <div class="foto-cap">{{ item.nama_item }}</div>
-                  {% else %}
-                    <div class="foto-empty">N/A</div>
-                  {% endif %}
+                    <div class="foto-pair-label">After</div>
+                    {% if item.foto_after %}
+                        <img src="{{ item.foto_after_path }}" class="foto-img">
+                        <div class="foto-cap">{{ item.nama_item }}</div>
+                    {% else %}
+                        <div class="foto-empty">N/A</div>
+                    {% endif %}
                 </td>
               </tr>
             </table>
