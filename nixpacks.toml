@@ -1,10 +1,10 @@
 [phases.setup]
-nixPkgs = [
-    "cairo",
-    "pango",
-    "gdk-pixbuf",
+aptPkgs = [
+    "libcairo2-dev",
+    "libpango1.0-dev",
+    "libgdk-pixbuf2.0-dev",
+    "libffi-dev",
     "pkg-config",
-    "gobject-introspection",
     "shared-mime-info",
 ]
 
